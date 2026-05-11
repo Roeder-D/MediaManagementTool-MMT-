@@ -10,6 +10,7 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires java.sql;
     requires io.github.cdimascio.dotenv.java;
     requires mysql.connector.j;
+/*    requires static lombok;*/
 
     //opens de.srh_2551.mediamanagementtoolmmt to javafx.fxml;
     //exports de.srh_2551.mediamanagementtoolmmt;
