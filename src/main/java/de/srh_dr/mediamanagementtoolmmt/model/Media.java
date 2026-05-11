@@ -1,5 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.model;
 
+import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+
 import java.time.LocalDate;
 import java.util.*;
 
@@ -463,36 +465,28 @@ public class Media {
         //Media constructor call
         public Media build() {
             if(id == 0){
-                throw new IllegalStateException("id is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.id_unset"));
             }
             if(title == null){
-                throw new IllegalStateException("title is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.title_unset"));
             }
             if(mediatype == null){
-                throw new IllegalStateException("mediatype is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.type_unset"));
             }
             if(publisher == null){
-                throw new IllegalStateException("publisher is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.publisher_unset"));
             }
             if(series == null){
-                throw new IllegalStateException("series is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.series_unset"));
             }
             if(languages.isEmpty()){
-                throw new IllegalStateException("languages is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.language_unset"));
             }
             if(franchises.isEmpty()){
-                throw new IllegalStateException("franchises is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.franchise_unset"));
             }
             if(genres.isEmpty()){
-                throw new IllegalStateException("genres is not set");
-                // TODO: i18n
+                throw new IllegalStateException(LanguageManager.getString("error.media.genre_unset"));
             }
 
             return new Media(this);

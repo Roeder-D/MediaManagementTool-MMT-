@@ -1,5 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.model;
 
+import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 
@@ -18,8 +20,7 @@ public class Lending {
         this.lendee = lendee;
 
         if(borrowDate == null) {
-            throw new IllegalArgumentException("borrowDate is null");
-            //TODO: add i18n
+            throw new IllegalArgumentException(LanguageManager.getString("error.lending.borrow_date_null"));
         }
         this.borrowDate = borrowDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
@@ -54,8 +55,7 @@ public class Lending {
     public void setReturnDate(LocalDate returnDate) {
         if(returnDate != null){
             if(returnDate.isBefore(borrowDate)) {
-                throw new IllegalArgumentException("returnDate is before borrowDate");
-                //TODO: add i18n
+                throw new IllegalArgumentException(LanguageManager.getString("error.lending.invalid_return_date"));
             }
             this.returnDate = returnDate;
         }else{

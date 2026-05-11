@@ -5,12 +5,16 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public class LanguageManager {
-    private static final String BUNDLE_PATH = "de.srh_2551.mediamanagementtoolmmt.messages";
+    private static final String BUNDLE_PATH = "de.srh_dr.mediamanagementtoolmmt.messages";
     private static ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_PATH);
 
     //default language
     static{
-        setLanguage("de");
+        try {
+            bundle = ResourceBundle.getBundle(BUNDLE_PATH, Locale.getDefault());
+        } catch (MissingResourceException e) {
+            setLanguage("en");
+        }
     }
 
     public static void setLanguage(String languageCode){
