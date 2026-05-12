@@ -8,7 +8,7 @@ import java.util.Objects;
 
 
 public class Lending {
-    private final int id;
+    private int id;
     private final Media media;
     private final Lendee lendee;
     private String note;
@@ -53,13 +53,16 @@ public class Lending {
     public LocalDate getReturnDate() {
         return returnDate;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setNote(String note) {
         if(!note.equals(this.note)) {
             this.note = note;

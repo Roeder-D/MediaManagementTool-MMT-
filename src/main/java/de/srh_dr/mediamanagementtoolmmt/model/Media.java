@@ -8,7 +8,7 @@ import java.util.*;
 public class Media {
     //current state
     private boolean isNewItem;
-    private final int id;
+    private int id;
     private String isbn;
     private String title;
     private String originalTitle;
@@ -158,6 +158,9 @@ public class Media {
 
 
     // setters
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setIsbn(String isbn) {
         if(!Objects.equals(isbn, this.isbn)){
             this.isbn = isbn;

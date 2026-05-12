@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class Artist {
-    private final int id;
+    private int id;
     private String firstName;
     private String lastName;
     private String nationality;
@@ -30,13 +30,16 @@ public class Artist {
     public String getNationality() {
         return nationality;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setFirstName(String firstName) {
         if(!firstName.equals(this.firstName)){
             this.firstName = firstName;

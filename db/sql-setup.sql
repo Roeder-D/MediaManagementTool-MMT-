@@ -74,7 +74,7 @@ CREATE TABLE media(
 	series_id			INTEGER,
 	mediatype_id		INTEGER,
 	publisher_id		INTEGER,
-	status				ENUM('Available', 'Lent', 'Lost') DEFAULT 'Available',
+	status				ENUM('AVAILABLE', 'LENT', 'LOST') DEFAULT 'AVAILABLE',
 
 	title_search		LONGTEXT,
 	refresh_t_s			TIMESTAMP,
@@ -140,14 +140,17 @@ CREATE TABLE media_language(
 );
 
 CREATE TABLE media_artist(
-	media_id			INTEGER,
-	artist_id			INTEGER,
-	artist_role_id		INTEGER,
+    media_id            INTEGER,
+    artist_id           INTEGER,
+    artist_role_id      INTEGER,
 
-	PRIMARY KEY (media_id, artist_id, artist_role_id),
-	FOREIGN KEY (media_id) REFERENCES media (media_id)						ON DELETE CASCADE,
-	FOREIGN KEY (artist_id) REFERENCES artist (artist_id)					ON DELETE CASCADE,
-	FOREIGN KEY (artist_role_id) REFERENCES artist_role (artist_role_id)	ON DELETE CASCADE
+    PRIMARY KEY (media_id, artist_id, artist_role_id),
+    FOREIGN KEY (media_id) REFERENCES media (media_id) ON DELETE CASCADE,
+
+    # artist can only be deleted if not assigned
+    FOREIGN KEY (artist_id) REFERENCES artist (artist_id) ON DELETE RESTRICT,
+    # artist_role can only be deleted if not assigned
+    FOREIGN KEY (artist_role_id) REFERENCES artist_role (artist_role_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE lending(
@@ -281,6 +284,16 @@ BEGIN
     	WHERE return_date IS NULL AND lendee_id IS NOT NULL
     );
 END;//
+
+CREATE TRIGGER trg_cleanup_on_media_franchise
+    AFTER DELETE on media_franchise
+    FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_franchise WHERE franchise_id = OLD.franchise_id) THEN
+    DELETE FROM franchise
+    WHERE franchise_id = OLD.franchise_id;
+END IF;
+END; //
 
 CREATE TRIGGER validate_isbn_on_insert
 BEFORE INSERT ON media

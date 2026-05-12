@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class MediaArtist {
-    private final int id;
+    private int id;
     private final Artist artist;
     private ArtistRole artistRole;
     private boolean isNewItem;
@@ -24,13 +24,16 @@ public class MediaArtist {
     public ArtistRole getArtistRole() {
         return artistRole;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setArtistRole(ArtistRole artistRole) {
         if(!artistRole.equals(this.artistRole)){
             this.artistRole = artistRole;

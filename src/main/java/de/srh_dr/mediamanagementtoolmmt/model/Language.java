@@ -5,7 +5,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import java.util.Objects;
 
 public class Language{
-    private final int id;
+    private int id;
     private String language;
     private boolean isNewItem;
     private boolean isDirty;
@@ -22,13 +22,16 @@ public class Language{
     public String getLanguage() {
         return language;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setLanguage(String language){
         if(language != null){
             if(!language.equals(this.language)){

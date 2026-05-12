@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.*;
 
 public class Series {
-    private final int id;
+    private int id;
     private String name;
     private int numberOfTitles;
     private int startYear;
@@ -46,6 +46,9 @@ public class Series {
     public boolean isNewItem() {
         return isNewItem;
     }
+    public boolean isDirty() {
+        return isDirty;
+    }
     public boolean listChanged() {
         return listChanged;
     }
@@ -56,6 +59,9 @@ public class Series {
         return Collections.unmodifiableList(altTitlesToRemove);
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setName(String name) {
         if(!Objects.equals(this.name, name)){
             this.name = name;

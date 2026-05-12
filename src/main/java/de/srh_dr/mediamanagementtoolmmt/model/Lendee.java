@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class Lendee {
-    private final int id;
+    private int id;
     private String firstName;
     private String lastName;
     private String alias;
@@ -30,8 +30,15 @@ public class Lendee {
     public String getAlias() {
         return alias;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
+    }
+    public boolean isDirty(){
+        return isDirty;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
     public void setFirstName(String firstName) {
         if(!this.firstName.equals(firstName)){

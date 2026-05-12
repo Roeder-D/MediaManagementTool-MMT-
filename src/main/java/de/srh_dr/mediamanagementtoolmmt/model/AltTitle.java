@@ -5,7 +5,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import java.util.Objects;
 
 public class AltTitle{
-    private final int id;
+    private int id;
     private String title;
     private boolean isNewItem;
     private boolean isDirty;
@@ -22,13 +22,16 @@ public class AltTitle{
     public String getTitle() {
         return title;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return this.isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setTitle(String title) {
         if(title != null){
             if(!title.equals(this.title)){

@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class Publisher{
-    private final int id;
+    private int id;
     private String publisherName;
     private boolean isNewItem;
     private boolean isDirty;
@@ -20,13 +20,16 @@ public class Publisher{
     public String getPublisherName(){
         return publisherName;
     }
-    public boolean getIsNewItem(){
+    public boolean isNewItem(){
         return isNewItem;
     }
-    public boolean getIsDirty(){
+    public boolean isDirty(){
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setPublisherName(String publisherName){
         if(!publisherName.equals(this.publisherName)){
             this.publisherName = publisherName;

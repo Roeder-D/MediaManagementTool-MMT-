@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class MediaType{
-    private final int id;
+    private int id;
     private String typeName;
     private boolean isNewItem;
     private boolean isDirty;
@@ -20,19 +20,23 @@ public class MediaType{
     public String getTypeName() {
         return typeName;
     }
-    public boolean getIsNewItem() {
+    public boolean isNewItem() {
         return isNewItem;
     }
-    public boolean getIsDirty() {
+    public boolean isDirty() {
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setTypeName(String typeName) {
         if(!typeName.equals(this.typeName)){
             this.typeName = typeName;
             this.isDirty = true;
         }
     }
+
     public void clearChangeTracking() {
         this.isNewItem = false;
         isDirty = false;

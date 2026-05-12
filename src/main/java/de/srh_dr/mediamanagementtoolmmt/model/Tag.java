@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class Tag{
-    private final int id;
+    private int id;
     private String name;
     private boolean isNewItem;
     private boolean isDirty;
@@ -27,6 +27,9 @@ public class Tag{
         return isDirty;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setName(String name){
         if(!name.equals(this.name)){
             this.name = name;

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Franchise {
-    private final int id;
+    private int id;
     private String name;
     private final List<AltTitle> altTitles;
     private boolean isNewItem;
@@ -26,16 +26,20 @@ public class Franchise {
     public String getName() {
         return name;
     }
-    public boolean getIsNewItem(){
+    public boolean isNewItem(){
         return isNewItem;
     }
-    public boolean getIsDirty() {
+    public boolean isDirty() {
         return isDirty;
     }
     public List<AltTitle> getAltTitles(){
         return altTitles;
     }
 
+
+    public void setId(int id) {
+        this.id = id;
+    }
     public void setName(String name) {
         if(name != null) {
             if(!name.equals(this.name)) {
