@@ -7,12 +7,15 @@ public class Lendee {
     private String firstName;
     private String lastName;
     private String alias;
+    private boolean isNewItem;
+    private boolean isDirty;
 
-    public Lendee(int id, String firstName, String lastName, String alias) {
+    public Lendee(int id, String firstName, String lastName, String alias,  boolean isNewItem) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.alias = alias;
+        this.isNewItem = isNewItem;
     }
 
     public int getId() {
@@ -27,14 +30,31 @@ public class Lendee {
     public String getAlias() {
         return alias;
     }
+    public boolean getIsNewItem() {
+        return isNewItem;
+    }
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        if(!this.firstName.equals(firstName)){
+            this.firstName = firstName;
+            this.isDirty = true;
+        }
     }
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        if(!this.lastName.equals(lastName)){
+            this.lastName = lastName;
+            this.isDirty =  true;
+        }
     }
     public void setAlias(String alias) {
-        this.alias = alias;
+        if(!this.alias.equals(alias)){
+            this.alias = alias;
+            this.isDirty =  true;
+        }
+    }
+
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
     }
 
     @Override

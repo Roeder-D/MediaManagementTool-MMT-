@@ -2,7 +2,43 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 
 import java.util.Objects;
 
-public record Publisher(int id, String publisherName){
+public class Publisher{
+    private final int id;
+    private String publisherName;
+    private boolean isNewItem;
+    private boolean isDirty;
+
+    public Publisher(int id, String publisherName,  boolean isNewItem){
+        this.id = id;
+        this.publisherName = publisherName;
+        this.isNewItem = isNewItem;
+    }
+
+    public int getId(){
+        return id;
+    }
+    public String getPublisherName(){
+        return publisherName;
+    }
+    public boolean getIsNewItem(){
+        return isNewItem;
+    }
+    public boolean getIsDirty(){
+        return isDirty;
+    }
+
+    public void setPublisherName(String publisherName){
+        if(!publisherName.equals(this.publisherName)){
+            this.publisherName = publisherName;
+            this.isDirty = true;
+        }
+    }
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

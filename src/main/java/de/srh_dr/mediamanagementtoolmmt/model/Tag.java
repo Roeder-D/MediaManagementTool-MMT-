@@ -2,7 +2,42 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 
 import java.util.Objects;
 
-public record Tag(int id, String name) {
+public class Tag{
+    private final int id;
+    private String name;
+    private boolean isNewItem;
+    private boolean isDirty;
+
+    public Tag(int id,String name, boolean isNewItem){
+        this.id = id;
+        this.name = name;
+        this.isNewItem = isNewItem;
+    }
+
+    public int getId(){
+        return id;
+    }
+    public String getName(){
+        return name;
+    }
+    public boolean getIsNewItem(){
+        return isNewItem;
+    }
+    public boolean getIsDirty() {
+        return isDirty;
+    }
+
+    public void setName(String name){
+        if(!name.equals(this.name)){
+            this.name = name;
+            this.isDirty =  true;
+        }
+    }
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,8 +1,51 @@
 package de.srh_dr.mediamanagementtoolmmt.model;
 
+import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+
 import java.util.Objects;
 
-public record ArtistRole(int id, String role) {
+public class ArtistRole {
+    private final int id;
+    private String role;
+    private boolean isNewItem;
+    private boolean isDirty;
+
+    public ArtistRole(int id,  String role, boolean isNewItem) {
+        this.id = id;
+        this.role = role;
+        this.isNewItem = isNewItem;
+    }
+
+    public int getId() {
+        return id;
+    }
+    public String getRole() {
+        return role;
+    }
+    public boolean getIsNewItem() {
+        return isNewItem;
+    }
+    public boolean getIsDirty(){
+        return isDirty;
+    }
+
+    public void setRole(String role) {
+        if(role !=  null) {
+            if(!role.equals(this.role)){
+                this.role = role;
+                this.isDirty = true;
+            }
+        }else{
+            throw new IllegalArgumentException(LanguageManager.getString("error.not_null="));
+        }
+    }
+
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -87,7 +87,7 @@ public class Series {
     }
     public void removeAltTitleById(int id) {
         AltTitle toRemove = altTitles.stream()
-                .filter(t -> t.id() == id)
+                .filter(t -> t.getId() == id)
                 .findFirst()
                 .orElse(null);
 

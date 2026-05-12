@@ -6,11 +6,14 @@ public class MediaArtist {
     private final int id;
     private final Artist artist;
     private ArtistRole artistRole;
+    private boolean isNewItem;
+    private boolean isDirty;
 
-    public MediaArtist(int id,  Artist artist, ArtistRole artistRole) {
+    public MediaArtist(int id,  Artist artist, ArtistRole artistRole, boolean isNewItem) {
         this.id = id;
         this.artist = artist;
         this.artistRole = artistRole;
+        this.isNewItem = isNewItem;
     }
     public int getId() {
         return id;
@@ -21,8 +24,23 @@ public class MediaArtist {
     public ArtistRole getArtistRole() {
         return artistRole;
     }
+    public boolean getIsNewItem() {
+        return isNewItem;
+    }
+    public boolean getIsDirty(){
+        return isDirty;
+    }
+
     public void setArtistRole(ArtistRole artistRole) {
-        this.artistRole = artistRole;
+        if(!artistRole.equals(this.artistRole)){
+            this.artistRole = artistRole;
+            this.isDirty = true;
+        }
+    }
+
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
     }
 
     @Override

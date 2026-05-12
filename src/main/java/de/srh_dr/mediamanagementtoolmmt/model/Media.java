@@ -500,10 +500,10 @@ public class Media {
         //Media constructor call
         public Media build() {
             if(id == 0){
-                throw new IllegalStateException(LanguageManager.getString("error.media.id_unset"));
+                throw new IllegalStateException(LanguageManager.getString("error.id_unset"));
             }
             if(title == null){
-                throw new IllegalStateException(LanguageManager.getString("error.media.title_unset"));
+                throw new IllegalStateException(LanguageManager.getString("error.title_null"));
             }
             if(mediatype == null){
                 throw new IllegalStateException(LanguageManager.getString("error.media.type_unset"));

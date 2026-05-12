@@ -7,12 +7,15 @@ public class Artist {
     private String firstName;
     private String lastName;
     private String nationality;
+    private boolean isNewItem;
+    private boolean isDirty;
 
-    public Artist(int id, String firstName, String lastName, String nationality) {
+    public Artist(int id, String firstName, String lastName, String nationality, boolean isNewItem) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.nationality = nationality;
+        this.isNewItem = isNewItem;
     }
 
     public int getId() {
@@ -27,15 +30,34 @@ public class Artist {
     public String getNationality() {
         return nationality;
     }
+    public boolean getIsNewItem() {
+        return isNewItem;
+    }
+    public boolean getIsDirty(){
+        return isDirty;
+    }
 
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        if(!firstName.equals(this.firstName)){
+            this.firstName = firstName;
+            this.isDirty = true;
+        }
     }
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        if(!lastName.equals(this.lastName)){
+            this.lastName = lastName;
+            this.isDirty = true;
+        }
     }
     public void setNationality(String nationality) {
-        this.nationality = nationality;
+        if(!nationality.equals(this.nationality)){
+            this.nationality = nationality;
+            this.isDirty = true;
+        }
+    }
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
     }
 
     @Override

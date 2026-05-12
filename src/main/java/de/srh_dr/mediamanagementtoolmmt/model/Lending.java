@@ -14,8 +14,10 @@ public class Lending {
     private String note;
     private final LocalDate borrowDate;
     private LocalDate returnDate;
+    private boolean isNewItem;
+    private boolean isDirty;
 
-    public Lending(int id, Media media, Lendee lendee, java.util.Date borrowDate, java.util.Date returnDate) {
+    public Lending(int id, Media media, Lendee lendee, java.util.Date borrowDate, java.util.Date returnDate, boolean isNewItem) {
         this.id = id;
         this.media = media;
         this.lendee = lendee;
@@ -30,6 +32,7 @@ public class Lending {
         }else{
             this.returnDate = null;
         }
+        this.isNewItem = isNewItem;
     }
 
     public int getId() {
@@ -50,8 +53,18 @@ public class Lending {
     public LocalDate getReturnDate() {
         return returnDate;
     }
+    public boolean getIsNewItem() {
+        return isNewItem;
+    }
+    public boolean getIsDirty(){
+        return isDirty;
+    }
+
     public void setNote(String note) {
-        this.note = note;
+        if(!note.equals(this.note)) {
+            this.note = note;
+            this.isDirty =  true;
+        }
     }
     public void setReturnDate(LocalDate returnDate) {
         if(returnDate != null){
@@ -62,6 +75,12 @@ public class Lending {
         }else{
             this.returnDate = null;
         }
+        this.isDirty = true;
+    }
+
+    public void clearChangeTracking() {
+        this.isNewItem = false;
+        isDirty = false;
     }
 
     @Override
