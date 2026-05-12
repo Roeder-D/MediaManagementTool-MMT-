@@ -4,6 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Objects;
 
 
 public class Lending {
@@ -61,5 +62,20 @@ public class Lending {
         }else{
             this.returnDate = null;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Lending lending = (Lending) o;
+        // Focus only on the ID for database identity
+        return this.id == lending.id;
+    }
+
+    @Override
+    public int hashCode() {
+        // Only use the ID to generate the hash
+        return Objects.hash(id);
     }
 }

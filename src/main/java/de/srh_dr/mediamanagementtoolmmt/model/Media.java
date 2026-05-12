@@ -121,8 +121,39 @@ public class Media {
     public MediaStatus getStatus() {
         return status;
     }
+
     public EnumSet<MediaField> getDirtyFields(){
         return this.dirtyFields;
+    }
+    public List<Tag> getTagsToAdd() {
+        return Collections.unmodifiableList(tagsToAdd);
+    }
+    public List<Tag> getTagsToRemove() {
+        return Collections.unmodifiableList(tagsToRemove);
+    }
+    public List<MediaArtist> getCreditsToAdd() {
+        return Collections.unmodifiableList(creditsToAdd);
+    }
+    public List<MediaArtist> getCreditsToRemove() {
+        return Collections.unmodifiableList(creditsToRemove);
+    }
+    public List<Franchise> getFranchisesToAdd() {
+        return Collections.unmodifiableList(franchisesToAdd);
+    }
+    public List<Franchise> getFranchisesToRemove() {
+        return Collections.unmodifiableList(franchisesToRemove);
+    }
+    public List<Language> getLanguagesToAdd() {
+        return Collections.unmodifiableList(languagesToAdd);
+    }
+    public List<Language> getLanguagesToRemove() {
+        return Collections.unmodifiableList(languagesToRemove);
+    }
+    public List<Genre> getGenresToAdd() {
+        return Collections.unmodifiableList(genresToAdd);
+    }
+    public List<Genre> getGenresToRemove() {
+        return Collections.unmodifiableList(genresToRemove);
     }
 
 
@@ -394,8 +425,12 @@ public class Media {
             return this;
         }
         public Builder isbn(String isbn) {
-            this.isbn = isbn;
-            return this;
+            if(isbn.length() == 10 ||  isbn.length() == 13){
+                this.isbn = isbn;
+                return this;
+            }else {
+                throw new IllegalArgumentException(LanguageManager.getString("error.media.isbn_invalid"));
+            }
         }
         public Builder title(String title) {
             this.title = title;
@@ -515,5 +550,22 @@ public class Media {
         this.genresToRemove.clear();
         this.languagesToAdd.clear();
         this.languagesToRemove.clear();
+        this.franchisesToAdd.clear();
+        this.franchisesToRemove.clear();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Media media = (Media) o;
+        // Focus only on the ID for database identity
+        return this.id == media.id;
+    }
+
+    @Override
+    public int hashCode() {
+        // Only use the ID to generate the hash
+        return Objects.hash(id);
     }
 }
