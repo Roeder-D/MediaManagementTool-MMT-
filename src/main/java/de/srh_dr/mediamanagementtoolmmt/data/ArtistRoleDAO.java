@@ -1,24 +1,27 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
+import de.srh_dr.mediamanagementtoolmmt.model.ArtistRole;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 
-public class ArtistDAO extends AbstractDAO<Artist> {
+public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
+
     @Override
-    protected String getTableName() {return "artist";}
+    protected String getTableName() { return "artist_role"; }
+
     @Override
-    protected String getIdColumnName() {return "artist_id";}
+    protected String getIdColumnName() { return "artist_role_id"; }
+
     @Override
-    protected  String getValueColumnName() {return "last_name";}
+    protected String getValueColumnName() { return "role"; }
+
     @Override
-    protected Artist mapResultSet(ResultSet rs) throws SQLException {
-        return new Artist(
-                rs.getInt("artist_id"),
-                rs.getString("first_name"),
-                rs.getString("last_name"),
-                rs.getString("nationality"),
+    protected ArtistRole mapResultSet(ResultSet rs) throws SQLException {
+        return new ArtistRole(
+                rs.getInt("artist_role_id"),
+                rs.getString("role"),
                 false
         );
     }

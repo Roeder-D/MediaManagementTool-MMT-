@@ -3,20 +3,15 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class MediaArtist {
-    private int id;
     private final Artist artist;
     private ArtistRole artistRole;
     private boolean isNewItem;
     private boolean isDirty;
 
-    public MediaArtist(int id,  Artist artist, ArtistRole artistRole, boolean isNewItem) {
-        this.id = id;
+    public MediaArtist(Artist artist, ArtistRole artistRole, boolean isNewItem) {
         this.artist = artist;
         this.artistRole = artistRole;
         this.isNewItem = isNewItem;
-    }
-    public int getId() {
-        return id;
     }
     public Artist getArtist() {
         return artist;
@@ -31,9 +26,6 @@ public class MediaArtist {
         return isDirty;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
     public void setArtistRole(ArtistRole artistRole) {
         if(!artistRole.equals(this.artistRole)){
             this.artistRole = artistRole;
@@ -50,14 +42,13 @@ public class MediaArtist {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MediaArtist mediaArtist = (MediaArtist) o;
-        // Focus only on the ID for database identity
-        return this.id == mediaArtist.id;
+        MediaArtist that = (MediaArtist) o;
+        return artist.getId() == that.artist.getId() &&
+                artistRole.getId() == that.artistRole.getId();
     }
 
     @Override
     public int hashCode() {
-        // Only use the ID to generate the hash
-        return Objects.hash(id);
+        return Objects.hash(artist.getId(), artistRole.getId());
     }
 }

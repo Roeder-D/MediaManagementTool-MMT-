@@ -2,42 +2,37 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
 import de.srh_dr.mediamanagementtoolmmt.model.Franchise;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FranchiseDAO {
-    // READ
-    public List<Franchise> findAll() {
-        String sql = "SELECT * FROM franchise ORDER BY franchise_name ASC";
-        List<Franchise> franchises = new ArrayList<>();
+public class FranchiseDAO extends AbstractDAO<Franchise> {
+    @Override
+    protected String getTableName() { return "franchise"; }
+    @Override
+    protected String getIdColumnName() { return "franchise_id"; }
+    @Override
+    protected String getValueColumnName() { return "franchise_name"; }
 
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    @Override
+    protected Franchise mapResultSet(ResultSet rs) throws SQLException {
+        int id = rs.getInt("franchise_id");
 
-            while (rs.next()) {
-                int id = rs.getInt("franchise_id");
-                franchises.add(new Franchise(
-                        id,
-                        rs.getString("franchise_name"),
-                        fetchAltTitles(id), // Lade Titel direkt mit
-                        false
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return franchises;
+        Connection conn = rs.getStatement().getConnection();
+        return new Franchise(
+                id,
+                rs.getString("franchise_name"),
+                fetchAltTitles(conn, id),
+                false
+        );
     }
 
-    private List<AltTitle> fetchAltTitles(int franchiseId) {
+    private List<AltTitle> fetchAltTitles(Connection conn, int franchiseId) {
         String sql = "SELECT alt_title_id, title FROM alt_title WHERE franchise_id = ?";
         List<AltTitle> titles = new ArrayList<>();
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, franchiseId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -52,6 +47,15 @@ public class FranchiseDAO {
             e.printStackTrace();
         }
         return titles;
+    }
+
+    // HELPER
+    public void save(Franchise franchise) throws SQLException {
+        if (franchise.isNewItem()) {
+            create(franchise);
+        } else {
+            update(franchise);
+        }
     }
 
     // CREATE
@@ -70,6 +74,27 @@ public class FranchiseDAO {
                 }
             }
             franchise.clearChangeTracking();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // UPDATE
+    public void update(Franchise franchise) {
+        if (franchise.isNewItem()) return;
+        if (!franchise.isDirty()) return;
+
+        String sql = "UPDATE franchise SET franchise_name = ? WHERE franchise_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, franchise.getName());
+            stmt.setInt(2, franchise.getId());
+
+            stmt.executeUpdate();
+            franchise.clearChangeTracking();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -39,7 +39,7 @@ public class MediaDAO {
                 }
             }
             e.printStackTrace();
-        }finally {
+        }finally{
             if(conn != null){
                 try{
                     conn.setAutoCommit(true); // Reset to default behavior
@@ -51,9 +51,105 @@ public class MediaDAO {
         }
     }
 
+    // READ by ID
+    public Media read(int mediaId) throws SQLException{
+        Media media = null;
+
+        String media_sql = "SELECT * FROM MEDIA WHERE media_id = ?";
+
+        try(Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(media_sql)){
+                stmt.setInt(1, mediaId);
+
+                try(ResultSet rs = stmt.executeQuery()){
+                    if(rs.next()){
+                        Media.Builder builder = new Media.Builder()
+                                .isNewItem(false)
+                                .id(rs.getInt("media_id"))
+                                .isbn(rs.getString("isbn"))
+                                .title(rs.getString("title"))
+                                .originalTitle(rs.getString("original_title"))
+                                .coverFileName(rs.getString("cover_url"))
+                                .description(rs.getString("description"))
+                                .rating(rs.getInt("rating"))
+                                .releaseDate(rs.getDate("release_date") != null ? rs.getDate("release_date").toLocalDate() : null)
+                                .seriesOrder(rs.getInt("series_order"))
+                                .status(MediaStatus.valueOf(rs.getString("status")));
+
+                        // Fetch linked entities
+                        int publisherId = rs.getInt("publisher_id");
+                        if(!rs.wasNull()){
+                            builder.publisher(new PublisherDAO().findById(publisherId));
+                        }
+                        int seriesId = rs.getInt("series_id");
+                        if(!rs.wasNull()){
+                            builder.series(new SeriesDAO().findById(seriesId));
+                        }
+                        builder.mediatype(new MediaTypeDAO().findById(rs.getInt("mediatype_id")));
+
+                        // Fetch lists
+                        builder.tags(fetchList(conn, mediaId, "media_tag", "tag_id", new TagDAO()));
+                        builder.genres(fetchList(conn, mediaId, "media_genre", "genre_id", new GenreDAO()));
+                        builder.languages(fetchList(conn, mediaId, "media_language", "language_id", new LanguageDAO()));
+                        builder.franchises(fetchList(conn, mediaId, "media_franchise", "franchise_id", new FranchiseDAO()));
+
+                        builder.credits(fetchCredits(conn, mediaId));
+
+                        media = builder.build();
+                        media.clearChangeTracking();
+                    }
+                }
+        }
+        return media;
+    }
+
+    private <T> List<T> fetchList(Connection conn, int mediaId, String table, String column, AbstractDAO<T> dao) throws SQLException {
+        List<T> items = new ArrayList<>();
+        String sql = "SELECT " + column + " FROM " + table + " WHERE media_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, mediaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(dao.findById(rs.getInt(column)));
+                }
+            }
+        }
+        return items;
+    }
+
+    private List<MediaArtist> fetchCredits(Connection conn, int mediaId) throws SQLException {
+        List<MediaArtist> credits = new ArrayList<>();
+        String sql = "SELECT a.artist_id, a.first_name, a.last_name, a.nationality, ar.artist_role_id, ar.role " +
+                "FROM media_artist ma JOIN artist a ON ma.artist_id = a.artist_id JOIN artist_role ar ON ma.artist_role_id = ar.artist_role_id " +
+                "WHERE ma.media_id = ? ";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, mediaId);
+            try(ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Artist artist = new Artist(
+                            rs.getInt("artist_id"),
+                            rs.getString("first_name"),
+                            rs.getString("last_name"),
+                            rs.getString("nationality"),
+                            false);
+                    ArtistRole artistRole = new ArtistRole(
+                            rs.getInt("artist_role_id"),
+                            rs.getString("role"),
+                            false);
+
+                    credits.add(new MediaArtist(artist, artistRole, false));
+                }
+            }
+        }
+        return credits;
+    }
+
     // CREATE
     private void create(Media media, Connection conn) throws SQLException {
-        String sql = "INSERT INTO media (isbn, title, original_title, cover_url, description, rating, release_date, series_order, series_id, mediatype_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO media (isbn, title, original_title, cover_url, description, rating, release_date, series_order," +
+                " series_id, mediatype_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try(PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             prepareMediaStatement(stmt, media);
@@ -87,8 +183,8 @@ public class MediaDAO {
                 case RATING -> appendUpdate(sql, "rating", values, media.getRating());
                 case RELEASE_DATE -> appendUpdate(sql, "release_date", values, media.getReleaseDate() != null ? Date.valueOf(media.getReleaseDate()) : null);
                 case SERIES_ORDER -> appendUpdate(sql, "series_order", values, media.getSeriesOrder());
-                case SERIES -> appendUpdate(sql, "series_id", values, media.getSeries().getId());
-                case PUBLISHER -> appendUpdate(sql, "publisher_id", values, media.getPublisher().getId());
+                case SERIES -> appendUpdate(sql, "series_id", values, media.getSeries() != null ? media.getSeries().getId() : null);
+                case PUBLISHER -> appendUpdate(sql, "publisher_id", values, media.getPublisher() != null ? media.getPublisher().getId() : null);
                 case STATUS -> appendUpdate(sql, "status", values, media.getStatus().name());
             }
         }
@@ -131,9 +227,17 @@ public class MediaDAO {
         stmt.setInt(6, m.getRating());
         stmt.setDate(7, m.getReleaseDate() != null ? Date.valueOf(m.getReleaseDate()) : null);
         stmt.setInt(8, m.getSeriesOrder());
-        stmt.setInt(9, m.getSeries().getId());
+        if(m.getSeries() != null){
+            stmt.setInt(9, m.getSeries().getId());
+        }else{
+            stmt.setNull(9, Types.INTEGER);
+        }
         stmt.setInt(10, m.getMediatype().getId());
-        stmt.setInt(11, m.getPublisher().getId());
+        if(m.getPublisher() != null){
+            stmt.setInt(11, m.getPublisher().getId());
+        }else{
+            stmt.setNull(11, Types.INTEGER);
+        }
         stmt.setString(12, m.getStatus().name());
     }
     // Helpers for synchronization of affected tables
@@ -202,5 +306,4 @@ public class MediaDAO {
         if(o instanceof Franchise){return ((Franchise)o).getId();}
         throw new IllegalArgumentException("Unknown entity type: " + o.getClass().getName());
     }
-
 }

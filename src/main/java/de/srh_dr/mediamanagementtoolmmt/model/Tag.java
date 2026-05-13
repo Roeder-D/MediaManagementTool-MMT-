@@ -20,10 +20,10 @@ public class Tag{
     public String getName(){
         return name;
     }
-    public boolean getIsNewItem(){
+    public boolean isNewItem(){
         return isNewItem;
     }
-    public boolean getIsDirty() {
+    public boolean isDirty() {
         return isDirty;
     }
 

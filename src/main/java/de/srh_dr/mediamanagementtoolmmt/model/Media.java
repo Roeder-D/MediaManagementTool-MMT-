@@ -479,7 +479,7 @@ public class Media {
             this.seriesOrder = seriesOrder;
             return this;
         }
-        public Builder genre(List<Genre> genres) {
+        public Builder genres(List<Genre> genres) {
             this.genres = genres;
             return this;
         }
@@ -502,30 +502,11 @@ public class Media {
 
         //Media constructor call
         public Media build() {
-            if(id == 0){
-                throw new IllegalStateException(LanguageManager.getString("error.id_unset"));
-            }
-            if(title == null){
-                throw new IllegalStateException(LanguageManager.getString("error.title_null"));
-            }
-            if(mediatype == null){
-                throw new IllegalStateException(LanguageManager.getString("error.media.type_unset"));
-            }
-            if(publisher == null){
-                throw new IllegalStateException(LanguageManager.getString("error.media.publisher_unset"));
-            }
-            if(series == null){
-                throw new IllegalStateException(LanguageManager.getString("error.media.series_unset"));
-            }
-            if(languages.isEmpty()){
-                throw new IllegalStateException(LanguageManager.getString("error.media.language_unset"));
-            }
-            if(franchises.isEmpty()){
-                throw new IllegalStateException(LanguageManager.getString("error.media.franchise_unset"));
-            }
-            if(genres.isEmpty()){
-                throw new IllegalStateException(LanguageManager.getString("error.media.genre_unset"));
-            }
+            if(id == 0 && !this.isNewItem){throw new IllegalStateException(LanguageManager.getString("error.id_unset"));}
+            if(title == null){throw new IllegalStateException(LanguageManager.getString("error.title_null"));}
+            if(mediatype == null){throw new IllegalStateException(LanguageManager.getString("error.media.type_unset"));}
+            if(languages.isEmpty()){throw new IllegalStateException(LanguageManager.getString("error.media.language_unset"));}
+            if(genres.isEmpty()){throw new IllegalStateException(LanguageManager.getString("error.media.genre_unset"));}
 
             return new Media(this);
         }
