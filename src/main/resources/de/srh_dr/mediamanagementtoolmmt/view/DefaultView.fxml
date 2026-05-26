@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<VBox prefHeight="600.0" prefWidth="800.0" spacing="30.0" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.DefaultViewController">
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
+    <children>
+
+        <HBox spacing="20.0" alignment="CENTER">
+            <children>
+
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <children>
+                        <Label text="%ui.stats.total_titles" styleClass="stat-label" />
+                        <Label fx:id="totalTitlesField" text="0" styleClass="stat-value" />
+                    </children>
+                </VBox>
+
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <children>
+                        <Label text="%ui.stats.lent_titles" styleClass="stat-label" />
+                        <Label fx:id="lentTitlesField" text="0" styleClass="stat-value, stat-lent" />
+                    </children>
+                </VBox>
+
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <children>
+                        <Label text="%ui.stats.lost_titles" styleClass="stat-label" />
+                        <Label fx:id="lostTitlesField" text="0" styleClass="stat-value, stat-lost" />
+                    </children>
+                </VBox>
+
+            </children>
+        </HBox>
+
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
+            <children>
+                <Label text="%ui.stats.distribution_header" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                <PieChart fx:id="mediaTypePieChart" legendSide="BOTTOM" labelsVisible="true" VBox.vgrow="ALWAYS" />
+            </children>
+        </VBox>
+
+    </children>
+</VBox>

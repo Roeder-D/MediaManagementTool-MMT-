@@ -20,7 +20,7 @@ public class MediaTypeDAO {
 
     // CREATE
     private void create(MediaType type) {
-        String sql = "INSERT INTO mediatype (type_name) VALUES (?)";
+        String sql = "INSERT INTO media_type (type_name) VALUES (?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -43,7 +43,7 @@ public class MediaTypeDAO {
 
     // READ (by ID)
     public MediaType findById(int id) {
-        String sql = "SELECT * FROM mediatype WHERE mediatype_id = ?";
+        String sql = "SELECT * FROM media_type WHERE mediatype_id = ?";
         MediaType type = null;
 
         try (Connection conn = DBConnection.getConnection();
@@ -53,7 +53,7 @@ public class MediaTypeDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     type = new MediaType(
-                            rs.getInt("mediatype_id"),
+                            rs.getInt("media_type_id"),
                             rs.getString("type_name"),
                             false
                     );
@@ -68,7 +68,7 @@ public class MediaTypeDAO {
 
     // READ (all)
     public List<MediaType> findAll() {
-        String sql = "SELECT * FROM mediatype";
+        String sql = "SELECT * FROM media_type";
         List<MediaType> types = new ArrayList<>();
 
         try (Connection conn = DBConnection.getConnection();
@@ -77,7 +77,7 @@ public class MediaTypeDAO {
 
             while (rs.next()) {
                 types.add(new MediaType(
-                        rs.getInt("mediatype_id"),
+                        rs.getInt("media_type_id"),
                         rs.getString("type_name"),
                         false
                 ));
@@ -95,7 +95,7 @@ public class MediaTypeDAO {
         if (type.isNewItem()) return;
         if (!type.isDirty()) return;
 
-        String sql = "UPDATE mediatype SET type_name = ? WHERE mediatype_id = ?";
+        String sql = "UPDATE media_type SET type_name = ? WHERE media_type_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -113,7 +113,7 @@ public class MediaTypeDAO {
 
     // DELETE
     public boolean delete(int id) {
-        String sql = "DELETE FROM mediatype WHERE mediatype_id = ?";
+        String sql = "DELETE FROM media_type WHERE media_type_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

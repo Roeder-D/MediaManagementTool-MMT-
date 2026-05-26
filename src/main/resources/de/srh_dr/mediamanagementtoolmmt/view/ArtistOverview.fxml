@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+
+<?import org.controlsfx.control.SearchableComboBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<VBox prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.ArtistOverviewController">
+    <children>
+        <HBox styleClass="controls-bar" spacing="15.0" alignment="CENTER_LEFT">
+            <children>
+                <Label styleClass="control-label" text="%ui.search" />
+                <TextField fx:id="searchField" prefWidth="250" promptText="%ui.search_artist" styleClass="search-field"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label styleClass="control-label" text="%ui.label.sort_by"/>
+                <SearchableComboBox fx:id="nationalityFilterComboBox" prefWidth="150" promptText="%ui.selectNationality"/>
+                <Button fx:id="filterBtn" mnemonicParsing="false" styleClass="action-button" text="%ui.apply_filter" onAction="#applyFilter"/>
+            </children>
+        </HBox>
+        <TableView fx:id="artistTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="firstName" prefWidth="250" text="%ui.first_name"/>
+                <TableColumn fx:id="lastName" prefWidth="200" text="%ui.last_name"/>
+                <TableColumn fx:id="alias" prefWidth="200" text="%ui.alias"/>
+                <TableColumn fx:id="nationality" prefWidth="120" text="%ui.nationality"/>
+            </columns>
+        </TableView>
+    </children>
+</VBox>

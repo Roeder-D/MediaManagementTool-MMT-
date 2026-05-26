@@ -1,0 +1,218 @@
+package de.srh_dr.mediamanagementtoolmmt.controller;
+
+import de.srh_dr.mediamanagementtoolmmt.data.SeriesDAO;
+import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
+import de.srh_dr.mediamanagementtoolmmt.model.Series;
+import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
+import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+
+import java.util.List;
+
+public class SeriesOverviewController implements MainControllerAware{
+    @FXML private TextField searchField;
+    @FXML private TextField yearFilterField;
+    @FXML private TableView<Series> seriesTable;
+    @FXML private TableColumn<Series, String> nameCol;
+    @FXML private TableColumn<Series, Number> yearCol;
+    @FXML private TableColumn<Series, Number> countCol;
+
+    private MainController mainController;
+    private final SeriesDAO seriesDAO = new SeriesDAO();
+    private final ObservableList<Series> seriesList = FXCollections.observableArrayList();
+    private FilteredList<Series> filteredSeries;
+
+    @Override
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
+
+    @FXML
+    private void initialize(){
+        nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
+        yearCol.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getStartYear()));
+        countCol.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getNumberOfTitles()));
+
+        // double-click listener
+        seriesTable.setRowFactory(tv -> {
+            TableRow<Series> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if(event.getClickCount() == 2 && (!row.isEmpty())) {
+                    openSeriesPopup(row.getItem());
+                }
+            });
+            return row;
+        });
+        loadSeries();
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilter());
+        yearFilterField.textProperty().addListener((observable, oldValue, newValue) -> applyFilter());
+    }
+
+    @FXML
+    private void loadSeries(){
+        seriesList.setAll(seriesDAO.findAll());
+        filteredSeries = new FilteredList<>(seriesList, p -> true);
+
+        SortedList<Series> sortedSeries = new SortedList<>(filteredSeries);
+        sortedSeries.comparatorProperty().bind(seriesTable.comparatorProperty());
+        seriesTable.setItems(sortedSeries);
+
+        applyFilter();
+    }
+
+    @FXML
+    private void applyFilter(){
+        String searchText = searchField.getText().toLowerCase();
+        String yearText = yearFilterField.getText().trim();
+
+        filteredSeries.setPredicate(series -> {
+            if (!yearText.isEmpty()) {
+                String seriesYear = String.valueOf(series.getStartYear());
+                if (!seriesYear.startsWith(yearText)) {
+                    return false;
+                }
+            }
+
+            if (searchText.isEmpty()) {
+                return true;
+            }
+
+            String name = series.getName() != null ? series.getName().toLowerCase() : "";
+
+            List<AltTitle> altTitleList = series.getAltTitles();
+            StringBuilder altTitles = new StringBuilder();
+            for (AltTitle altTitle : altTitleList) {
+                if(altTitle.getTitle() != null && !altTitle.getTitle().isEmpty()) {
+                    altTitles.append(altTitle.getTitle()).append(" ");
+                }
+            }
+
+            return name.contains(searchText) || altTitles.toString().contains(searchText);
+        });
+    }
+
+    private void openSeriesPopup(Series selectedSeries)
+    {
+        Dialog<Series> dialog = new Dialog<>();
+        dialog.setTitle(LanguageManager.getString("ui.edit_series"));
+        dialog.setHeaderText(LanguageManager.getString("ui.edit_series"));
+
+        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"),  ButtonBar.ButtonData.OK_DONE);
+        ButtonType deleteButtonType = new ButtonType(LanguageManager.getString("ui.delete"),  ButtonBar.ButtonData.LEFT);
+        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, saveButtonType, ButtonType.CANCEL);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+
+        TextField nameField = new TextField();
+        nameField.setText(selectedSeries.getName() !=  null ? selectedSeries.getName() : "--ERROR--");
+        TextField yearField = new TextField();
+        yearField.setText(selectedSeries.getStartYear() > 0 ? String.valueOf(selectedSeries.getStartYear()) : "");
+        TextField countField = new TextField();
+        countField.setText(selectedSeries.getNumberOfTitles() > 0 ? String.valueOf(selectedSeries.getNumberOfTitles()) : "");
+
+        ListView<AltTitle> altTitleListView = new ListView<>();
+        ObservableList<AltTitle> altTitles = FXCollections.observableArrayList();
+        altTitleListView.setItems(altTitles);
+        altTitleListView.setPrefHeight(100);
+
+        altTitleListView.setCellFactory(param -> new ListCell<AltTitle>() {
+            @Override
+            protected void updateItem(AltTitle item, boolean empty) {
+                super.updateItem(item, empty);
+                if(empty || item == null) {
+                    setText(null);
+                }else{
+                    setText(item.getTitle());
+                }
+            }
+        });
+
+        TextField newAltTitleField = new TextField();
+        newAltTitleField.setPromptText(LanguageManager.getString("ui.new_alt_title"));
+
+        Button addAltTitleBtn = new Button(LanguageManager.getString("ui.add"));
+        Button removeAltTitleBtn = new Button(LanguageManager.getString("ui.remove"));
+
+        addAltTitleBtn.setOnAction(event -> {
+            String newText = newAltTitleField.getText();
+            if(!newText.isEmpty()) {
+                AltTitle newAltTitle = new AltTitle(0, newText, true);
+
+                selectedSeries.addAltTitle(newAltTitle);
+                altTitles.add(newAltTitle);
+                newAltTitleField.clear();
+            }
+        });
+
+        removeAltTitleBtn.setOnAction(event -> {
+            AltTitle selectedAltTitle = altTitleListView.getSelectionModel().getSelectedItem();
+            if(selectedAltTitle != null) {
+                selectedSeries.removeAltTitleById(selectedAltTitle.getId());
+                altTitles.remove(selectedAltTitle);
+            }
+        });
+
+        HBox altTitleControls = new HBox(10, newAltTitleField, addAltTitleBtn, removeAltTitleBtn);
+
+        gridPane.add(new Label(LanguageManager.getString("ui.series_name")), 0, 0);
+        gridPane.add(nameField, 1, 0);
+        gridPane.add(new Label(LanguageManager.getString("ui.series_year")), 0, 1);
+        gridPane.add(yearField, 1, 1);
+        gridPane.add(new Label(LanguageManager.getString("ui.series_count")), 0, 2);
+        gridPane.add(countField, 1, 2);
+
+        gridPane.add(new Label(LanguageManager.getString("ui.alt_titles")), 0, 3);
+        gridPane.add(altTitleListView, 1, 3);
+        gridPane.add(altTitleControls, 1, 4);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                selectedSeries.setName(nameField.getText());
+
+                try {
+                    selectedSeries.setStartYear(yearField.getText().isEmpty() ? 0 : Integer.parseInt(yearField.getText().trim()));
+                    selectedSeries.setNumberOfTitles(countField.getText().isEmpty() ? 0 : Integer.parseInt(countField.getText().trim()));
+
+                    seriesDAO.save(selectedSeries);
+                } catch (NumberFormatException e) {
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), "Year and Number of Titles must be valid numbers.");
+                } catch (Exception e) {
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToSave") + e.getMessage());
+                }
+                return null;
+            }
+
+            if (dialogButton == deleteButtonType) {
+                boolean confirmDelete = AlertManager.requestConfirmation(
+                        LanguageManager.getString("ui.warning"),
+                        LanguageManager.getString("warning.confirmDeleteSeries"));
+
+                if (confirmDelete) {
+                    try {
+                        seriesDAO.delete(selectedSeries.getId());
+                    } catch (Exception e) {
+                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                    }
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+        loadSeries();
+    }
+}

@@ -27,34 +27,32 @@ public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
     }
 
     // HELPER
-    public void save(Artist artist) {
-        if (artist.isNewItem()) {
-            create(artist);
+    public void save(ArtistRole artistRole) {
+        if (artistRole.isNewItem()) {
+            create(artistRole);
         } else {
-            update(artist);
+            update(artistRole);
         }
     }
 
     // CREATE
-    private void create(Artist artist) {
-        String sql = "INSERT INTO artist (first_name, last_name, nationality) VALUES (?, ?, ?)";
+    private void create(ArtistRole artistRole) {
+        String sql = "INSERT INTO artist_role (role) VALUES (?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, artist.getFirstName());
-            stmt.setString(2, artist.getLastName());
-            stmt.setString(3, artist.getNationality());
+            stmt.setString(1, artistRole.getRole());
 
             stmt.executeUpdate();
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    artist.setId(rs.getInt(1));
+                    artistRole.setId(rs.getInt(1));
                 }
             }
 
-            artist.clearChangeTracking();
+            artistRole.clearChangeTracking();
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -62,22 +60,20 @@ public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
     }
 
     // UPDATE
-    private void update(Artist artist) {
-        if (artist.isNewItem()) return;
-        if (!artist.isDirty()) return;
+    private void update(ArtistRole artistRole) {
+        if (artistRole.isNewItem()) return;
+        if (!artistRole.isDirty()) return;
 
-        String sql = "UPDATE artist SET first_name = ?, last_name = ?, nationality = ? WHERE artist_id = ?";
+        String sql = "UPDATE artist_role SET role = ? WHERE artist_role_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, artist.getFirstName());
-            stmt.setString(2, artist.getLastName());
-            stmt.setString(3, artist.getNationality());
-            stmt.setInt(4, artist.getId());
+            stmt.setString(1, artistRole.getRole());
+            stmt.setInt(2, artistRole.getId());
 
             stmt.executeUpdate();
-            artist.clearChangeTracking();
+            artistRole.clearChangeTracking();
 
         } catch (SQLException e) {
             e.printStackTrace();

@@ -12,30 +12,31 @@ CREATE TABLE tag(
 CREATE TABLE series(
                        series_id			INTEGER			PRIMARY KEY AUTO_INCREMENT,
                        series_name			VARCHAR(350),
-                       number_of_titles	INTEGER,
+                       number_of_titles	    INTEGER,
                        start_year			YEAR
 );
 
-CREATE TABLE mediatype(
-                          mediatype_id		INTEGER			PRIMARY KEY AUTO_INCREMENT,
-                          type_name			VARCHAR(50)		UNIQUE
+CREATE TABLE media_type(
+                           media_type_id		INTEGER			PRIMARY KEY AUTO_INCREMENT,
+                           type_name			VARCHAR(50)		UNIQUE
 );
 
 CREATE TABLE publisher(
                           publisher_id		INTEGER			PRIMARY KEY AUTO_INCREMENT,
-                          publisher_name		VARCHAR(50)		UNIQUE
+                          publisher_name	VARCHAR(50)		UNIQUE
 );
 
 CREATE TABLE artist(
                        artist_id			INTEGER			PRIMARY KEY AUTO_INCREMENT,
                        first_name			VARCHAR(50),
                        last_name			VARCHAR(50),
+                       alias                VARCHAR(50),
                        nationality			VARCHAR(50)
 );
 
 CREATE TABLE artist_role(
                             artist_role_id		INTEGER			PRIMARY KEY AUTO_INCREMENT,
-                            role				VARCHAR(50)
+                            role				VARCHAR(50)		UNIQUE
 );
 
 CREATE TABLE franchise(
@@ -72,7 +73,7 @@ CREATE TABLE media(
                       release_date		DATE,
                       series_order		INTEGER,
                       series_id			INTEGER,
-                      mediatype_id		INTEGER,
+                      media_type_id		INTEGER,
                       publisher_id		INTEGER,
                       status				ENUM('AVAILABLE', 'LENT', 'LOST') DEFAULT 'AVAILABLE',
 
@@ -83,7 +84,7 @@ CREATE TABLE media(
                       CONSTRAINT chk_media_rating CHECK (rating >= 1 AND rating <= 5),
 
                       FOREIGN KEY (series_id) REFERENCES series (series_id),
-                      FOREIGN KEY (mediatype_id) REFERENCES mediatype (mediatype_id),
+                      FOREIGN KEY (media_type_id) REFERENCES media_type (media_type_id),
                       FOREIGN KEY (publisher_id) REFERENCES publisher (publisher_id)
 );
 
@@ -193,13 +194,16 @@ SELECT
     m.title,
     m.release_date,
     p.publisher_name,
-    m.status
+    m.status,
+    t.type_name
 FROM media AS m
-         LEFT JOIN publisher AS p ON m.publisher_id = p.publisher_id;
+        LEFT JOIN publisher AS p ON m.publisher_id = p.publisher_id
+        LEFT JOIN media_type AS t ON m.media_type_id = t.media_type_id;
 
 CREATE VIEW v_lending_dashboard AS
 SELECT DISTINCT
     l.lending_id,
+    l.media_id,
     m.title AS media_title,
     -- Concatenate the exact "Lendee + alias" format for UI
     CONCAT(le.first_name, ' ', le.last_name, ' (', le.alias, ')') AS lendee_info,
@@ -214,6 +218,21 @@ FROM lending AS l
          JOIN media AS m ON l.media_id = m.media_id
          JOIN lendee AS le ON l.lendee_id = le.lendee_id;
 
+CREATE VIEW v_collection_statistics AS
+SELECT
+    (SELECT COUNT(*) FROM media) AS total_titles,
+
+    (SELECT COUNT(*) FROM media WHERE status = 'AVAILABLE') AS available_titles,
+    (SELECT COUNT(*) FROM media WHERE status = 'LENT') AS lent_titles,
+    (SELECT COUNT(*) FROM media WHERE status = 'LOST') AS lost_titles;
+
+CREATE VIEW v_media_type_distribution AS
+SELECT
+    mt.type_name AS media_type,
+    COUNT(m.media_id) AS total_count
+FROM media AS m
+         RIGHT JOIN media_type AS mt ON m.media_type_id = mt.media_type_id
+GROUP BY mt.media_type_id, mt.type_name;
 
 # triggers & events
 SET GLOBAL event_scheduler = ON;
@@ -235,7 +254,7 @@ BEGIN
     IF OLD.return_date IS NULL AND NEW.return_date IS NOT NULL THEN
     UPDATE media
     SET status = 'AVAILABLE'
-    WHERE media_id = NEW.media_id AND status != 'Lost';
+    WHERE media_id = NEW.media_id AND status != 'LOST';
 END IF;
 END; //
 

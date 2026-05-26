@@ -3,7 +3,6 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Objects;
 
 
@@ -17,7 +16,7 @@ public class Lending {
     private boolean isNewItem;
     private boolean isDirty;
 
-    public Lending(int id, Media media, Lendee lendee, java.util.Date borrowDate, java.util.Date returnDate, boolean isNewItem) {
+    public Lending(int id, Media media, Lendee lendee, java.time.LocalDate borrowDate, java.time.LocalDate returnDate, boolean isNewItem) {
         this.id = id;
         this.media = media;
         this.lendee = lendee;
@@ -25,10 +24,10 @@ public class Lending {
         if(borrowDate == null) {
             throw new IllegalArgumentException(LanguageManager.getString("error.lending.borrow_date_null"));
         }
-        this.borrowDate = borrowDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        this.borrowDate = borrowDate;
 
         if(returnDate != null) {
-            setReturnDate(returnDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            setReturnDate(returnDate);
         }else{
             this.returnDate = null;
         }

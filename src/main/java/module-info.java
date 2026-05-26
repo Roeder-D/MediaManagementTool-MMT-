@@ -14,10 +14,9 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires jdk.jfr;
     requires org.apache.httpcomponents.client5.httpclient5;
     requires org.apache.httpcomponents.core5.httpcore5;
-    /*    requires static lombok;*/
+    requires java.management;
+    requires java.prefs;
 
-    //opens de.srh_2551.mediamanagementtoolmmt to javafx.fxml;
-    //exports de.srh_2551.mediamanagementtoolmmt;
     exports de.srh_dr.mediamanagementtoolmmt.app;
     opens de.srh_dr.mediamanagementtoolmmt.app to javafx.fxml;
     exports de.srh_dr.mediamanagementtoolmmt.controller;

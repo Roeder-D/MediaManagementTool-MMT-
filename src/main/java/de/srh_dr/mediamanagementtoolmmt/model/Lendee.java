@@ -41,19 +41,19 @@ public class Lendee {
         this.id = id;
     }
     public void setFirstName(String firstName) {
-        if(!this.firstName.equals(firstName)){
+        if(!Objects.equals(this.firstName, firstName)){
             this.firstName = firstName;
             this.isDirty = true;
         }
     }
     public void setLastName(String lastName) {
-        if(!this.lastName.equals(lastName)){
+        if(!Objects.equals(this.lastName, lastName)){
             this.lastName = lastName;
             this.isDirty =  true;
         }
     }
     public void setAlias(String alias) {
-        if(!this.alias.equals(alias)){
+        if(!Objects.equals(this.alias, alias)){
             this.alias = alias;
             this.isDirty =  true;
         }
@@ -77,5 +77,21 @@ public class Lendee {
     public int hashCode() {
         // Only use the ID to generate the hash
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        String identifier = "";
+        if(this.firstName != null && !this.firstName.trim().isEmpty()){
+            identifier = this.firstName + " ";
+        }
+        if(this.lastName != null && !this.lastName.trim().isEmpty()){
+            identifier += this.lastName + " ";
+        }
+        if(this.alias != null && !this.alias.trim().isEmpty()){
+            identifier += this.alias;
+        }
+        identifier = identifier.trim();
+        return identifier;
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.SeriesOverviewController">
+    <children>
+        <HBox styleClass="controls-bar" spacing="15.0" alignment="CENTER_LEFT">
+            <children>
+                <Label styleClass="control-label" text="%ui.search" />
+                <TextField fx:id="searchField" prefWidth="250" promptText="%ui.search_series" styleClass="search-field"/>
+
+                <Label styleClass="control-label" text="%ui.year" />
+                <TextField fx:id="yearFilterField" prefWidth="100" promptText="YYYY" styleClass="search-field"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label styleClass="control-label" text="%ui.click_headers_to_sort"/>
+            </children>
+        </HBox>
+
+        <TableView fx:id="seriesTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="nameCol" text="%ui.series_name" prefWidth="350"/>
+                <TableColumn fx:id="yearCol" text="%ui.start_year" prefWidth="150"/>
+                <TableColumn fx:id="countCol" text="%ui.number_of_titles" prefWidth="150"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+    </children>
+</VBox>

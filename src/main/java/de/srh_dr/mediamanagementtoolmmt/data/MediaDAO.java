@@ -1,6 +1,9 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.*;
+import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
+import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -91,8 +94,8 @@ public class MediaDAO {
                         builder.tags(fetchList(conn, mediaId, "media_tag", "tag_id", new TagDAO()));
                         builder.genres(fetchList(conn, mediaId, "media_genre", "genre_id", new GenreDAO()));
                         builder.languages(fetchList(conn, mediaId, "media_language", "language_id", new LanguageDAO()));
-                        builder.franchises(fetchList(conn, mediaId, "media_franchise", "franchise_id", new FranchiseDAO()));
 
+                        builder.franchises(fetchFranchises(conn, mediaId));
                         builder.credits(fetchCredits(conn, mediaId));
 
                         media = builder.build();
@@ -118,9 +121,46 @@ public class MediaDAO {
         return items;
     }
 
+    private List<Franchise> fetchFranchises(Connection conn, int mediaId) throws SQLException {
+        List<Franchise> franchises = new ArrayList<>();
+        String franchiseSql = "SELECT f.franchise_id, f.franchise_name " +
+                "FROM media_franchise mf " +
+                "JOIN franchise f ON mf.franchise_id = f.franchise_id " +
+                "WHERE mf.media_id = ?";
+
+        String titlesSql = "SELECT alt_title_id, title FROM alt_title WHERE franchise_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(franchiseSql)) {
+            stmt.setInt(1, mediaId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int franchiseId = rs.getInt("franchise_id");
+                    String franchiseName = rs.getString("title");
+                    List<AltTitle> altTitles = new ArrayList<>();
+
+                    try(PreparedStatement titleStmt = conn.prepareStatement(titlesSql)){
+                        titleStmt.setInt(1, franchiseId);
+                        try(ResultSet rsTitles =  titleStmt.executeQuery()){
+                            while(rsTitles.next()){
+                                altTitles.add(new AltTitle(
+                                   rsTitles.getInt("alt_title_id"),
+                                   rsTitles.getString("title"),
+                                   false
+                                ));
+                            }
+                        }
+                    }
+                    franchises.add(new Franchise(franchiseId, franchiseName, altTitles, false));
+                }
+            }
+        }
+        return franchises;
+    }
+
     private List<MediaArtist> fetchCredits(Connection conn, int mediaId) throws SQLException {
         List<MediaArtist> credits = new ArrayList<>();
-        String sql = "SELECT a.artist_id, a.first_name, a.last_name, a.nationality, ar.artist_role_id, ar.role " +
+        String sql = "SELECT a.artist_id, a.first_name, a.last_name, a.alias, a.nationality, ar.artist_role_id, ar.role " +
                 "FROM media_artist ma JOIN artist a ON ma.artist_id = a.artist_id JOIN artist_role ar ON ma.artist_role_id = ar.artist_role_id " +
                 "WHERE ma.media_id = ? ";
 
@@ -132,6 +172,7 @@ public class MediaDAO {
                             rs.getInt("artist_id"),
                             rs.getString("first_name"),
                             rs.getString("last_name"),
+                            rs.getString("alias"),
                             rs.getString("nationality"),
                             false);
                     ArtistRole artistRole = new ArtistRole(

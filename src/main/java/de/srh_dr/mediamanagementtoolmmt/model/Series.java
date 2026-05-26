@@ -17,6 +17,14 @@ public class Series {
     private final List<AltTitle> altTitlesToRemove = new ArrayList<>();
 
 
+    public Series(boolean isNewItem, int id, String name, int numberOfTitles, int startYear) {
+        this.isNewItem = isNewItem;
+        this.id = id;
+        this.name = name;
+        this.numberOfTitles = numberOfTitles;
+        this.startYear = startYear;
+    }
+
     public Series(boolean isNewItem, int id, String name, int numberOfTitles, int startYear, List<AltTitle> altTitles) {
         this.isNewItem = isNewItem;
         this.id = id;
@@ -130,5 +138,10 @@ public class Series {
     public int hashCode() {
         // Only use the ID to generate the hash
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

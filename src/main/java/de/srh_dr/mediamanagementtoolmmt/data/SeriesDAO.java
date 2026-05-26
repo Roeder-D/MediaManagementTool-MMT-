@@ -5,8 +5,7 @@ import de.srh_dr.mediamanagementtoolmmt.model.Series;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SeriesDAO {
 
@@ -183,5 +182,52 @@ public class SeriesDAO {
             e.printStackTrace();
         }
         return series;
+    }
+
+    // READ all
+    public List<Series> findAll() {
+        Map<Integer,Series> seriesMap = new LinkedHashMap<>();
+
+        String seriesSql = "SELECT * FROM series";
+        String titlesSql = "SELECT * FROM alt_title";
+
+        try(Connection conn = DBConnection.getConnection()){
+            try(PreparedStatement stmt = conn.prepareStatement(seriesSql);
+                ResultSet rs = stmt.executeQuery()){
+                while(rs.next()){
+                    int id = rs.getInt("series_id");
+                    Series series = new Series(
+                            false,
+                            id,
+                            rs.getString("series_name"),
+                            rs.getInt("number_of_titles"),
+                            rs.getInt("start_year"),
+                            new ArrayList<>()
+                    );
+                    seriesMap.put(id, series);
+                }
+            }
+
+            if(!seriesMap.isEmpty()){
+                try(PreparedStatement stmt = conn.prepareStatement(titlesSql);
+                    ResultSet rs = stmt.executeQuery()){
+                    while(rs.next()){
+                        int seriesId = rs.getInt("series_id");
+                        Series series = seriesMap.get(seriesId);
+
+                        if(series != null){
+                            series.getAltTitles().add(new AltTitle(
+                                    rs.getInt("alt_title_id"),
+                                    rs.getString("title"),
+                                    false
+                            ));
+                        }
+                    }
+                }
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return new ArrayList<>(seriesMap.values());
     }
 }

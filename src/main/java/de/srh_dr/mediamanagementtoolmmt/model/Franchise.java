@@ -3,6 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,6 +13,9 @@ public class Franchise {
     private final List<AltTitle> altTitles;
     private boolean isNewItem;
     private boolean isDirty;
+    private boolean listChanged;
+    private final List<AltTitle> altTitlesToAdd = new ArrayList<>();
+    private final List<AltTitle> altTitlesToRemove = new ArrayList<>();
 
     public Franchise(int id, String name, List<AltTitle> altTitles,  boolean isNewItem) {
         this.id = id;
@@ -32,8 +36,17 @@ public class Franchise {
     public boolean isDirty() {
         return isDirty;
     }
+    public boolean listChanged() {
+        return listChanged;
+    }
     public List<AltTitle> getAltTitles(){
         return altTitles;
+    }
+    public List<AltTitle> getAltTitlesToAdd() {
+        return Collections.unmodifiableList(altTitlesToAdd);
+    }
+    public List<AltTitle> getAltTitlesToRemove() {
+        return Collections.unmodifiableList(altTitlesToRemove);
     }
 
 
@@ -50,8 +63,30 @@ public class Franchise {
             throw new NullPointerException(LanguageManager.getString("error.title_null"));
         }
     }
+    public void addAltTitle(AltTitle altTitle) {
+        if(!altTitles.contains(altTitle)) {
+            this.altTitles.add(altTitle);
+            if(this.altTitlesToRemove.contains(altTitle)) {
+                this.altTitlesToRemove.remove(altTitle);
+            }else{
+                this.altTitlesToAdd.add(altTitle);
+            }
+            this.listChanged = true;
+        }
+    }
+    public void removeAltTitle(AltTitle altTitle) {
+        this.altTitles.remove(altTitle);
+        if(this.altTitlesToAdd.contains(altTitle)) {
+            this.altTitlesToAdd.remove(altTitle);
+        }else{
+            this.altTitlesToRemove.add(altTitle);
+        }
+        this.listChanged = true;
+    }
 
     public void clearChangeTracking() {
+        altTitlesToAdd.clear();
+        altTitlesToRemove.clear();
         this.isNewItem = false;
         isDirty = false;
     }

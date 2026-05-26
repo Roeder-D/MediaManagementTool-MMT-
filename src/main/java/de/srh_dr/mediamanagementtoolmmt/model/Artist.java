@@ -1,21 +1,35 @@
 package de.srh_dr.mediamanagementtoolmmt.model;
 
+import com.mysql.cj.conf.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 import java.util.Objects;
 
 public class Artist {
     private int id;
     private String firstName;
     private String lastName;
+    private String alias;
     private String nationality;
     private boolean isNewItem;
     private boolean isDirty;
 
-    public Artist(int id, String firstName, String lastName, String nationality, boolean isNewItem) {
+    private final SimpleStringProperty firstNameProperty = new SimpleStringProperty();
+    private final SimpleStringProperty lastNameProperty = new SimpleStringProperty();
+    private final SimpleStringProperty aliasProperty = new SimpleStringProperty();
+    private final SimpleStringProperty nationalityProperty = new SimpleStringProperty();
+
+    public Artist(int id, String firstName, String lastName, String alias, String nationality, boolean isNewItem) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.alias = alias;
         this.nationality = nationality;
         this.isNewItem = isNewItem;
+        this.firstNameProperty.setValue(firstName);
+        this.lastNameProperty.setValue(lastName);
+        this.aliasProperty.setValue(alias);
+        this.nationalityProperty.setValue(nationality);
     }
 
     public int getId() {
@@ -26,6 +40,9 @@ public class Artist {
     }
     public String getLastName() {
         return lastName;
+    }
+    public String getAlias() {
+        return alias;
     }
     public String getNationality() {
         return nationality;
@@ -41,19 +58,25 @@ public class Artist {
         this.id = id;
     }
     public void setFirstName(String firstName) {
-        if(!firstName.equals(this.firstName)){
+        if(!Objects.equals(firstName, this.firstName)){
             this.firstName = firstName;
             this.isDirty = true;
         }
     }
     public void setLastName(String lastName) {
-        if(!lastName.equals(this.lastName)){
+        if(!Objects.equals(lastName, this.lastName)){
             this.lastName = lastName;
             this.isDirty = true;
         }
     }
+    public void setAlias(String alias) {
+        if(!Objects.equals(alias, this.alias)){
+            this.alias = alias;
+            this.isDirty = true;
+        }
+    }
     public void setNationality(String nationality) {
-        if(!nationality.equals(this.nationality)){
+        if(!Objects.equals(nationality, this.nationality)){
             this.nationality = nationality;
             this.isDirty = true;
         }
@@ -62,6 +85,21 @@ public class Artist {
         this.isNewItem = false;
         isDirty = false;
     }
+
+    public SimpleStringProperty firstNameProperty() {
+        return firstNameProperty;
+    }
+    public SimpleStringProperty lastNameProperty() {
+        return lastNameProperty;
+    }
+    public SimpleStringProperty aliasProperty() {
+        return aliasProperty;
+    }
+    public SimpleStringProperty nationalityProperty() {
+        return nationalityProperty;
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
