@@ -17,7 +17,7 @@ import org.controlsfx.control.SearchableComboBox;
 
 import java.util.List;
 
-public class ArtistOverviewController implements MainControllerAware{
+public class ArtistOverviewController{
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private SearchableComboBox<String> nationalityFilterComboBox;
@@ -26,19 +26,11 @@ public class ArtistOverviewController implements MainControllerAware{
     @FXML private TableColumn<Artist, String> lastName;
     @FXML private TableColumn<Artist, String> alias;
     @FXML private TableColumn<Artist, String> nationality;
-    @FXML private Button filterBtn;
 
-    private MainController mainController;
     private final ArtistDAO artistDAO = new ArtistDAO();
     private List<String> allNationalities;
     private final ObservableList<Artist> artists = FXCollections.observableArrayList();
     private FilteredList<Artist> filteredArtists;
-
-
-    @Override
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     public void initialize(){

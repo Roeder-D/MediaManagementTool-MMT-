@@ -12,7 +12,7 @@ public class AltTitle{
 
     public AltTitle(int id, String title,  boolean isNew) {
         this.id = id;
-        this.title = title;
+        this.title = title.trim();
         this.isNewItem = isNew;
     }
 
@@ -33,9 +33,9 @@ public class AltTitle{
         this.id = id;
     }
     public void setTitle(String title) {
-        if(title != null){
+        if(title != null && !title.trim().isEmpty()){
             if(!title.equals(this.title)){
-                this.title = title;
+                this.title = title.trim();
                 this.isDirty = true;
             }
         }else{
