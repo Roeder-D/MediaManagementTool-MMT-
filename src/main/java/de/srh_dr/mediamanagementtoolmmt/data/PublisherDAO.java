@@ -48,7 +48,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
             publisher.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error creating publisher " + publisher.getPublisherName());
         }
     }
 
@@ -69,7 +69,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
             publisher.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating publisher " + publisher.getPublisherName());
         }
     }
 

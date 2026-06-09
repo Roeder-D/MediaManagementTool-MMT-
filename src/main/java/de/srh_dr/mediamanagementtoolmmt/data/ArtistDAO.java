@@ -1,9 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
-import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
-import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -60,10 +58,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
             artist.clearChangeTracking();
 
         } catch (SQLException e) {
-            AlertManager.showAlert(
-                    Alert.AlertType.ERROR,
-                    LanguageManager.getString("ui.error"),
-                    LanguageManager.getString("error.failedToSave") + ": " + e.getMessage());
+            System.err.println("Error creating insert into " + getTableName());
         }
     }
 
@@ -78,7 +73,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
                 nationalities.add(rs.getString("nationality"));
             }
         } catch (SQLException e) {
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + " " + e.getMessage());
+            System.err.println("Error getting all nationalities from " + getTableName());
         }
         return nationalities;
     }
@@ -103,10 +98,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
             artist.clearChangeTracking();
 
         } catch (SQLException e) {
-            AlertManager.showAlert(
-                    Alert.AlertType.ERROR,
-                    LanguageManager.getString("ui.error"),
-                    LanguageManager.getString("error.failedToSave") + ": " + e.getMessage());
+            System.err.println("Error updating " + getTableName());
         }
     }
 

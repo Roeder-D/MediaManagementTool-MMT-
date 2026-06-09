@@ -37,13 +37,13 @@ public class MediaTypeDAO {
             type.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 
     // READ (by ID)
     public MediaType findById(int id) {
-        String sql = "SELECT * FROM media_type WHERE mediatype_id = ?";
+        String sql = "SELECT * FROM media_type WHERE media_type_id = ?";
         MediaType type = null;
 
         try (Connection conn = DBConnection.getConnection();
@@ -61,7 +61,7 @@ public class MediaTypeDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
         return type;
     }
@@ -84,7 +84,7 @@ public class MediaTypeDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
 
         return types;
@@ -107,7 +107,7 @@ public class MediaTypeDAO {
             type.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 
@@ -127,7 +127,7 @@ public class MediaTypeDAO {
             if (e.getErrorCode() == 1451) {
                 System.err.println(LanguageManager.getString("sql.error.mediaType.cannot_delete"));
             } else {
-                e.printStackTrace();
+                System.err.println("SQLException: " + e.getMessage());
             }
             return false;
         }

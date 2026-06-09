@@ -1,6 +1,5 @@
 package de.srh_dr.mediamanagementtoolmmt.model;
 
-import com.mysql.cj.conf.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.util.Objects;
@@ -114,5 +113,10 @@ public class Artist {
     public int hashCode() {
         // Only use the ID to generate the hash
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return this.alias + " " + this.firstName + " " + this.lastName;
     }
 }

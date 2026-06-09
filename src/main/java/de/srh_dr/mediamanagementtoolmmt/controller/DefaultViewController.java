@@ -7,30 +7,26 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
 
-public class DefaultViewController implements MainControllerAware{
+public class DefaultViewController{
     @FXML private Label totalTitlesField;
     @FXML private Label lentTitlesField;
     @FXML private Label lostTitlesField;
     @FXML private PieChart mediaTypePieChart;
 
-    private MainController mainController;
-    private final StatisticsDAO statisticsDAO =  new StatisticsDAO();
 
-    @Override
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
+    private final StatisticsDAO statisticsDAO =  new StatisticsDAO();
 
     @FXML
     private void initialize() {
-        Platform.runLater(this::loadDasboardData);
+        Platform.runLater(this::loadDashboardData);
     }
 
-    public void loadDasboardData(){
+    public void loadDashboardData(){
         try{
             Map<String, Integer> collectionStatistics = statisticsDAO.getCollectionStatistics();
             Map<String, Integer> distributionStatistics = statisticsDAO.getMediaTypeDistribution();

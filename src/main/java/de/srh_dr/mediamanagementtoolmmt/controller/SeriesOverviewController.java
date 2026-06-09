@@ -15,10 +15,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 
 import java.util.List;
 
-public class SeriesOverviewController implements MainControllerAware{
+public class SeriesOverviewController{
+    @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private TextField yearFilterField;
     @FXML private TableView<Series> seriesTable;
@@ -26,15 +29,9 @@ public class SeriesOverviewController implements MainControllerAware{
     @FXML private TableColumn<Series, Number> yearCol;
     @FXML private TableColumn<Series, Number> countCol;
 
-    private MainController mainController;
     private final SeriesDAO seriesDAO = new SeriesDAO();
     private final ObservableList<Series> seriesList = FXCollections.observableArrayList();
     private FilteredList<Series> filteredSeries;
-
-    @Override
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     private void initialize(){
@@ -101,8 +98,7 @@ public class SeriesOverviewController implements MainControllerAware{
         });
     }
 
-    private void openSeriesPopup(Series selectedSeries)
-    {
+    private void openSeriesPopup(Series selectedSeries) {
         Dialog<Series> dialog = new Dialog<>();
         dialog.setTitle(LanguageManager.getString("ui.edit_series"));
         dialog.setHeaderText(LanguageManager.getString("ui.edit_series"));
@@ -173,7 +169,7 @@ public class SeriesOverviewController implements MainControllerAware{
         gridPane.add(new Label(LanguageManager.getString("ui.series_count")), 0, 2);
         gridPane.add(countField, 1, 2);
 
-        gridPane.add(new Label(LanguageManager.getString("ui.alt_titles")), 0, 3);
+        gridPane.add(new Label(LanguageManager.getString("ui.altTitles")), 0, 3);
         gridPane.add(altTitleListView, 1, 3);
         gridPane.add(altTitleControls, 1, 4);
 
@@ -189,9 +185,17 @@ public class SeriesOverviewController implements MainControllerAware{
 
                     seriesDAO.save(selectedSeries);
                 } catch (NumberFormatException e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), "Year and Number of Titles must be valid numbers.");
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            "Year and Number of Titles must be valid numbers.",
+                            getWindow());
                 } catch (Exception e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToSave") + e.getMessage());
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            LanguageManager.getString("error.failedToSave") + e.getMessage(),
+                            getWindow());
                 }
                 return null;
             }
@@ -199,13 +203,18 @@ public class SeriesOverviewController implements MainControllerAware{
             if (dialogButton == deleteButtonType) {
                 boolean confirmDelete = AlertManager.requestConfirmation(
                         LanguageManager.getString("ui.warning"),
-                        LanguageManager.getString("warning.confirmDeleteSeries"));
+                        LanguageManager.getString("warning.confirmDeleteSeries"),
+                        getWindow());
 
                 if (confirmDelete) {
                     try {
                         seriesDAO.delete(selectedSeries.getId());
                     } catch (Exception e) {
-                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                        AlertManager.showAlert(
+                                Alert.AlertType.ERROR,
+                                LanguageManager.getString("ui.error"),
+                                e.getMessage(),
+                                getWindow());
                     }
                 }
             }
@@ -214,5 +223,12 @@ public class SeriesOverviewController implements MainControllerAware{
 
         dialog.showAndWait();
         loadSeries();
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

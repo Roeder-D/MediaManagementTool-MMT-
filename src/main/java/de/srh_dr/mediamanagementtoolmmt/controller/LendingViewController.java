@@ -11,7 +11,9 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
 
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class LendingViewController implements MainControllerAware{
+    @FXML private BorderPane viewContainer;
     @FXML private TextField mediaTitleField;
     @FXML private SearchableComboBox<Lendee> lendeeComboBox;
     @FXML private DatePicker borrowDateField;
@@ -83,7 +86,11 @@ public class LendingViewController implements MainControllerAware{
                 }
             }
         }catch(Exception e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ui.error"),
+                    LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -102,15 +109,15 @@ public class LendingViewController implements MainControllerAware{
         gridPane.setVgap(10);
 
         TextField firstNameField = new TextField();
-        firstNameField.setPromptText(LanguageManager.getString("ui.first_Name"));
+        firstNameField.setPromptText(LanguageManager.getString("ui.firstName"));
         TextField lastNameField = new TextField();
-        lastNameField.setPromptText(LanguageManager.getString("ui.last_Name"));
+        lastNameField.setPromptText(LanguageManager.getString("ui.lastName"));
         TextField aliasField = new TextField();
         aliasField.setPromptText(LanguageManager.getString("ui.alias"));
 
-        gridPane.add(new Label(LanguageManager.getString("ui.first_Name")+ ": "), 0, 0);
+        gridPane.add(new Label(LanguageManager.getString("ui.firstName")+ ": "), 0, 0);
         gridPane.add(firstNameField, 1, 0);
-        gridPane.add(new Label(LanguageManager.getString("ui.last_Name")+ ": "), 0, 1);
+        gridPane.add(new Label(LanguageManager.getString("ui.lastName")+ ": "), 0, 1);
         gridPane.add(lastNameField, 1, 1);
         gridPane.add(new Label(LanguageManager.getString("ui.alias")+ ": "), 0, 2);
         gridPane.add(aliasField, 1, 2);
@@ -153,7 +160,11 @@ public class LendingViewController implements MainControllerAware{
     @FXML
     private void handleSubmit(){
         if(targetMedia == null ||lendeeComboBox.getValue() == null || lendeeComboBox.getValue().getId() == 0 || borrowDateField.getValue() == null){
-            AlertManager.showAlert(Alert.AlertType.WARNING, LanguageManager.getString("ui.warning"), LanguageManager.getString("warning.missing_lending_fields"));
+            AlertManager.showAlert(
+                    Alert.AlertType.WARNING,
+                    LanguageManager.getString("ui.warning"),
+                    LanguageManager.getString("warning.missing_lending_fields"),
+                    getWindow());
             return;
         }
         try {
@@ -179,7 +190,11 @@ public class LendingViewController implements MainControllerAware{
             }
             handleCancel();
         }catch(Exception e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToSave") + ": " + e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ui.error"),
+                    LanguageManager.getString("error.failedToSave") + ": " + e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -190,4 +205,10 @@ public class LendingViewController implements MainControllerAware{
         }
     }
 
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
+    }
 }

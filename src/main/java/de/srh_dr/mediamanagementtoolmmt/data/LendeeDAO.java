@@ -41,7 +41,7 @@ public class LendeeDAO {
             lendee.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Failed to create lendee " + lendee.getFirstName() + " " + lendee.getLastName());
         }
     }
 
@@ -67,7 +67,7 @@ public class LendeeDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error finding lendee " + id);
         }
         return lendee;
     }
@@ -92,7 +92,7 @@ public class LendeeDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error finding lendees " + lendees.size());
         }
 
         return lendees;
@@ -117,7 +117,7 @@ public class LendeeDAO {
             lendee.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating lendee " + lendee.getId());
         }
     }
 
@@ -132,7 +132,7 @@ public class LendeeDAO {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error deleting lendee " + id);
         }
     }
 }

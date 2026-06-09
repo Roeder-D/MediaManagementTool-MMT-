@@ -11,20 +11,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 
-public class PublisherOverviewController implements MainControllerAware{
+public class PublisherOverviewController{
+    @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Publisher> publisherList;
 
-    private MainController mainController;
     private final PublisherDAO publisherDAO = new PublisherDAO();
     private final ObservableList<Publisher> publishers = FXCollections.observableArrayList();
     private FilteredList<Publisher> filteredPublishers;
-
-    @Override
-    public void setMainController(MainController mainController) {
-        this.mainController = mainController;
-    }
 
     @FXML
     private void initialize() {
@@ -102,19 +99,27 @@ public class PublisherOverviewController implements MainControllerAware{
                 try{
                    publisherDAO.save(selectedPublisher);
                 }catch(Exception e){
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failed to save"));
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            LanguageManager.getString("error.failed to save"),
+                            getWindow());
                 }
                 return null;
             }else if(dialogButton == deleteButtonType){
                 boolean confirmDelete = AlertManager.requestConfirmation(
                         LanguageManager.getString("ui.warning"),
-                        LanguageManager.getString("warning.confirmDeletePublisher")
-                );
+                        LanguageManager.getString("warning.confirmDeletePublisher"),
+                        getWindow());
                 if(confirmDelete) {
                     try {
                         publisherDAO.delete(selectedPublisher.getId());
                     } catch (Exception e) {
-                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToDelete") + ": " + e.getMessage());
+                        AlertManager.showAlert(
+                                Alert.AlertType.ERROR,
+                                LanguageManager.getString("ui.error"),
+                                LanguageManager.getString("error.failedToDelete") + ": " + e.getMessage(),
+                                getWindow());
                     }
                 }
             }
@@ -122,5 +127,12 @@ public class PublisherOverviewController implements MainControllerAware{
         });
         dialog.showAndWait();
         loadPublishers();
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

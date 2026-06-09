@@ -1,5 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.util;
 
+import com.sun.tools.javac.Main;
+import de.srh_dr.mediamanagementtoolmmt.controller.MainController;
 import javafx.scene.control.Alert;
 
 import java.io.InputStream;
@@ -30,12 +32,12 @@ public class ConfigManager {
         if(!foundConfig) {
             try (InputStream in = ConfigManager.class.getResourceAsStream("/de/srh_dr/mediamanagementtoolmmt/config/app.properties")) {
                 if (in == null) {
-                    AlertManager.showAlert(Alert.AlertType.WARNING, LanguageManager.getString("ConfigManager.missingProperties"), LanguageManager.getString("ConfigManager couldn't find properties file"));
+                    throw new ExceptionInInitializerError();
                 } else {
                     properties.load(in);
                 }
             } catch (Exception e) {
-                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ConfigManager.failedToLoad"), e.getMessage());
+                throw new RuntimeException(e);
             }
         }
     }
@@ -64,7 +66,7 @@ public class ConfigManager {
                 properties.store(out, "MMT User Settings");
             }
         } catch (Exception e) {
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ConfigManager.failedToSave"), e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

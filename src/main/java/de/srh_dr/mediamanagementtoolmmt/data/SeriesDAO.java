@@ -47,7 +47,7 @@ public class SeriesDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 
@@ -94,7 +94,7 @@ public class SeriesDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 
@@ -136,7 +136,7 @@ public class SeriesDAO {
             if (e.getErrorCode() == 1451) {
                 System.err.println(LanguageManager.getString("sql.error.series.cannot_delete"));
             } else {
-                e.printStackTrace();
+                System.err.println("SQLException: " + e.getMessage());
             }
             return false;
         }
@@ -179,7 +179,7 @@ public class SeriesDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
         return series;
     }
@@ -226,7 +226,7 @@ public class SeriesDAO {
                 }
             }
         }catch(SQLException e){
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
         return new ArrayList<>(seriesMap.values());
     }

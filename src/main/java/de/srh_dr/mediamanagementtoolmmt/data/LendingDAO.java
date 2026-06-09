@@ -4,9 +4,6 @@ import de.srh_dr.mediamanagementtoolmmt.model.Lendee;
 import de.srh_dr.mediamanagementtoolmmt.model.Lending;
 import de.srh_dr.mediamanagementtoolmmt.model.LendingDashboardItem;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
-import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
-import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -46,7 +43,7 @@ public class LendingDAO {
             }
             lending.clearChangeTracking();
         }catch(SQLException e){
-            e.printStackTrace();
+            System.err.println("Error creating lending " + lending.getLendee().getId());
         }
     }
 
@@ -67,7 +64,7 @@ public class LendingDAO {
             stmt.executeUpdate();
             lending.clearChangeTracking();
         }catch(SQLException e){
-            e.printStackTrace();
+            System.err.println("Error updating lending " + lending.getLendee().getId());
         }
     }
 
@@ -81,7 +78,7 @@ public class LendingDAO {
 
             stmt.executeUpdate();
         }catch(SQLException e){
-            e.printStackTrace();
+            System.err.println("Error deleting lending " + id);
         }
     }
 
@@ -110,10 +107,7 @@ public class LendingDAO {
                 }
             }
         }catch(SQLException e){
-            AlertManager.showAlert(
-                    Alert.AlertType.ERROR,
-                    LanguageManager.getString("ui.error"),
-                    LanguageManager.getString("error.failedToLoad") + " :" + e.getMessage());
+            System.err.println("Error fetching lending " + id);
         }
         return null;
     }
@@ -132,7 +126,6 @@ public class LendingDAO {
             }
         }catch(SQLException e){
             System.err.println("SQLException: " + e.getMessage());
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + " :" + e.getMessage());
         }
         return 0;
     }
@@ -147,19 +140,18 @@ public class LendingDAO {
 
             while(rs.next()){
                 int lendingId = rs.getInt("lending_id");
-                int mediaId = rs.getInt("media_id");
                 String mediaTitle = rs.getString("media_title");
                 String lendeeInfo = rs.getString("lendee_info");
                 String borrowedOn = rs.getString("lent_on");
                 String returnedOn = rs.getString("returned_on");
                 String status = rs.getString("lending_status");
 
-                LendingDashboardItem li = new LendingDashboardItem(lendingId, mediaId,mediaTitle, lendeeInfo, borrowedOn, returnedOn, status);
+                LendingDashboardItem li = new LendingDashboardItem(lendingId,mediaTitle, lendeeInfo, borrowedOn, returnedOn, status);
                 lendingDashboardItems.add(li);
 
             }
         }catch(SQLException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + " " + e.getMessage());
+            System.err.println("SQLException: " + e.getMessage());
         }
         return lendingDashboardItems;
     }

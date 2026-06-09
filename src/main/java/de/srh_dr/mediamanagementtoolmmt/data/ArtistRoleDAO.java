@@ -1,6 +1,5 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
-import de.srh_dr.mediamanagementtoolmmt.model.Artist;
 import de.srh_dr.mediamanagementtoolmmt.model.ArtistRole;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
@@ -55,7 +54,7 @@ public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
             artistRole.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error saving artist_role: " + e.getMessage());
         }
     }
 
@@ -76,7 +75,7 @@ public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
             artistRole.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating artist_role: " + e.getMessage());
         }
     }
 

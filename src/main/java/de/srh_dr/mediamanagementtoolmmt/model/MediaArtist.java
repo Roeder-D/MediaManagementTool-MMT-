@@ -2,7 +2,8 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 
 import java.util.Objects;
 
-public class MediaArtist {
+public class
+MediaArtist {
     private final Artist artist;
     private ArtistRole artistRole;
     private boolean isNewItem;
@@ -50,5 +51,10 @@ public class MediaArtist {
     @Override
     public int hashCode() {
         return Objects.hash(artist.getId(), artistRole.getId());
+    }
+
+    @Override
+    public String toString() {
+        return this.artist.toString() + " " + this.artistRole;
     }
 }

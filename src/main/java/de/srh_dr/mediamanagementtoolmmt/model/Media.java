@@ -483,7 +483,7 @@ public class Media {
             this.genres = genres;
             return this;
         }
-        public Builder mediatype(MediaType mediatype) {
+        public Builder mediaType(MediaType mediatype) {
             this.mediatype = mediatype;
             return this;
         }
@@ -551,5 +551,10 @@ public class Media {
     public int hashCode() {
         // Only use the ID to generate the hash
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return this.title;
     }
 }

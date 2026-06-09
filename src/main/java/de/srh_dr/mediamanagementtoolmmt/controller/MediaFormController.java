@@ -7,6 +7,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -28,6 +29,7 @@ import java.util.function.Consumer;
 //TODO: add APIs
 
 public class MediaFormController implements MainControllerAware{
+    @FXML private ScrollPane viewContainer;
     @FXML private StackPane imageDropZone;
     @FXML private ImageView coverImage;
     @FXML private Rating mediaRating;
@@ -42,7 +44,9 @@ public class MediaFormController implements MainControllerAware{
     @FXML private VBox languageContainer;
     @FXML private VBox artistContainer;
     @FXML private TextArea descriptionArea;
-    @FXML private Label isbnLabel;
+    @FXML private TextField seriesOrderField;
+    @FXML private VBox franchiseContainer;
+    @FXML private VBox tagContainer;
 
     // DAOs
     PublisherDAO publisherDAO = new PublisherDAO();
@@ -50,6 +54,7 @@ public class MediaFormController implements MainControllerAware{
     ArtistDAO artistDAO = new ArtistDAO();
     ArtistRoleDAO artistRoleDAO = new ArtistRoleDAO();
     TagDAO tagDAO = new TagDAO();
+    FranchiseDAO franchiseDAO = new FranchiseDAO();
     MediaTypeDAO  mediaTypeDAO = new MediaTypeDAO();
     SeriesDAO seriesDAO = new SeriesDAO();
     LanguageDAO languageDAO = new LanguageDAO();
@@ -67,6 +72,8 @@ public class MediaFormController implements MainControllerAware{
     private List<Publisher> allPublishers;
     private List<MediaType> allMediaTypes;
     private List<Series> allSeries;
+    private List<Tag> allTags;
+    private List<Franchise> allFranchises;
 
     @Override
     public void setMainController(MainController mainController) {
@@ -81,6 +88,8 @@ public class MediaFormController implements MainControllerAware{
         allPublishers = publisherDAO.findAll();
         allMediaTypes = mediaTypeDAO.findAll();
         allSeries = seriesDAO.findAll();
+        allTags = tagDAO.findAll();
+        allFranchises = franchiseDAO.findAll();
 
         publisherComboBox.getItems().addAll(allPublishers);
         mediaTypeComboBox.getItems().addAll(allMediaTypes);
@@ -89,6 +98,8 @@ public class MediaFormController implements MainControllerAware{
         addGenreDropdown();
         addLanguageRow();
         addArtistDropRow();
+        addFranchiseDropdown();
+        addTagDropdown();
     }
 
     public void loadMedia(int mediaId){
@@ -139,9 +150,33 @@ public class MediaFormController implements MainControllerAware{
                     addArtistDropRow();
                 }
 
+                franchiseContainer.getChildren().clear();
+                for(Franchise franchise : media.getFranchises()){
+                    addDynamicDropdownRow(franchiseContainer, allFranchises, franchise, null);
+                }
+                if(franchiseContainer.getChildren().isEmpty()){
+                    addFranchiseDropdown();
+                }
+
+                tagContainer.getChildren().clear();
+                for(Tag tag : media.getTags()){
+                    addDynamicDropdownRow(tagContainer, allTags, tag, null);
+                }
+
+                if(tagContainer.getChildren().isEmpty()){
+                    addTagDropdown();
+                }
+
+                mediaRating.setRating(media.getRating());
+
+                if(media.getSeriesOrder() != 0){
+                    seriesOrderField.setText(String.valueOf(media.getSeriesOrder()));
+                }else{
+                    seriesOrderField.setText("");
+                }
 
             }catch(Exception e){
-                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage());
+                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage(), getWindow());
             }
         }
     }
@@ -197,6 +232,25 @@ public class MediaFormController implements MainControllerAware{
     private void addArtistDropRow(){
         addMediaArtistRow(null);
     }
+    @FXML
+    private void addFranchiseDropdown(){
+        addDynamicDropdownRow(franchiseContainer, allFranchises, null, () ->{
+            HBox activeRow = (HBox) franchiseContainer.getChildren().getLast();
+            @SuppressWarnings("unchecked")
+            SearchableComboBox<Franchise> franchiseComboBox = (SearchableComboBox<Franchise>) activeRow.getChildren().getFirst();
+            handleAddNewFranchise(franchiseComboBox);
+        });
+    }
+    @FXML
+    private void addTagDropdown(){
+        addDynamicDropdownRow(tagContainer, allTags, null, () ->{
+            HBox activeRow = (HBox) tagContainer.getChildren().getLast();
+            @SuppressWarnings("unchecked")
+            SearchableComboBox<Tag> tagComboBox = (SearchableComboBox<Tag>) activeRow.getChildren().getFirst();
+            handleAddNewTag(tagComboBox);
+        });
+    }
+
 
     @FXML
     private void handleAddNewArtist(SearchableComboBox<Artist> targetComboBox){
@@ -247,6 +301,7 @@ public class MediaFormController implements MainControllerAware{
             return null;
         });
 
+        dialog.initOwner(getWindow());
         Optional<Artist> result = dialog.showAndWait();
 
         result.ifPresent(artist -> {
@@ -270,7 +325,8 @@ public class MediaFormController implements MainControllerAware{
 
                     boolean continueAnyway = AlertManager.requestConfirmation(
                             LanguageManager.getString("ui.warning"),
-                            LanguageManager.getString("warning.theArtistAlreadyExists_p1") + fullName + LanguageManager.getString("warning.theArtistAlreadyExists_p2")
+                            LanguageManager.getString("warning.theArtistAlreadyExists_p1") + fullName + LanguageManager.getString("warning.theArtistAlreadyExists_p2"),
+                            getWindow()
                     );
 
                     if(!continueAnyway){
@@ -283,11 +339,10 @@ public class MediaFormController implements MainControllerAware{
                 targetComboBox.getItems().add(artist);
                 targetComboBox.setValue(artist);
             }catch(Exception e){
-                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
     }
-
     @FXML
     public void handleAddNewSeries(){
         SearchableComboBox<Series> targetComboBox = seriesComboBox;
@@ -368,6 +423,7 @@ public class MediaFormController implements MainControllerAware{
             }
             return null;
         });
+        dialog.initOwner(getWindow());
         Optional<Series> result = dialog.showAndWait();
 
         result.ifPresent(series -> {
@@ -377,7 +433,8 @@ public class MediaFormController implements MainControllerAware{
                 if(isDuplicate){
                     boolean continueAnyway = AlertManager.requestConfirmation(
                             LanguageManager.getString("ui.warning"),
-                            LanguageManager.getString("warning.theSeriesAlreadyExists_p1") + series.getName() + LanguageManager.getString("warning.theSeriesAlreadyExists_p2")
+                            LanguageManager.getString("warning.theSeriesAlreadyExists_p1") + series.getName() + LanguageManager.getString("warning.theSeriesAlreadyExists_p2"),
+                            getWindow()
                     );
                     if(!continueAnyway){
                         return;
@@ -388,7 +445,7 @@ public class MediaFormController implements MainControllerAware{
                 targetComboBox.getItems().add(series);
                 targetComboBox.setValue(series);
             }catch(Exception e){
-                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
     }
@@ -399,6 +456,7 @@ public class MediaFormController implements MainControllerAware{
         dialog.setHeaderText(LanguageManager.getString("ui.addNewArtistRole"));
         dialog.setContentText(LanguageManager.getString("ui.artistRoleName"));
 
+        dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(roleName -> {
@@ -414,7 +472,8 @@ public class MediaFormController implements MainControllerAware{
                         AlertManager.showAlert(
                                 Alert.AlertType.INFORMATION,
                                 LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("error.artistRoleExistsAndSelected")
+                                LanguageManager.getString("error.artistRoleExistsAndSelected"),
+                                getWindow()
                         );
                     }else{
                         ArtistRole artistRole = new ArtistRole(0, roleName.trim(), true);
@@ -427,7 +486,8 @@ public class MediaFormController implements MainControllerAware{
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
-                            e.getMessage()
+                            e.getMessage(),
+                            getWindow()
                     );
                 }
             }
@@ -442,6 +502,7 @@ public class MediaFormController implements MainControllerAware{
         dialog.setHeaderText(LanguageManager.getString("ui.addNewPublisher"));
         dialog.setContentText(LanguageManager.getString("ui.publisherName"));
 
+        dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(publisherName -> {
@@ -457,7 +518,8 @@ public class MediaFormController implements MainControllerAware{
                         AlertManager.showAlert(
                                 Alert.AlertType.INFORMATION,
                                 LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("ui.publisherExistsAndSelected"));
+                                LanguageManager.getString("ui.publisherExistsAndSelected"),
+                                getWindow());
                     }else{
                         Publisher publisher = new Publisher(0, publisherName.trim(), true);
                         publisherDAO.save(publisher);
@@ -466,7 +528,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(publisher);
                     }
                 }catch(Exception e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(),  getWindow());
                 }
             }
         });
@@ -481,6 +543,7 @@ public class MediaFormController implements MainControllerAware{
         dialog.setHeaderText(LanguageManager.getString("ui.addNewMediaType"));
         dialog.setContentText(LanguageManager.getString("ui.mediaTypeName"));
 
+        dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(mediaTypeName -> {
@@ -495,7 +558,8 @@ public class MediaFormController implements MainControllerAware{
                        AlertManager.showAlert(
                                Alert.AlertType.INFORMATION,
                                LanguageManager.getString("ui.info"),
-                               LanguageManager.getString("info.mediaTypeExistsAndSelected")
+                               LanguageManager.getString("info.mediaTypeExistsAndSelected"),
+                               getWindow()
                        );
                    } else{
                        MediaType mediaType = new MediaType(0, mediaTypeName.trim(), true);
@@ -505,7 +569,7 @@ public class MediaFormController implements MainControllerAware{
                        targetComboBox.setValue(mediaType);
                    }
                }catch(Exception e){
-                   AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                   AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                }
            }
         });
@@ -517,6 +581,7 @@ public class MediaFormController implements MainControllerAware{
         dialog.setHeaderText(LanguageManager.getString("ui.addNewGenre"));
         dialog.setContentText(LanguageManager.getString("ui.genreName"));
 
+        dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
             String cleanName = name.trim();
@@ -531,17 +596,18 @@ public class MediaFormController implements MainControllerAware{
                         AlertManager.showAlert(
                                 Alert.AlertType.INFORMATION,
                                 LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.genreExistsAndSelected")
+                                LanguageManager.getString("info.genreExistsAndSelected"),
+                                getWindow()
                         );
                     }else{
                         Genre genre = new Genre(0, name.trim(), true);
-                        genreDAO.save(genre); // Assuming your GenreDAO matches others
+                        genreDAO.save(genre);
                         allGenres.add(genre);
                         targetComboBox.getItems().add(genre);
                         targetComboBox.setValue(genre);
                     }
                 } catch(Exception e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
         });
@@ -553,6 +619,7 @@ public class MediaFormController implements MainControllerAware{
         dialog.setHeaderText(LanguageManager.getString("ui.addNewLanguage"));
         dialog.setContentText(LanguageManager.getString("ui.languageName"));
 
+        dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
             String cleanName = name.trim();
@@ -566,7 +633,8 @@ public class MediaFormController implements MainControllerAware{
                         AlertManager.showAlert(
                                 Alert.AlertType.INFORMATION,
                                 LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.languageExistsAndSelected")
+                                LanguageManager.getString("info.languageExistsAndSelected"),
+                                getWindow()
                         );
                     }else {
                         Language lang = new Language(0, name.trim(), true);
@@ -576,7 +644,83 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(lang);
                     }
                 } catch(Exception e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
+                }
+            }
+        });
+    }
+    @FXML
+    private void handleAddNewTag(SearchableComboBox<Tag> targetComboBox) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(LanguageManager.getString("ui.newTag"));
+        dialog.setHeaderText(LanguageManager.getString("ui.addNewTag"));
+        dialog.setContentText(LanguageManager.getString("ui.tagName"));
+
+        dialog.initOwner(getWindow());
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            String cleanName = name.trim();
+            if(!cleanName.isEmpty()){
+                try {
+                    Optional<Tag> existingTag = allTags.stream()
+                            .filter(t -> t.getName().equalsIgnoreCase(cleanName))
+                            .findFirst();
+
+                    if(existingTag.isPresent()){
+                        targetComboBox.setValue(existingTag.get());
+                        AlertManager.showAlert(
+                                Alert.AlertType.INFORMATION,
+                                LanguageManager.getString("ui.info"),
+                                LanguageManager.getString("info.tagExistsAndSelected"),
+                                getWindow()
+                        );
+                    }else{
+                        Tag tag = new Tag(0, name.trim(), true);
+                        tagDAO.save(tag);
+                        allTags.add(tag);
+                        targetComboBox.getItems().add(tag);
+                        targetComboBox.setValue(tag);
+                    }
+                } catch(Exception e) {
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
+                }
+            }
+        });
+    }
+    @FXML
+    private void handleAddNewFranchise(SearchableComboBox<Franchise> targetComboBox) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(LanguageManager.getString("ui.newFranchise"));
+        dialog.setHeaderText(LanguageManager.getString("ui.addNewFranchise"));
+        dialog.setContentText(LanguageManager.getString("ui.FranchiseName"));
+
+        dialog.initOwner(getWindow());
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            String cleanName = name.trim();
+            if(!cleanName.isEmpty()){
+                try {
+                    Optional<Franchise> existingFranchise = allFranchises.stream()
+                            .filter(f -> f.getName().equalsIgnoreCase(cleanName))
+                            .findFirst();
+
+                    if(existingFranchise.isPresent()){
+                        targetComboBox.setValue(existingFranchise.get());
+                        AlertManager.showAlert(
+                                Alert.AlertType.INFORMATION,
+                                LanguageManager.getString("ui.info"),
+                                LanguageManager.getString("info.franchiseExistsAndSelected"),
+                                getWindow()
+                        );
+                    }else{
+                        Franchise franchise = new Franchise(0, name.trim(), null, true);
+                        franchiseDAO.save(franchise);
+                        allFranchises.add(franchise);
+                        targetComboBox.getItems().add(franchise);
+                        targetComboBox.setValue(franchise);
+                    }
+                } catch(Exception e) {
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
         });
@@ -597,12 +741,23 @@ public class MediaFormController implements MainControllerAware{
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
-                    LanguageManager.getString("error.title_null")
+                    LanguageManager.getString("error.title_null"),
+                    getWindow()
             );
             return;
         }
-
+        int seriesOrder = 0;
+        try {
+            String orderText = seriesOrderField.getText().trim();
+            if(!orderText.isEmpty()){
+                seriesOrder = Integer.parseInt(orderText);
+            }
+        }catch(NumberFormatException e){
+            System.err.println("Invalid order number, defaulting to 0");
+        }
         List<Genre> selectedGenres = getSelectedGenres();
+        List<Tag> selectedTags = getSelectedTags();
+        List<Franchise> selectedFranchises = getSelectedFranchises();
         List<Language> selectedLanguages = getSelectedLanguages();
         MediaType selectedMediaType = mediaTypeComboBox.getValue();
         if (selectedMediaType == null || selectedGenres.isEmpty() || selectedLanguages.isEmpty()) {
@@ -614,7 +769,8 @@ public class MediaFormController implements MainControllerAware{
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
-                    errorMsg.toString()
+                    errorMsg.toString(),
+                    getWindow()
             );
             return;
         }
@@ -657,13 +813,16 @@ public class MediaFormController implements MainControllerAware{
                         .description(descriptionArea.getText().trim())
                         .rating((int) mediaRating.getRating())
                         .releaseDate(releaseDateField.getValue())
-                        .mediatype(mediaTypeComboBox.getValue())
+                        .mediaType(mediaTypeComboBox.getValue())
                         .publisher(publisherComboBox.getValue())
                         .series(seriesComboBox.getValue())
                         .genres(selectedGenres)
                         .languages(selectedLanguages)
                         .credits(getSelectedMediaArtists())
                         .status(MediaStatus.AVAILABLE)
+                        .tags(selectedTags)
+                        .franchises(selectedFranchises)
+                        .seriesOrder(seriesOrder)
                         .build();
 
                 mediaDAO.save(newMedia);
@@ -677,10 +836,13 @@ public class MediaFormController implements MainControllerAware{
                 currentMedia.setReleaseDate(releaseDateField.getValue());
                 currentMedia.setPublisher(publisherComboBox.getValue());
                 currentMedia.setSeries(seriesComboBox.getValue());
+                currentMedia.setSeriesOrder(seriesOrder);
 
                 syncList(currentMedia.getGenres(), selectedGenres, currentMedia::removeGenre, currentMedia::addGenre);
                 syncList(currentMedia.getCredits(), getSelectedMediaArtists(), currentMedia::removeCredit, currentMedia::addCredit);
                 syncList(currentMedia.getLanguages(), selectedLanguages, currentMedia::removeLanguage, currentMedia::addLanguage);
+                syncList(currentMedia.getTags(), selectedTags, currentMedia::removeTag, currentMedia::addTag);
+                syncList(currentMedia.getFranchises(), selectedFranchises, currentMedia::removeFranchise, currentMedia::addFranchise);
 
                 mediaDAO.save(currentMedia);
             }
@@ -698,8 +860,7 @@ public class MediaFormController implements MainControllerAware{
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
         );
 
-        Window stage = imageDropZone.getScene().getWindow();
-        File file = fileChooser.showOpenDialog(stage);
+        File file = fileChooser.showOpenDialog(getWindow());
 
         if(file != null){
             selectedCoverImage = file;
@@ -721,6 +882,34 @@ public class MediaFormController implements MainControllerAware{
             }
         }
         return genres;
+    }
+
+    private List<Tag> getSelectedTags(){
+        List<Tag> tags = new ArrayList<>();
+        for(Node node : tagContainer.getChildren()){
+            if(node instanceof HBox){
+                @SuppressWarnings("unchecked")
+                SearchableComboBox<Tag> comboBox = (SearchableComboBox<Tag>) ((HBox) node).getChildren().getFirst();
+                if(comboBox.getValue() != null){
+                    tags.add(comboBox.getValue());
+                }
+            }
+        }
+        return  tags;
+    }
+
+    private List<Franchise> getSelectedFranchises(){
+        List<Franchise> franchises = new ArrayList<>();
+        for(Node node : franchiseContainer.getChildren()){
+            if(node instanceof HBox){
+                @SuppressWarnings("unchecked")
+                SearchableComboBox<Franchise> comboBox = (SearchableComboBox<Franchise>) ((HBox) node).getChildren().getFirst();
+                if(comboBox.getValue() != null){
+                    franchises.add(comboBox.getValue());
+                }
+            }
+        }
+        return franchises;
     }
 
     private List<Language> getSelectedLanguages(){
@@ -793,6 +982,7 @@ public class MediaFormController implements MainControllerAware{
 
     private <T> void addDynamicDropdownRow(VBox container, List<T> items, T selectedItem, Runnable onAddAction){
         HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
 
         SearchableComboBox<T> comboBox = new SearchableComboBox<>();
         if(items != null){
@@ -833,5 +1023,12 @@ public class MediaFormController implements MainControllerAware{
         uiItems.forEach(item -> {
             if(!currentItems.contains(item)){adder.accept(item);}
         });
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

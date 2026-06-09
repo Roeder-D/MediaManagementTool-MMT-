@@ -12,7 +12,12 @@ import java.util.List;
 public class MediaOverviewDAO {
     public List<MediaOverview> getMediaOverview() throws SQLException {
         List<MediaOverview> overviewList = new ArrayList<>();
-        String sql = "SELECT media_id, title, release_date, publisher_name, status, type_name FROM v_media_overview";
+        String sql = "SELECT media_id, title, release_date, publisher_name, status, type_name, " + // <-- Added comma here
+                " (SELECT GROUP_CONCAT(t.tag SEPARATOR ',') " + // <-- Fixed SEPARATOR and added closing )
+                " FROM media_tag mt " +
+                " JOIN tag t on mt.tag_id = t.tag_id " +
+                " WHERE mt.media_id = v.media_id) AS tags " +
+                "FROM v_media_overview v";
 
         try(Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -22,6 +27,8 @@ public class MediaOverviewDAO {
                 int mediaId = rs.getInt("media_id");
                 String title = rs.getString("title");
                 String type = rs.getString("type_name");
+                String tagsRaw = rs.getString("tags");
+                String tags = (tagsRaw != null) ? tagsRaw : "";
 
                 java.sql.Date sqlDate = rs.getDate("release_date");
                 String releaseDate = (sqlDate != null) ? sqlDate.toString() : "Unknown";
@@ -31,7 +38,7 @@ public class MediaOverviewDAO {
 
                 String status = rs.getString("status");
 
-                overviewList.add(new MediaOverview(mediaId, type, title, releaseDate, publisher, status));
+                overviewList.add(new MediaOverview(mediaId, type, title, releaseDate, publisher, status, tags));
             }
         }
         return overviewList;

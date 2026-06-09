@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import org.controlsfx.control.SearchableComboBox?>
-<BorderPane prefHeight="500.0" stylesheets="@../css/style.css" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.LendingViewController">
+<BorderPane fx:id="viewContainer" prefHeight="500.0" stylesheets="@../css/style.css" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.LendingViewController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
@@ -20,35 +20,30 @@
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
 
-                <!-- Media Title (Read Only) -->
-                <Label text="%ui.title" GridPane.rowIndex="0" />
+                <Label styleClass="section-header" text="%ui.title" GridPane.rowIndex="0" />
                 <TextField fx:id="mediaTitleField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                <!-- Lendee Selection with Quick-Add -->
-                <Label text="%ui.lendee" GridPane.rowIndex="1" />
+                <Label styleClass="section-header" text="%ui.lendee" GridPane.rowIndex="1" />
                 <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <SearchableComboBox fx:id="lendeeComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
                     <Button text="+" onAction="#handleManageLendee" />
                 </HBox>
 
-                <!-- Borrow Date -->
-                <Label text="%ui.lent_on" GridPane.rowIndex="2" />
+                <Label styleClass="section-header" text="%ui.lent_on" GridPane.rowIndex="2" />
                 <DatePicker fx:id="borrowDateField" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <!-- Return Date -->
-                <Label text="%ui.returned_on" GridPane.rowIndex="3" />
+                <Label styleClass="section-header" text="%ui.returned_on" GridPane.rowIndex="3" />
                 <DatePicker fx:id="returnDateField" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                <!-- Notes -->
-                <Label text="%ui.note" GridPane.rowIndex="4" GridPane.valignment="TOP"/>
+                <Label styleClass="section-header" text="%ui.note" GridPane.rowIndex="4" GridPane.valignment="TOP"/>
                 <TextArea fx:id="noteArea" prefRowCount="3" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS" />
 
             <HBox alignment="BOTTOM_RIGHT" spacing="15.0">
-                <Button text="%ui.abort" onAction="#handleCancel" />
-                <Button text="%ui.submit" defaultButton="true" onAction="#handleSubmit" />
+                <Button styleClass="app-button" text="%ui.abort" onAction="#handleCancel" />
+                <Button styleClass="app-button" text="%ui.submit" defaultButton="true" onAction="#handleSubmit" />
             </HBox>
         </VBox>
     </center>

@@ -23,9 +23,8 @@ public class MMT_Application extends Application {
 
         stage.setScene(scene);
         stage.setTitle(LanguageManager.getString("app.title"));
-        stage.show();
 
-        //save window size and position
+        //load window size and position
         if (isFirstLaunch) {
             stage.sizeToScene();
             stage.centerOnScreen();
@@ -44,5 +43,7 @@ public class MMT_Application extends Application {
             prefs.putDouble("height", stage.getHeight());
             prefs.putBoolean("first_launch", false);
         });
+
+        stage.show();
     }
 }

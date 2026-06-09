@@ -48,7 +48,7 @@ public class TagDAO extends AbstractDAO<Tag> {
             tag.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 
@@ -69,7 +69,7 @@ public class TagDAO extends AbstractDAO<Tag> {
             tag.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 

@@ -13,8 +13,11 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 
 public class FranchiseOverviewController implements MainControllerAware{
+    @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Franchise> franchiseList;
 
@@ -134,7 +137,11 @@ public class FranchiseOverviewController implements MainControllerAware{
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             String newName = franchiseNameField.getText().trim();
             if(newName.isEmpty()){
-                AlertManager.showAlert(Alert.AlertType.WARNING, LanguageManager.getString("ui.warning"), LanguageManager.getString("ui.empty_franchise_name"));
+                AlertManager.showAlert(
+                        Alert.AlertType.WARNING,
+                        LanguageManager.getString("ui.warning"),
+                        LanguageManager.getString("ui.empty_franchise_name"),
+                        getWindow());
                 event.consume();
             }
         });
@@ -142,7 +149,8 @@ public class FranchiseOverviewController implements MainControllerAware{
         deleteButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             boolean confirmDelete = AlertManager.requestConfirmation(
                     LanguageManager.getString("ui.warning"),
-                    LanguageManager.getString("warning.confirmDeleteFranchise")
+                    LanguageManager.getString("warning.confirmDeleteFranchise"),
+                    getWindow()
             );
 
             if (!confirmDelete) {
@@ -151,7 +159,11 @@ public class FranchiseOverviewController implements MainControllerAware{
                 try {
                     franchiseDAO.delete(selectedFranchise.getId());
                 } catch(Exception e) {
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            e.getMessage(),
+                            getWindow());
                     event.consume();
                 }
             }
@@ -163,7 +175,11 @@ public class FranchiseOverviewController implements MainControllerAware{
                     selectedFranchise.setName(franchiseNameField.getText().trim());
                     franchiseDAO.save(selectedFranchise);
                 }catch(Exception e){
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToSave") + e.getMessage());
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            LanguageManager.getString("error.failedToSave") + e.getMessage(),
+                            getWindow());
                 }
             }
             return null;
@@ -191,5 +207,12 @@ public class FranchiseOverviewController implements MainControllerAware{
             }
             return targetText.toString().contains(searchText);
         });
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

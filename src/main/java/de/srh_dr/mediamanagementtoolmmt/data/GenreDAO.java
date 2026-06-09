@@ -48,7 +48,7 @@ public class GenreDAO extends AbstractDAO<Genre> {
             genre.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error saving genre " + genre.getGenreName());
         }
     }
 
@@ -69,7 +69,7 @@ public class GenreDAO extends AbstractDAO<Genre> {
             genre.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating genre " + genre.getGenreName());
         }
     }
 

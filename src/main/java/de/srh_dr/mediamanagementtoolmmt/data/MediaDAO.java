@@ -1,9 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.*;
-import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
-import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,8 +8,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 
-//Complex structure to ensure synchronized db-updates across all affected tables
 public class MediaDAO {
+
     // HELPER
     public void save(Media media){
         Connection conn = null;
@@ -38,17 +35,17 @@ public class MediaDAO {
                     System.err.println("Transaction is being rolled back due to: " + e.getMessage());
                     conn.rollback();
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    System.err.println("SQLException: " + ex.getMessage());
                 }
             }
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }finally{
             if(conn != null){
                 try{
                     conn.setAutoCommit(true); // Reset to default behavior
                     conn.close();
                 }catch(SQLException e){
-                    e.printStackTrace();
+                    System.err.println("SQLException: " + e.getMessage());
                 }
             }
         }
@@ -58,7 +55,7 @@ public class MediaDAO {
     public Media read(int mediaId) throws SQLException{
         Media media = null;
 
-        String media_sql = "SELECT * FROM MEDIA WHERE media_id = ?";
+        String media_sql = "SELECT * FROM media WHERE media_id = ?";
 
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(media_sql)){
@@ -88,7 +85,7 @@ public class MediaDAO {
                         if(!rs.wasNull()){
                             builder.series(new SeriesDAO().findById(seriesId));
                         }
-                        builder.mediatype(new MediaTypeDAO().findById(rs.getInt("mediatype_id")));
+                        builder.mediaType(new MediaTypeDAO().findById(rs.getInt("media_type_id")));
 
                         // Fetch lists
                         builder.tags(fetchList(conn, mediaId, "media_tag", "tag_id", new TagDAO()));
@@ -136,7 +133,7 @@ public class MediaDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int franchiseId = rs.getInt("franchise_id");
-                    String franchiseName = rs.getString("title");
+                    String franchiseName = rs.getString("franchise_name");
                     List<AltTitle> altTitles = new ArrayList<>();
 
                     try(PreparedStatement titleStmt = conn.prepareStatement(titlesSql)){
@@ -190,7 +187,7 @@ public class MediaDAO {
     // CREATE
     private void create(Media media, Connection conn) throws SQLException {
         String sql = "INSERT INTO media (isbn, title, original_title, cover_url, description, rating, release_date, series_order," +
-                " series_id, mediatype_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                " series_id, media_type_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try(PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             prepareMediaStatement(stmt, media);
@@ -254,7 +251,7 @@ public class MediaDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQLException: " + e.getMessage());
         }
     }
 

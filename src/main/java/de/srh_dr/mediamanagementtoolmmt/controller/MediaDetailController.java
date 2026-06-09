@@ -3,6 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.controller;
 import de.srh_dr.mediamanagementtoolmmt.data.MediaDAO;
 import de.srh_dr.mediamanagementtoolmmt.model.Genre;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
+import de.srh_dr.mediamanagementtoolmmt.model.MediaArtist;
 import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
@@ -10,15 +11,16 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.stage.Window;
 import org.controlsfx.control.Rating;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MediaDetailController implements MainControllerAware {
+    @FXML private BorderPane viewContainer;
+    @FXML private Label titleLabel;
     @FXML private Label isbnLabel;
     @FXML private Label isbnField;
     @FXML private FlowPane genreContainer;
@@ -29,6 +31,8 @@ public class MediaDetailController implements MainControllerAware {
     @FXML private Label publisherField;
     @FXML private Label releaseDateField;
     @FXML private Label descriptionField;
+    @FXML private FlowPane franchiseContainer;
+    @FXML private Label seriesOrderField;
 
 
     MainController mainController;
@@ -47,7 +51,8 @@ public class MediaDetailController implements MainControllerAware {
 
         boolean confirmDelete = AlertManager.requestConfirmation(
                 LanguageManager.getString("ui.warning"),
-                LanguageManager.getString("warning.confirmDeleteMedia")
+                LanguageManager.getString("warning.confirmDeleteMedia"),
+                getWindow()
         );
 
         if(confirmDelete){
@@ -58,7 +63,11 @@ public class MediaDetailController implements MainControllerAware {
                     mainController.showDefaultView();
                 }
             }catch(Exception e){
-                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                AlertManager.showAlert(
+                        Alert.AlertType.ERROR,
+                        LanguageManager.getString("ui.error"),
+                        e.getMessage(),
+                        getWindow());
             }
         }
     }
@@ -86,10 +95,23 @@ public class MediaDetailController implements MainControllerAware {
 
           this.currentMedia = media;
 
+          // populate title field
+          titleLabel.setText(media.getTitle());
+
           // toggle ISBN field visible
-          List<String> isbnTypes = ConfigManager.getISBNEnabledMediaTypes();
-          String currentMediaType = currentMedia.getMediatype().getTypeName();
-          boolean showISBN = isbnTypes.stream().anyMatch(mt -> mt.equalsIgnoreCase(currentMediaType));
+          boolean showISBN = true;
+          try {
+              List<String> isbnTypes = ConfigManager.getISBNEnabledMediaTypes();
+              String currentMediaType = currentMedia.getMediatype().getTypeName();
+              showISBN = isbnTypes.stream().anyMatch(mt -> mt.equalsIgnoreCase(currentMediaType));
+          }catch(Exception e){
+              AlertManager.showAlert(
+                      Alert.AlertType.ERROR,
+                      LanguageManager.getString("ui.error"),
+                      LanguageManager.getString("error.failedToLoad") + e.getMessage(),
+                      getWindow()
+              );
+          }
           isbnLabel.setVisible(showISBN);
           isbnField.setVisible(showISBN);
           isbnLabel.setManaged(showISBN);
@@ -110,6 +132,17 @@ public class MediaDetailController implements MainControllerAware {
               }
           });
 
+          //populate franchises
+          franchiseContainer.getChildren().clear();
+          media.getFranchises().forEach(franchise -> {
+              if(franchise.getName() != null && !franchise.getName().trim().isEmpty()){
+                  Label badge = new Label(franchise.getName());
+                  badge.getStyleClass().addAll("badge", "franchise-badge");
+
+                  franchiseContainer.getChildren().add(badge);
+              }
+          });
+
           // populate tags
           tagsContainer.getChildren().clear();
           media.getTags().forEach(tag -> {
@@ -125,25 +158,24 @@ public class MediaDetailController implements MainControllerAware {
           artistContainer.getChildren().clear();
           media.getCredits().forEach(credit -> {
               if(credit != null){
-                  HBox row = new HBox();
-                  Label artist = new Label();
-                  String name = "";
-                  if(credit.getArtist().getFirstName() != null && !credit.getArtist().getFirstName().trim().isEmpty()){
-                      name = credit.getArtist().getFirstName();
-                  }
-                  if(name.isEmpty()){
-                      name = credit.getArtist().getLastName();
-                  }else{
-                      name += " " +credit.getArtist().getLastName();
-                  }
-                  artist.setText(name);
+                  HBox row = new HBox(10);
+                  row.getStyleClass().add("credit-row");
+                  Label artist = getLabel(credit);
 
                   Label artistRole =  new Label(credit.getArtistRole().getRole());
-
+                  artistRole.getStyleClass().add("artist-role-label");
                   row.getChildren().addAll(artist, artistRole);
                   artistContainer.getChildren().add(row);
               }
           });
+
+          // populate series order
+          if(media.getSeriesOrder() != 0) {
+              seriesOrderField.setText("Volume " + media.getSeriesOrder());
+          }else{
+              seriesOrderField.setVisible(false);
+              seriesOrderField.setManaged(false);
+          }
 
           // implement rating system
           Rating starRating = new Rating(5);
@@ -159,7 +191,11 @@ public class MediaDetailController implements MainControllerAware {
 
                       System.out.println("Database auto-updated! New rating stored: " + newRating.intValue());
                   }catch(Exception e){
-                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("error.failedToSave"),e.getMessage());
+                        AlertManager.showAlert(
+                                Alert.AlertType.ERROR,
+                                LanguageManager.getString("error.failedToSave"),
+                                e.getMessage(),
+                                getWindow());
                   }
               }
           });
@@ -190,7 +226,33 @@ public class MediaDetailController implements MainControllerAware {
 
 
       }catch(Exception e){
-          AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("error.failedToLoad"), e.getMessage());
+          AlertManager.showAlert(
+                  Alert.AlertType.ERROR,
+                  LanguageManager.getString("error.failedToLoad"),
+                  e.getMessage(),
+                  getWindow());
       }
+    }
+
+    private static Label getLabel(MediaArtist credit) {
+        Label artist = new Label();
+        String name = "";
+        if(credit.getArtist().getFirstName() != null && !credit.getArtist().getFirstName().trim().isEmpty()){
+            name = credit.getArtist().getFirstName();
+        }
+        if(name.isEmpty()){
+            name = credit.getArtist().getLastName();
+        }else{
+            name += " " + credit.getArtist().getLastName();
+        }
+        artist.setText(name);
+        return artist;
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

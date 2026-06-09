@@ -2,9 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
 import de.srh_dr.mediamanagementtoolmmt.model.Franchise;
-import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
-import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.*;
@@ -45,7 +43,7 @@ public class FranchiseDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error saving franchise " + franchise.getName());
         }
     }
 
@@ -90,7 +88,7 @@ public class FranchiseDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating franchise " + franchise.getName());
         }
     }
 
@@ -132,7 +130,7 @@ public class FranchiseDAO {
             if (e.getErrorCode() == 1451) {
                 System.err.println(LanguageManager.getString("sql.error.franchise.cannot_delete"));
             } else {
-                e.printStackTrace();
+                System.err.println("Error deleting franchise " + id);
             }
             return false;
         }
@@ -173,7 +171,7 @@ public class FranchiseDAO {
                 }
             }
         } catch (SQLException e) {
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.eror"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage());
+            System.err.println("Error fetching franchise " + id);
         }
         return franchise;
     }
@@ -219,7 +217,7 @@ public class FranchiseDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error fetching franchise " + franchiseMap.size());
         }
         return new ArrayList<>(franchiseMap.values());
     }

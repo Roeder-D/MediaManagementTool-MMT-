@@ -62,4 +62,9 @@ public class AltTitle{
         // Only use the ID to generate the hash
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return this.title;
+    }
 }

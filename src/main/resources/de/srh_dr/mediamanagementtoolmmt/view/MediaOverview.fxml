@@ -3,31 +3,35 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.MediaOverviewController">
-    <children>
-        <HBox styleClass="controls-bar">
-            <children>
-                <Label styleClass="control-label" text="%ui.search" />
-                <TextField fx:id="searchField" prefWidth="250" promptText="%ui.search_media" styleClass="search-field"/>
+<?import org.controlsfx.control.SearchableComboBox?>
+<VBox fx:id="viewContainer" prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.MediaOverviewController">
+    <HBox styleClass="controls-bar" alignment="CENTER_LEFT">
+        <Label styleClass="control-label" text="%ui.search"/>
+        <TextField fx:id="searchField" prefWidth="250" promptText="%ui.search_media" styleClass="search-field"/>
 
-                <Region HBox.hgrow="ALWAYS"/>
+        <Region HBox.hgrow="ALWAYS"/>
 
-                <Label styleClass="control-label" text="%ui.label.sort_by"/>
-                <Label styleClass="control-label" text="%ui.status"/>
-                <ComboBox fx:id="filterStatusComboBox" prefWidth="150" promptText="%ui.status" onAction="#applyFilter"/>
-                <Label styleClass="control-label" text="%ui.mediaType"/>
-                <ComboBox fx:id="filterMediaTypeComboBox" prefWidth="150" promptText="%ui.mediaType" onAction="#applyFilter"/>
-            </children>
-        </HBox>
-        <TableView fx:id="mediaTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="titleCol" prefWidth="300" text="%ui.title"/>
-                <TableColumn fx:id="typeCol" prefWidth="200" text="%ui.mediaType"/>
-                <TableColumn fx:id="releaseDateCol" prefWidth="150" text="%ui.releasedate"/>
-                <TableColumn fx:id="publisherCol" prefWidth="200" text="%ui.publisher"/>
-                <TableColumn fx:id="availableCol" prefWidth="100" text="%ui.available"/>
-            </columns>
-        </TableView>
+        <Label styleClass="control-label" text="%ui.label.sort_by"/>
+        <Label styleClass="control-label" text="%ui.mediaTag"/>
+        <SearchableComboBox fx:id="filterTagComboBox" prefWidth="150" promptText="%ui.mediaTag" onAction="#applyFilter"/>
+        <Label styleClass="control-label" text="%ui.mediaType"/>
+        <SearchableComboBox fx:id="filterMediaTypeComboBox" prefWidth="150" promptText="%ui.mediaType" onAction="#applyFilter"/>
+        <Label styleClass="control-label" text="%ui.status"/>
+        <SearchableComboBox fx:id="filterStatusComboBox" prefWidth="150" promptText="%ui.status" onAction="#applyFilter"/>
+    </HBox>
+    <TableView fx:id="mediaTable" VBox.vgrow="ALWAYS">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <columns>
+            <TableColumn fx:id="titleCol" prefWidth="300" text="%ui.title" styleClass="left-aligned-column"/>
+            <TableColumn fx:id="typeCol" prefWidth="200" text="%ui.mediaType" styleClass="left-aligned-column"/>
+            <TableColumn fx:id="releaseDateCol" prefWidth="150" text="%ui.releasedate" styleClass="center-aligned-column"/>
+            <TableColumn fx:id="publisherCol" prefWidth="200" text="%ui.publisher" styleClass="left-aligned-column"/>
+            <TableColumn fx:id="availableCol" prefWidth="100" text="%ui.available" styleClass="right-aligned-column"/>
+        </columns>
+    </TableView>
 
-    </children>
 </VBox>

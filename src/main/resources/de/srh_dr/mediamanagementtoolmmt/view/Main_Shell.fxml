@@ -7,18 +7,18 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Menu?>
 
-<BorderPane fx:id="mainBorderPane" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.MainController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="623.0" prefWidth="1050" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="viewContainer" fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.MainController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="623.0" prefWidth="1050" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/style.css">
    <left>
-      <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-            <Button fx:id="dashboard_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showDefaultView" text="%menu.dashboard"/>
-            <Button fx:id="overview_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showMediaOverview" text="%menu.overview"/>
-            <Button fx:id="artist_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showArtists" text="%menu.artist"/>
-            <Button fx:id="series_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showSeries" text="%menu.series"/>
-            <Button fx:id="franchise_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showFranchises" text="%menu.franchise"/>
-            <Button fx:id="publisher_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showPublishers" text="%menu.publisher"/>
+      <VBox styleClass="menu-box" minWidth="100" BorderPane.alignment="CENTER">
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showDefaultView" text="%menu.dashboard"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showMediaOverview" text="%menu.overview"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showArtists" text="%menu.artist"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showSeries" text="%menu.series"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showFranchises" text="%menu.franchise"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showPublishers" text="%menu.publisher"/>
             <VBox styleClass="btn-separator" prefHeight="10"/>
-            <Button fx:id="addMedia_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showAddMedia" text="%menu.addMedia"/>
-            <Button fx:id="lendings_btn" styleClass="menu-btn" mnemonicParsing="false" onAction="#showLendings" text="%menu.lendings"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showAddMedia" text="%menu.addMedia"/>
+            <Button styleClass="menu-btn" mnemonicParsing="false" onAction="#showLendings" text="%menu.lendings"/>
       </VBox>
    </left>
    <top>

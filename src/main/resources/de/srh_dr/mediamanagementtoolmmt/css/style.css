@@ -1,0 +1,214 @@
+/* ==========================================================================
+   GLOBAL VARIABLES & BASE THEME
+   ========================================================================== */
+.root {
+    /* Define color palette as reusable variables */
+    -fx-primary-color: #2b579a;
+    -fx-accent-color: #1e3a67;
+    -fx-bg-color: #f4f6f9;
+    -fx-card-bg: #ffffff;
+    -fx-text-main: #333333;
+    -fx-text-muted: #666666;
+    -fx-error-color: #d9534f;
+    -fx-success-color: #5cb85c;
+    -fx-badge-color: #7ba7ea;
+}
+
+/* ==========================================================================
+   LAYOUTS & CONTAINERS
+   ========================================================================== */
+.view-container {
+    -fx-background-color: -fx-bg-color;
+    -fx-padding: 20px;
+}
+
+.controls-bar {
+    -fx-background-color: -fx-card-bg;
+    -fx-padding: 12px 15px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+    -fx-margin-bottom: 15px;
+}
+
+.menu-box {
+    -fx-background-color: #1f2d3d;
+    -fx-padding: 15px 10px;
+    -fx-spacing: 8px;
+}
+
+.scroll-bar:horizontal .thumb,
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -fx-primary-color;
+    -fx-background-radius: 5em;
+}
+
+.control-label, .field-label {
+    -fx-padding: 0 10px 0 10px;
+}
+
+/* ==========================================================================
+   TYPOGRAPHY
+   ========================================================================== */
+.control-label, .field-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-main;
+}
+
+.section-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-color;
+}
+
+.media-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-text-main;
+}
+
+/* ==========================================================================
+   FORM CONTROLS & UTILITIES
+   ========================================================================== */
+.text-field, .combo-box, .date-picker {
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
+}
+
+.text-field:focused, .combo-box:focused, .date-picker:focused {
+    -fx-background-color: -fx-card-bg, -fx-primary-color, -fx-card-bg;
+    -fx-background-insets: 0, 0 0 1 0, 1 1 2 1; /* Subtle underline focus look */
+}
+
+/* Reusable buttons */
+.app-button {
+    -fx-background-color: -fx-primary-color;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 6px 14px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.app-button:hover {
+    -fx-background-color: -fx-accent-color;
+}
+
+.menu-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a5b2c1;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: infinity;
+}
+
+.menu-btn:hover {
+    -fx-background-color: #2c3b4c;
+    -fx-text-fill: white;
+}
+
+.credit-row .credit-role-label {
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-style: italic;
+}
+/* ==========================================================================
+   DASHBOARD STAT CARDS
+   ========================================================================== */
+.stat-card {
+    -fx-background-color: -fx-card-bg;
+    -fx-padding: 20px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 4);
+    -fx-spacing: 5px;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-weight: bold;
+}
+
+.stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-color;
+}
+
+.stat-lent { -fx-text-fill: #f0ad4e; }
+.stat-lost { -fx-text-fill: -fx-error-color; }
+
+/* ==========================================================================
+   DATA TABLES (AUTOMATIC COLUMN ALIGNMENTS)
+   ========================================================================== */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+}
+
+.left-aligned-column .table-cell {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.centered-column .table-cell {
+    -fx-alignment: CENTER;
+}
+
+.right-aligned-column .table-cell {
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* ==========================================================================
+   TableView Column Alignment Rules
+   ========================================================================== */
+
+/* Left Aligned Columns (Data Cells + Header Text) */
+.table-cell.left-aligned-column {
+    -fx-alignment: center-left;
+}
+.column-header.left-aligned-column .label {
+    -fx-alignment: center-left;
+}
+
+/* Right Aligned Columns (Data Cells + Header Text) */
+.table-cell.right-aligned-column {
+    -fx-alignment: center-right;
+}
+.column-header.right-aligned-column .label {
+    -fx-alignment: center-right;
+}
+
+/* Center Aligned Columns (Highly Recommended for Dates) */
+.table-cell.center-aligned-column {
+    -fx-alignment: center;
+}
+.column-header.center-aligned-column .label {
+    -fx-alignment: center;
+}
+
+/* ==========================================================================
+   CONTROLSFX RATING Button
+   ========================================================================== */
+.rating .button {
+    -fx-cursor: hand;
+}
+
+/* ==========================================================================
+   Badges & Chips (Small frame + color variants)
+   ========================================================================== */
+.tag-badge {
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-border-width: 1px;
+    -fx-background-color: -fx-badge-color;
+}
+
+/* ==========================================================================
+   REMOVE DOUBLE FRAME
+   ========================================================================== */
+.searchable-combo-box {
+    -fx-padding: 0px;
+}
+
+.date-picker {
+    -fx-padding: 0px;
+}

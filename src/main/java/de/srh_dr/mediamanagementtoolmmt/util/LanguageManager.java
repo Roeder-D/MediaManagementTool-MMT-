@@ -1,5 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.util;
 
+import javafx.scene.control.Alert;
+
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -19,7 +21,14 @@ public class LanguageManager {
     }
 
     private static Locale init(){
-        String languageSetting = ConfigManager.getAppLanguage();
+        String languageSetting;
+        try {
+            languageSetting = ConfigManager.getAppLanguage();
+        }catch (Exception e){
+            System.err.println("Failed to load language settings: " + e.getMessage());
+            languageSetting = "default";
+        }
+
         Locale locale;
         if(languageSetting.isEmpty() || languageSetting.equalsIgnoreCase("default")){
             locale = Locale.getDefault();

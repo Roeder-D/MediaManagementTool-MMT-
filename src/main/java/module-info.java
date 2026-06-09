@@ -16,6 +16,7 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires org.apache.httpcomponents.core5.httpcore5;
     requires java.management;
     requires java.prefs;
+    requires jdk.compiler;
 
     exports de.srh_dr.mediamanagementtoolmmt.app;
     opens de.srh_dr.mediamanagementtoolmmt.app to javafx.fxml;

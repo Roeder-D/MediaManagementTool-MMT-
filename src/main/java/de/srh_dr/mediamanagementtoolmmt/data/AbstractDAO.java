@@ -25,7 +25,6 @@ public abstract class AbstractDAO<T> {
             }
         } catch (SQLException e) {
             System.err.println("Error fetching from " + getTableName());
-            e.printStackTrace();
         }
         return items;
     }
@@ -41,7 +40,7 @@ public abstract class AbstractDAO<T> {
                 if (rs.next()) return mapResultSet(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error fetching from " + getTableName());
         }
         return null;
     }

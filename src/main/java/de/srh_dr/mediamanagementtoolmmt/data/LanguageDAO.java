@@ -48,7 +48,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
             language.clearChangeTracking();
 
         }catch(SQLException e){
-            e.printStackTrace();
+            System.err.println("Error saving language " + language.getLanguage());
         }
     }
 
@@ -69,7 +69,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
             language.clearChangeTracking();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error updating language " + language.getLanguage());
         }
     }
 

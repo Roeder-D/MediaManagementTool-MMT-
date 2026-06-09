@@ -12,7 +12,7 @@ CREATE TABLE tag(
 CREATE TABLE series(
                        series_id			INTEGER			PRIMARY KEY AUTO_INCREMENT,
                        series_name			VARCHAR(350),
-                       number_of_titles	    INTEGER,
+                       number_of_titles	INTEGER,
                        start_year			YEAR
 );
 
@@ -23,14 +23,14 @@ CREATE TABLE media_type(
 
 CREATE TABLE publisher(
                           publisher_id		INTEGER			PRIMARY KEY AUTO_INCREMENT,
-                          publisher_name	VARCHAR(50)		UNIQUE
+                          publisher_name		VARCHAR(50)		UNIQUE
 );
 
 CREATE TABLE artist(
                        artist_id			INTEGER			PRIMARY KEY AUTO_INCREMENT,
                        first_name			VARCHAR(50),
                        last_name			VARCHAR(50),
-                       alias                VARCHAR(50),
+                       alias               VARCHAR(50),
                        nationality			VARCHAR(50)
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE lendee(
                        first_name			VARCHAR(50),
                        last_name			VARCHAR(50),
                        alias				VARCHAR(50),
-                       last_active_date 	DATE 			DEFAULT (CURRENT_DATE)
+                       last_active_date 	DATE 			DEFAULT(CURRENT_DATE)
 );
 
 CREATE TABLE language(
@@ -197,8 +197,8 @@ SELECT
     m.status,
     t.type_name
 FROM media AS m
-        LEFT JOIN publisher AS p ON m.publisher_id = p.publisher_id
-        LEFT JOIN media_type AS t ON m.media_type_id = t.media_type_id;
+         LEFT JOIN publisher AS p ON m.publisher_id = p.publisher_id
+         LEFT JOIN media_type AS t ON m.media_type_id = t.media_type_id;
 
 CREATE VIEW v_lending_dashboard AS
 SELECT DISTINCT
@@ -233,6 +233,7 @@ SELECT
 FROM media AS m
          RIGHT JOIN media_type AS mt ON m.media_type_id = mt.media_type_id
 GROUP BY mt.media_type_id, mt.type_name;
+
 
 # triggers & events
 SET GLOBAL event_scheduler = ON;
@@ -335,23 +336,31 @@ END IF;
 END;//
 
 # optimizing title-search performance
-# ai = after insert		au= after update
-                                             CREATE TRIGGER trg_media_ai_insert_search
-                                             AFTER INSERT ON media
-                                             FOR EACH ROW
+# bi = before insert		bu= before update
+                                               CREATE TRIGGER trg_media_bi_insert_search
+                                               BEFORE INSERT ON media
+                                               FOR EACH ROW
 BEGIN
-CALL sp_update_title_search(NEW.media_id);
+	SET NEW.title_search = CONCAT_WS(' ',
+        NEW.title,
+        NEW.original_title,
+        (SELECT s.series_name FROM series AS s WHERE s.series_id = NEW.series_id)
+    );
 END;//
 
-CREATE TRIGGER trg_media_au_update_search
-    AFTER UPDATE ON media
+CREATE TRIGGER trg_media_bu_update_search
+    BEFORE UPDATE ON media
     FOR EACH ROW
 BEGIN
-    IF NOT OLD.title <=> NEW.title
-		OR NOT (OLD.original_title <=> NEW.original_title)
-		OR NOT (OLD.refresh_t_s <=> NEW.refresh_t_s) THEN
-		CALL sp_update_title_search(NEW.media_id);
-END IF;
+    SET NEW.title_search = CONCAT_WS(' ',
+        NEW.title,
+        NEW.original_title,
+        (SELECT s.series_name FROM series AS s WHERE s.series_id = NEW.series_id),
+        (SELECT GROUP_CONCAT(a.title SEPARATOR ' ')
+         FROM alt_title AS a
+         WHERE a.series_id = NEW.series_id
+            OR a.franchise_id IN (SELECT franchise_id FROM media_franchise WHERE media_id = NEW.media_id))
+    );
 END;//
 
 

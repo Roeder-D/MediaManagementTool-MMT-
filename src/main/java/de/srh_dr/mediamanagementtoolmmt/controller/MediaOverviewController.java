@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.MediaOverviewDAO;
 import de.srh_dr.mediamanagementtoolmmt.model.MediaOverview;
+import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import de.srh_dr.mediamanagementtoolmmt.viewmodel.FilterOption;
@@ -10,12 +11,17 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
+import org.controlsfx.control.SearchableComboBox;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MediaOverviewController implements MainControllerAware {
+    @FXML private VBox viewContainer;
     @FXML private TableView<MediaOverview> mediaTable;
     @FXML private TableColumn<MediaOverview, String> titleCol;
     @FXML private TableColumn<MediaOverview, String> typeCol;
@@ -23,8 +29,9 @@ public class MediaOverviewController implements MainControllerAware {
     @FXML private TableColumn<MediaOverview, String> publisherCol;
     @FXML private TableColumn<MediaOverview, String> availableCol;
     @FXML private TextField searchField;
-    @FXML private ComboBox<FilterOption> filterStatusComboBox;
-    @FXML private ComboBox<String> filterMediaTypeComboBox;
+    @FXML private SearchableComboBox<FilterOption> filterStatusComboBox;
+    @FXML private SearchableComboBox<String> filterMediaTypeComboBox;
+    @FXML private SearchableComboBox<String> filterTagComboBox;
 
 
     private MainController mainController;
@@ -46,8 +53,6 @@ public class MediaOverviewController implements MainControllerAware {
         filterStatusComboBox.getItems().add(new FilterOption(LanguageManager.getString("ui.LOST"), "LOST"));
         filterStatusComboBox.getSelectionModel().select(0);
 
-        setMediaTypes();
-
         titleCol.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
         typeCol.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
         releaseDateCol.setCellValueFactory(cellData -> cellData.getValue().releaseDateProperty());
@@ -62,7 +67,7 @@ public class MediaOverviewController implements MainControllerAware {
                     MediaOverview clickedRow = row.getItem();
                     if(mainController != null) {
                         mainController.showMediaDetail(clickedRow.getMediaId());
-                    };
+                    }
                 }
             });
             return row;
@@ -76,10 +81,16 @@ public class MediaOverviewController implements MainControllerAware {
         try{
            var dataList = mediaOverviewDAO.getMediaOverview();
            mediaOverviews.setAll(dataList);
+            setMediaTypes();
+            setTags();
             filteredMediaOverviews = new FilteredList<>(mediaOverviews, p -> true);
            mediaTable.setItems(filteredMediaOverviews);
         }catch(SQLException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("error.failedToLoad"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("error.failedToLoad"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -97,11 +108,29 @@ public class MediaOverviewController implements MainControllerAware {
         filterMediaTypeComboBox.getSelectionModel().select(0);
     }
 
+    private void setTags(){
+        List<String> tagList = new ArrayList<>();
+
+        for(MediaOverview mediaOverview : mediaOverviews){
+            for(String tag : mediaOverview.getTags()){
+                if(!tagList.contains(tag)){
+                    tagList.add(tag);
+                }
+            }
+        }
+        filterTagComboBox.getItems().clear();
+        filterTagComboBox.getItems().add(LanguageManager.getString("ui.All"));
+        filterTagComboBox.getItems().addAll(tagList);
+        filterTagComboBox.getSelectionModel().select(0);
+
+    }
+
     @FXML
     public void applyFilter() {
         String searchText = searchField.getText();
         FilterOption selectedStatus = filterStatusComboBox.getSelectionModel().getSelectedItem();
         String selectedMediaType = filterMediaTypeComboBox.getSelectionModel().getSelectedItem();
+        String selectedTag = filterTagComboBox.getSelectionModel().getSelectedItem();
 
         filteredMediaOverviews.setPredicate(media -> {
             if(!searchText.isEmpty()) {
@@ -111,6 +140,13 @@ public class MediaOverviewController implements MainControllerAware {
                     return false;
                 }
             }
+
+            if(selectedTag != null && !selectedTag.equals(LanguageManager.getString("ui.All"))){
+                if(!media.getTags().contains(selectedTag)){
+                    return false;
+                }
+            }
+
             if(selectedStatus != null && !selectedStatus.getInternalValue().equals("ALL")){
                 if(!media.getStatus().equals(selectedStatus.getInternalValue())){
                     return false;
@@ -118,11 +154,18 @@ public class MediaOverviewController implements MainControllerAware {
             }
 
             if(selectedMediaType != null && !selectedMediaType.equals(LanguageManager.getString("ui.All"))) {
-                return media.getType().equalsIgnoreCase(selectedMediaType);
+                if(!media.getType().equalsIgnoreCase(selectedMediaType)) {
+                    return false;
+                }
             }
             return true;
         });
     }
 
-
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
+    }
 }

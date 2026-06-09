@@ -11,11 +11,14 @@ import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
 import java.util.List;
 
 public class ArtistOverviewController implements MainControllerAware{
+    @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private SearchableComboBox<String> nationalityFilterComboBox;
     @FXML private TableView<Artist> artistTable;
@@ -106,10 +109,10 @@ public class ArtistOverviewController implements MainControllerAware{
         gridPane.setVgap(10);
 
         TextField firstNameField = new TextField();
-        firstNameField.setPromptText(LanguageManager.getString("ui.first_name"));
+        firstNameField.setPromptText(LanguageManager.getString("ui.firstName"));
         firstNameField.setText(selectedArtist.getFirstName() != null ? selectedArtist.getFirstName() : "");
         TextField lastNameField = new TextField();
-        lastNameField.setPromptText(LanguageManager.getString("ui.last_name"));
+        lastNameField.setPromptText(LanguageManager.getString("ui.lastName"));
         lastNameField.setText(selectedArtist.getLastName() != null ? selectedArtist.getLastName() : "");
         TextField aliasField = new TextField();
         aliasField.setPromptText(LanguageManager.getString("ui.alias"));
@@ -118,9 +121,9 @@ public class ArtistOverviewController implements MainControllerAware{
         nationalityField.setPromptText(LanguageManager.getString("ui.nationality"));
         nationalityField.setText(selectedArtist.getNationality() != null ? selectedArtist.getNationality() : "");
 
-        gridPane.add(new Label(LanguageManager.getString("ui.first_name")), 0, 0);
+        gridPane.add(new Label(LanguageManager.getString("ui.firstName")), 0, 0);
         gridPane.add(firstNameField, 1, 0);
-        gridPane.add(new Label(LanguageManager.getString("ui.last_name")), 0, 1);
+        gridPane.add(new Label(LanguageManager.getString("ui.lastName")), 0, 1);
         gridPane.add(lastNameField, 1, 1);
         gridPane.add(new Label(LanguageManager.getString("ui.alias")), 0, 2);
         gridPane.add(aliasField, 1, 2);
@@ -139,19 +142,20 @@ public class ArtistOverviewController implements MainControllerAware{
                 try{
                     artistDAO.save(selectedArtist);
                 }catch(Exception e){
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"),LanguageManager.getString("error.failedToSave") + e.getMessage());
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"),LanguageManager.getString("error.failedToSave") + e.getMessage(), getWindow());
                 }
                 return null;
             }else if(dialogButton == deleteButtonType) {
                 boolean confirmDelete = AlertManager.requestConfirmation(
                         LanguageManager.getString("ui.warning"),
-                        LanguageManager.getString("warning.confirmDeleteArtist"));
+                        LanguageManager.getString("warning.confirmDeleteArtist"),
+                        getWindow());
 
                 if(confirmDelete) {
                     try {
                         artistDAO.delete(selectedArtist.getId());
                     }catch(Exception e){
-                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+                        AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                     }
                 }
             }
@@ -168,5 +172,12 @@ public class ArtistOverviewController implements MainControllerAware{
         nationalityFilterComboBox.getItems().clear();
         nationalityFilterComboBox.getItems().add(LanguageManager.getString("ui.selectNationality"));
         nationalityFilterComboBox.getItems().addAll(allNationalities);
+    }
+
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

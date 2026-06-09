@@ -18,6 +18,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -36,8 +38,7 @@ public class MainController {
     }
 
     // HUD
-    @FXML
-    private BorderPane mainBorderPane;
+    @FXML private BorderPane viewContainer;
 
     // Menu
     @FXML
@@ -58,7 +59,12 @@ public class MainController {
         langCombo.getSelectionModel().select(0);
 
         //set to current language
-        String currentLanguage = ConfigManager.getAppLanguage();
+        String currentLanguage = "default";
+        try {
+            currentLanguage = ConfigManager.getAppLanguage();
+        }catch (Exception e){
+            System.err.println("Error while loading language : " + e.getMessage());
+        }
         for(FilterOption filterOption : langCombo.getItems()){
             if( filterOption.getInternalValue().equals(currentLanguage)){
                 langCombo.getSelectionModel().select(filterOption);
@@ -77,8 +83,16 @@ public class MainController {
         languageDialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 String newLanguage = langCombo.getValue().getInternalValue();
-                ConfigManager.setProperty("APP_LANGUAGE", newLanguage);
-
+                try {
+                    ConfigManager.setProperty("APP_LANGUAGE", newLanguage);
+                }catch (Exception e){
+                    AlertManager.showAlert(
+                            Alert.AlertType.ERROR,
+                            LanguageManager.getString("ui.error"),
+                            LanguageManager.getString("error.failedToSave") + e.getMessage(),
+                            getWindow()
+                    );
+                }
                 //Trigger UI reload
                 LanguageManager.setLanguage(newLanguage);
                 reloadApplicationUI();
@@ -99,74 +113,93 @@ public class MainController {
         VBox container = new VBox(10);
         Label isbnLabel = new Label(LanguageManager.getString("ui.settings.isbnType.text"));
 
-        ObservableList<String> values = FXCollections.observableArrayList(ConfigManager.getISBNEnabledMediaTypes());
-        TableView<String> isbnTypeTable = new TableView<>(values);
-        isbnTypeTable.setEditable(true);
-        isbnTypeTable.setPrefHeight(200);
+        try {
+            ObservableList<String> values = FXCollections.observableArrayList(ConfigManager.getISBNEnabledMediaTypes());
 
-        TableColumn<String, String> typeCol = new TableColumn<>(LanguageManager.getString("ui.settings.isbnType.text"));
-        typeCol.setPrefWidth(250);
+            TableView<String> isbnTypeTable = new TableView<>(values);
+            isbnTypeTable.setEditable(true);
+            isbnTypeTable.setPrefHeight(200);
 
-        typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        typeCol.setOnEditCommit(event -> {
-            values.set(event.getTablePosition().getRow(), event.getNewValue());
-        });
+            TableColumn<String, String> typeCol = new TableColumn<>(LanguageManager.getString("ui.settings.isbnType.text"));
+            typeCol.setPrefWidth(250);
 
-        TableColumn<String, Void> deleteCol = new TableColumn<>(LanguageManager.getString("ui.delete"));
-        deleteCol.setPrefWidth(60);
+            typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+            typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
+            typeCol.setOnEditCommit(event -> {
+                values.set(event.getTablePosition().getRow(), event.getNewValue());
+            });
 
-        deleteCol.setCellFactory(param -> new TableCell<String, Void>() {
-            private final Button deleteBtn = new  Button(LanguageManager.getString("ui.delete"));
+            TableColumn<String, Void> deleteCol = new TableColumn<>(LanguageManager.getString("ui.delete"));
+            deleteCol.setPrefWidth(60);
 
-            {
-                deleteBtn.setOnAction(event -> {
-                    String item = getTableView().getItems().get(getIndex());
-                    values.remove(item);
-                });
-            }
+            deleteCol.setCellFactory(param -> new TableCell<String, Void>() {
+                private final Button deleteBtn = new Button(LanguageManager.getString("ui.delete"));
 
-            @Override
-            public void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if(empty) {
-                    setGraphic(null);
-                }else{
-                    setGraphic(deleteBtn);
+                {
+                    deleteBtn.setOnAction(event -> {
+                        String item = getTableView().getItems().get(getIndex());
+                        values.remove(item);
+                    });
                 }
-            }
-        });
 
-        isbnTypeTable.getColumns().add(typeCol);
-        isbnTypeTable.getColumns().add(deleteCol);
+                @Override
+                public void updateItem(Void item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        setGraphic(deleteBtn);
+                    }
+                }
+            });
 
-        HBox controlBar  = new HBox(10);
+            isbnTypeTable.getColumns().add(typeCol);
+            isbnTypeTable.getColumns().add(deleteCol);
 
-        TextField inputField = new TextField();
-        Button addBtn = new Button(LanguageManager.getString("ui.add"));
+            HBox controlBar = new HBox(10);
 
-        addBtn.setOnAction(event -> {
-            if(!inputField.getText().isEmpty() && values.stream().noneMatch(value -> value.equalsIgnoreCase(inputField.getText().trim()))) {
-                isbnTypeTable.getItems().add(inputField.getText().trim());
-            }
-        });
+            TextField inputField = new TextField();
+            Button addBtn = new Button(LanguageManager.getString("ui.add"));
 
-        controlBar.getChildren().addAll(inputField, addBtn);
-        container.getChildren().addAll( isbnLabel,isbnTypeTable, controlBar);
+            addBtn.setOnAction(event -> {
+                if (!inputField.getText().isEmpty() && values.stream().noneMatch(value -> value.equalsIgnoreCase(inputField.getText().trim()))) {
+                    isbnTypeTable.getItems().add(inputField.getText().trim());
+                }
+            });
 
-        isbnDialog.getDialogPane().setContent(container);
+            controlBar.getChildren().addAll(inputField, addBtn);
+            container.getChildren().addAll(isbnLabel, isbnTypeTable, controlBar);
 
-        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
-        isbnDialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+            isbnDialog.getDialogPane().setContent(container);
 
-        isbnDialog.setResultConverter(dialogButton -> {
-            if(dialogButton == saveButtonType) {
-                String isbnString = String.join(", ", values);
-                ConfigManager.setProperty("APP_ISBN_MEDIA_TYPES", isbnString);
-            }
-            return null;
-        });
-        isbnDialog.showAndWait();
+            ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
+            isbnDialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+            isbnDialog.setResultConverter(dialogButton -> {
+                if (dialogButton == saveButtonType) {
+                    String isbnString = String.join(", ", values);
+                    try {
+                        ConfigManager.setProperty("APP_ISBN_MEDIA_TYPES", isbnString);
+                    }catch (Exception e){
+                        AlertManager.showAlert(
+                                Alert.AlertType.ERROR,
+                                LanguageManager.getString("ui.error"),
+                                LanguageManager.getString("error.failedToSave" + e.getMessage()),
+                                getWindow());
+                    }
+
+                }
+                return null;
+            });
+            isbnDialog.showAndWait();
+        } catch (Exception e) {
+           AlertManager.showAlert(
+                   Alert.AlertType.ERROR,
+                   LanguageManager.getString("ui.error"),
+                   LanguageManager.getString("error.failedToLoad") + e.getMessage(),
+                   getWindow()
+           );
+        }
     }
 
 // TODO: implement db / api settings
@@ -182,15 +215,16 @@ public class MainController {
             Node view = loader.load();
 
             DefaultViewController defaultViewController = loader.getController();
-            if(defaultViewController != null){
-                defaultViewController.setMainController(this);
-            }
             currentView = ViewState.DEFAULT_VIEW;
             currentPramId = -1;
             lendingParam = false;
-            mainBorderPane.setCenter(view);
+            viewContainer.setCenter(view);
         }catch(IOException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ui.error"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
     @FXML
@@ -261,9 +295,13 @@ public class MainController {
                 ((MainControllerAware) controller).setMainController(this);
             }
 
-            mainBorderPane.setCenter(view);
+            viewContainer.setCenter(view);
         }catch(IOException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ConfigManager.failedToLoad"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ConfigManager.failedToLoad"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -284,9 +322,13 @@ public class MainController {
             currentView = ViewState.MEDIA_DETAIL;
             currentPramId = mediaId;
             lendingParam = false;
-            mainBorderPane.setCenter(view);
+            viewContainer.setCenter(view);
         }catch(IOException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ConfigManager.failedToLoad"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ConfigManager.failedToLoad"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -309,10 +351,14 @@ public class MainController {
                 currentView = ViewState.MEDIA_FORM;
                 currentPramId = mediaId;
                 lendingParam = false;
-                mainBorderPane.setCenter(view);
+                viewContainer.setCenter(view);
             }
         }catch(IOException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ui.error"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
 
@@ -333,15 +379,19 @@ public class MainController {
             currentView = ViewState.LENDING_DETAIL_VIEW;
             currentPramId = id;
             lendingParam = true;
-            mainBorderPane.setCenter(view);
+            viewContainer.setCenter(view);
         }catch(IOException e){
-            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage());
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    LanguageManager.getString("ui.error"),
+                    e.getMessage(),
+                    getWindow());
         }
     }
 
     private void reloadApplicationUI() {
         try {
-            Stage stage = (Stage) mainBorderPane.getScene().getWindow();
+            Stage stage = (Stage) getWindow();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/de/srh_dr/mediamanagementtoolmmt/view/Main_Shell.fxml"));
             loader.setResources(LanguageManager.getBundle());
@@ -353,7 +403,11 @@ public class MainController {
 
             stage.getScene().setRoot(newRoot);
         } catch (IOException e) {
-            AlertManager.showAlert(Alert.AlertType.ERROR, "UI Error", "Failed to reload language.");
+            AlertManager.showAlert(
+                    Alert.AlertType.ERROR,
+                    "UI Error",
+                    "Failed to reload language.",
+                    getWindow());
         }
     }
 
@@ -372,4 +426,10 @@ public class MainController {
         }
     }
 
+    public Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
+    }
 }
