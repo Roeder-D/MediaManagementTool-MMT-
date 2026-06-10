@@ -4,6 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.model.Lendee;
 import de.srh_dr.mediamanagementtoolmmt.model.Lending;
 import de.srh_dr.mediamanagementtoolmmt.model.LendingDashboardItem;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;

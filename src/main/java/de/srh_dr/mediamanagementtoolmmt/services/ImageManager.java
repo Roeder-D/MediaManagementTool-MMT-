@@ -1,4 +1,4 @@
-package de.srh_dr.mediamanagementtoolmmt.util;
+package de.srh_dr.mediamanagementtoolmmt.services;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.hc.core5.http.ContentType;

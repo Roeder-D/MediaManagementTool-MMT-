@@ -1,5 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

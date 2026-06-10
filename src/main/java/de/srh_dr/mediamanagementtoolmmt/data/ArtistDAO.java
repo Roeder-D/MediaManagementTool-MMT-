@@ -1,6 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
@@ -62,7 +63,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
         }
     }
 
-    // READ (nationalities)
+    // READ
     public List<String> getAllNationalities() {
         String sql = "SELECT DISTINCT nationality FROM artist WHERE nationality IS NOT NULL AND nationality != '' ORDER BY nationality ASC";
         List<String> nationalities = new ArrayList<>();
@@ -76,6 +77,22 @@ public class ArtistDAO extends AbstractDAO<Artist> {
             System.err.println("Error getting all nationalities from " + getTableName());
         }
         return nationalities;
+    }
+
+    public Artist findByFullName(String firstName, String lastName) {
+        String sql = "SELECT * FROM artist WHERE first_name = ? AND last_name = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, firstName);
+            stmt.setString(2, lastName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return mapResultSet(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error looking up artist: " + firstName + " " + lastName);
+        }
+        return null;
     }
 
     // UPDATE

@@ -1,4 +1,4 @@
-package de.srh_dr.mediamanagementtoolmmt.data;
+package de.srh_dr.mediamanagementtoolmmt.services;
 
 import io.github.cdimascio.dotenv.Dotenv;
 

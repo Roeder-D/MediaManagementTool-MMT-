@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.SQLException;

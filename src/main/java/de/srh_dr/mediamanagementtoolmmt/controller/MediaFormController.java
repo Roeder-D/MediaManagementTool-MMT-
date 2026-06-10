@@ -2,8 +2,9 @@ package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.*;
 import de.srh_dr.mediamanagementtoolmmt.model.*;
+import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
-import de.srh_dr.mediamanagementtoolmmt.util.ImageManager;
+import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -49,16 +50,17 @@ public class MediaFormController implements MainControllerAware{
     @FXML private VBox tagContainer;
 
     // DAOs
-    PublisherDAO publisherDAO = new PublisherDAO();
-    GenreDAO genreDAO = new GenreDAO();
-    ArtistDAO artistDAO = new ArtistDAO();
-    ArtistRoleDAO artistRoleDAO = new ArtistRoleDAO();
-    TagDAO tagDAO = new TagDAO();
-    FranchiseDAO franchiseDAO = new FranchiseDAO();
-    MediaTypeDAO  mediaTypeDAO = new MediaTypeDAO();
-    SeriesDAO seriesDAO = new SeriesDAO();
-    LanguageDAO languageDAO = new LanguageDAO();
-    MediaDAO mediaDAO = new MediaDAO();
+    private final PublisherDAO publisherDAO = new PublisherDAO();
+    private final GenreDAO genreDAO = new GenreDAO();
+    private final ArtistDAO artistDAO = new ArtistDAO();
+    private final ArtistRoleDAO artistRoleDAO = new ArtistRoleDAO();
+    private final TagDAO tagDAO = new TagDAO();
+    private final FranchiseDAO franchiseDAO = new FranchiseDAO();
+    private final MediaTypeDAO  mediaTypeDAO = new MediaTypeDAO();
+    private final SeriesDAO seriesDAO = new SeriesDAO();
+    private final LanguageDAO languageDAO = new LanguageDAO();
+    private final MediaDAO mediaDAO = new MediaDAO();
+    private final MediaIntegrationFacade mediaIntegrationFacade = new  MediaIntegrationFacade();
 
     MainController mainController;
     ImageManager imageManager = new ImageManager();
@@ -825,7 +827,7 @@ public class MediaFormController implements MainControllerAware{
                         .seriesOrder(seriesOrder)
                         .build();
 
-                mediaDAO.save(newMedia);
+                mediaIntegrationFacade.persistConfirmedBook(newMedia);
             }else{ //existing item
                 currentMedia.setIsbn(isbnField.getText().trim());
                 currentMedia.setTitle(titleField.getText().trim());
@@ -844,7 +846,7 @@ public class MediaFormController implements MainControllerAware{
                 syncList(currentMedia.getTags(), selectedTags, currentMedia::removeTag, currentMedia::addTag);
                 syncList(currentMedia.getFranchises(), selectedFranchises, currentMedia::removeFranchise, currentMedia::addFranchise);
 
-                mediaDAO.save(currentMedia);
+                mediaDAO.save(currentMedia); // Don't allow API-Search on existing Media
             }
         }catch(Exception e){
             System.err.println("Failed to save Media: " + e.getMessage());

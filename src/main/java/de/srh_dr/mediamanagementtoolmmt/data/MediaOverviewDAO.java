@@ -1,6 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.MediaOverview;
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,8 +21,8 @@ public class MediaOverviewDAO {
                 "FROM v_media_overview v";
 
         try(Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
 
             while(rs.next()) {
                 int mediaId = rs.getInt("media_id");

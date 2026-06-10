@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
 import de.srh_dr.mediamanagementtoolmmt.model.Series;
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;

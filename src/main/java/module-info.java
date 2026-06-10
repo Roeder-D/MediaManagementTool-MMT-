@@ -17,6 +17,7 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires java.management;
     requires java.prefs;
     requires jdk.compiler;
+    requires com.fasterxml.jackson.databind;
 
     exports de.srh_dr.mediamanagementtoolmmt.app;
     opens de.srh_dr.mediamanagementtoolmmt.app to javafx.fxml;
@@ -24,4 +25,8 @@ module de.srh_dr.mediamanagementtoolmmt {
     opens de.srh_dr.mediamanagementtoolmmt.controller to javafx.fxml;
     exports de.srh_dr.mediamanagementtoolmmt.util;
     opens de.srh_dr.mediamanagementtoolmmt.util to javafx.fxml;
+    exports de.srh_dr.mediamanagementtoolmmt.services;
+    opens de.srh_dr.mediamanagementtoolmmt.services to javafx.fxml;
+    exports de.srh_dr.mediamanagementtoolmmt.dto;
+    exports de.srh_dr.mediamanagementtoolmmt.model;
 }

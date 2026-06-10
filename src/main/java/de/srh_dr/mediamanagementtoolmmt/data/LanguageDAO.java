@@ -1,6 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
@@ -26,6 +27,22 @@ public class LanguageDAO extends AbstractDAO<Language> {
         } else {
             update(language);
         }
+    }
+
+    // READ
+    public Language findByName(String name) {
+        String sql = "SELECT * FROM language WHERE language = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return mapResultSet(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error looking up language by name: " + name);
+        }
+        return null;
     }
 
     // CREATE
@@ -57,7 +74,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
         if (language.isNewItem()) return;
         if (!language.isDirty()) return;
 
-        String sql = "UPDATE tag SET language = ? WHERE language_id = ?";
+        String sql = "UPDATE language SET language = ? WHERE language_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
