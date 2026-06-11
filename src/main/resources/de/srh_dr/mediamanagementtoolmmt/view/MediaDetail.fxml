@@ -47,8 +47,10 @@
                     <Label fx:id="isbnField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                     <Label text="%ui.series" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                    <Label fx:id="seriesField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                    <Label fx:id="seriesOrderField" prefWidth="60.0" GridPane.rowIndex="2"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <Label fx:id="seriesField" text="-"/>
+                    <Label fx:id="seriesOrderField" prefWidth="60.0" />
+                    </HBox>
 
                     <Label text="%ui.franchise" styleClass="field-label" GridPane.valignment="TOP" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                     <FlowPane fx:id="franchiseContainer" hgap="6" vgap="6" GridPane.columnIndex="1" GridPane.rowIndex="3" />

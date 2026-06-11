@@ -32,6 +32,8 @@ public class MainController {
     private int currentPramId = -1;
     private boolean lendingParam = false;
 
+
+
     @FXML
     private void initialize(){
         showDefaultView();
@@ -236,10 +238,7 @@ public class MainController {
     }
     @FXML
     void showAddMedia() {
-        currentView = ViewState.MEDIA_FORM;
-        currentPramId = -1;
-        lendingParam = false;
-        loadView("/de/srh_dr/mediamanagementtoolmmt/view/MediaForm.fxml");
+        showMediaFormView(0);
     }
     @FXML
     void showArtists() {
@@ -346,6 +345,8 @@ public class MainController {
 
                 if(mediaId > 0){
                     formController.loadMedia(mediaId);
+                }else{
+                    formController.refresh();
                 }
 
                 currentView = ViewState.MEDIA_FORM;

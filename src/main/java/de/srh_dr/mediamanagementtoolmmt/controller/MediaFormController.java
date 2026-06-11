@@ -1,6 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.*;
+import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.*;
 import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
@@ -19,6 +20,8 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import javafx.util.converter.LocalDateStringConverter;
+import javafx.util.converter.LocalDateTimeStringConverter;
 import org.controlsfx.control.Rating;
 import org.controlsfx.control.SearchableComboBox;
 
@@ -48,6 +51,8 @@ public class MediaFormController implements MainControllerAware{
     @FXML private TextField seriesOrderField;
     @FXML private VBox franchiseContainer;
     @FXML private VBox tagContainer;
+    @FXML private Button api_search_isbn_button;
+    @FXML private Button api_search_title_button;
 
     // DAOs
     private final PublisherDAO publisherDAO = new PublisherDAO();
@@ -65,6 +70,7 @@ public class MediaFormController implements MainControllerAware{
     MainController mainController;
     ImageManager imageManager = new ImageManager();
     private File selectedCoverImage;
+    private String remoteCoverUrl;
 
     Media currentMedia;
     private List<Genre> allGenres;
@@ -105,6 +111,9 @@ public class MediaFormController implements MainControllerAware{
     }
 
     public void loadMedia(int mediaId){
+        this.selectedCoverImage = null;
+        this.remoteCoverUrl = null;
+
         if(mediaId != 0){
             try{
                 Media media = mediaDAO.read(mediaId);
@@ -177,6 +186,14 @@ public class MediaFormController implements MainControllerAware{
                     seriesOrderField.setText("");
                 }
 
+                displayImage();
+
+                if(currentMedia != null) {
+                    api_search_isbn_button.setVisible(false);
+                    api_search_isbn_button.setManaged(false);
+                    api_search_title_button.setVisible(false);
+                    api_search_title_button.setManaged(false);
+                }
             }catch(Exception e){
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage(), getWindow());
             }
@@ -729,6 +746,145 @@ public class MediaFormController implements MainControllerAware{
     }
 
     @FXML
+    private void handleSearchRemoteByIsbn(){
+        String isbn = isbnField.getText().trim();
+
+        if(isbn.isEmpty() || isbn.length() != 10 && isbn.length() != 13){
+            AlertManager.showAlert(Alert.AlertType.INFORMATION, LanguageManager.getString("ui.info"), LanguageManager.getString("ui.invalidIsbn"), getWindow());
+            return;
+        }
+
+        ExternalMediaSearchResult result = mediaIntegrationFacade.fetchAndSyncBookIsbn(isbn);
+        if (result == null) {
+            AlertManager.showAlert(Alert.AlertType.INFORMATION,
+                    LanguageManager.getString("ui.info"),
+                    LanguageManager.getString("ui.noIsbnFound"),
+                    getWindow());
+            return;
+        }
+
+
+        LocalDate releaseDate = parseDate(result.releaseDate());
+
+        isbnField.setText(result.remoteId());
+        titleField.setText(result.title());
+        releaseDateField.setValue(releaseDate);
+        descriptionArea.setText(result.description());
+
+        if(!allPublishers.contains(result.publisher())){
+            allPublishers.add(result.publisher());
+            publisherComboBox.getItems().add(result.publisher());
+        }
+        publisherComboBox.setValue(result.publisher());
+
+        artistContainer.getChildren().clear();
+        for(Artist artist : result.artists()){
+            MediaArtist partialCredit = new MediaArtist(artist, null, true);
+            addMediaArtistRow(partialCredit);
+        }
+
+        languageContainer.getChildren().clear();
+        for(Language language : result.languages()){
+            if(!allLanguages.contains(language)){
+                allLanguages.add(language);
+            }
+            addDynamicDropdownRow(languageContainer, allLanguages, language, null);
+        }
+
+        this.remoteCoverUrl = result.imageUrl();
+        displayImage();
+    }
+
+    @FXML
+    private void handleSearchRemoteByTitle(){
+        String searchText = titleField.getText().trim();
+        if(searchText.isEmpty()){
+            AlertManager.showAlert(Alert.AlertType.INFORMATION, LanguageManager.getString("ui.info"), LanguageManager.getString("ui.titleEmpty"), getWindow());
+            return;
+        }
+
+        List<ExternalMediaSearchResult> results = mediaIntegrationFacade.fetchAndSyncBookTitle(searchText);
+        ExternalMediaSearchResult selectedResult;
+        if(results == null ||results.isEmpty()){
+            return;
+        }
+        if(results.size() == 1){
+            selectedResult = results.getFirst();
+        }else {
+
+            //Dialog
+            Dialog<ExternalMediaSearchResult> dialog = new Dialog<>();
+            dialog.setTitle(LanguageManager.getString("ui.selectOnlineResult"));
+            dialog.setHeaderText(LanguageManager.getString("ui.multipleOnlineResults"));
+            dialog.initOwner(getWindow());
+
+            ListView<ExternalMediaSearchResult> listView = new ListView<>();
+            listView.getItems().addAll(results);
+            listView.setPrefWidth(500);
+            listView.setPrefHeight(250);
+
+            dialog.getDialogPane().setContent(listView);
+
+            listView.setCellFactory(param -> new ListCell<>(){
+                @Override
+                protected void updateItem(ExternalMediaSearchResult item, boolean empty){
+                    super.updateItem(item, empty);
+                    if(empty || item == null){
+                        setText(null);
+                    }else{
+                        setText(item.title() + " " + item.publisher() + " " + item.releaseDate());
+                    }
+                }
+            });
+
+            ButtonType importButtonType = new ButtonType(LanguageManager.getString("ui.buttonImport"), ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
+
+            dialog.setResultConverter(clickedButton -> {
+                if(clickedButton == importButtonType){
+                    return listView.getSelectionModel().getSelectedItem();
+                }
+                return null;
+            });
+
+            Optional<ExternalMediaSearchResult> selection = dialog.showAndWait();
+
+            selectedResult = selection.orElse(null);
+            if (selectedResult == null) {return;}
+        }
+        LocalDate releaseDate = parseDate(selectedResult.releaseDate());
+
+        isbnField.setText(selectedResult.remoteId());
+        titleField.setText(selectedResult.title());
+        releaseDateField.setValue(releaseDate);
+        descriptionArea.setText(selectedResult.description());
+
+        if(!allPublishers.contains(selectedResult.publisher())){
+            allPublishers.add(selectedResult.publisher());
+            publisherComboBox.getItems().add(selectedResult.publisher());
+        }
+        publisherComboBox.setValue(selectedResult.publisher());
+
+        artistContainer.getChildren().clear();
+        for(Artist artist : selectedResult.artists()){
+            MediaArtist partialCredit = new MediaArtist(artist, null, true);
+            addMediaArtistRow(partialCredit);
+        }
+
+        languageContainer.getChildren().clear();
+        for(Language language : selectedResult.languages()){
+            if(!allLanguages.contains(language)){
+                allLanguages.add(language);
+            }
+            addDynamicDropdownRow(languageContainer, allLanguages, language, null);
+        }
+
+        this.remoteCoverUrl = selectedResult.imageUrl();
+        displayImage();
+    }
+
+
+    @FXML
     public void handleCancel(){
         if(mainController != null){
             mainController.showDefaultView();
@@ -780,30 +936,45 @@ public class MediaFormController implements MainControllerAware{
         try{
             String imageFileName = (currentMedia != null) ? currentMedia.getCoverFileName() : null;
 
+            String cleanTitle = sanitizeForFilename(titleField.getText());
+
+            int maxLength = Math.min(cleanTitle.length(), 30);
+            String truncatedTitle = cleanTitle.substring(0, maxLength);
+            String timestamp = String.valueOf(System.currentTimeMillis());
+
+            //User image upload
             if(selectedCoverImage != null){
                 String originalName =  selectedCoverImage.getName();
                 String extension = originalName.substring(originalName.lastIndexOf("."));
-
-                String cleanTitle = titleField.getText().trim().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("Ä", "Ae").replace("Ö", "Oe").replace("Ü", "Ue").replace("ß", "ss")
-                        .replaceAll("\\s+", "_") // Convert spaces to underscores
-                        .replaceAll("[^a-zA-Z0-9_]", ""); // Remove everything else
-
-                int maxLength = Math.min(cleanTitle.length(), 30);
-                String truncatedTitle = cleanTitle.substring(0, maxLength);
-                String timestamp = String.valueOf(System.currentTimeMillis());
                 String newName = truncatedTitle + "_" + timestamp + extension;
 
-                boolean success = imageManager.uploadImage(selectedCoverImage, newName);
-
-                if(success){
+                if(imageManager.uploadImage(selectedCoverImage, newName)){
                     if(currentMedia != null && currentMedia.getCoverFileName() != null){
                         imageManager.deleteImage(currentMedia.getCoverFileName());
                     }
                     imageFileName = newName;
-                }else{
-                    System.err.println("Failed to upload image: " + newName);
                 }
             }
+            // API image upload
+            else if (remoteCoverUrl != null && !remoteCoverUrl.isEmpty()) {
+                String extension = ".jpg";
+                if (remoteCoverUrl.toLowerCase().contains(".png")) {
+                    extension = ".png";
+                } else if (remoteCoverUrl.toLowerCase().contains(".webp")) {
+                    extension = ".webp";
+                }
+                String newName = truncatedTitle + "_" + timestamp + extension;
+
+                if(imageManager.uploadImageFromUrl(remoteCoverUrl, newName)){
+                    if(currentMedia != null && currentMedia.getCoverFileName() != null){
+                        imageManager.deleteImage(currentMedia.getCoverFileName());
+                    }
+                    imageFileName = newName;
+                }else {
+                    System.err.println("Failed to download or upload remote cover image from: " + remoteCoverUrl);
+                }
+            }
+
             if(currentMedia == null){ //fresh item
                 Media newMedia = new Media.Builder()
                         .isNewItem(true)
@@ -872,6 +1043,46 @@ public class MediaFormController implements MainControllerAware{
 
 
     // Helper
+    public void refresh(){
+        this.currentMedia = null;
+        this.selectedCoverImage = null;
+        this.remoteCoverUrl = null;
+
+        isbnField.clear();
+        titleField.clear();
+        originalTitleField.clear();
+        seriesOrderField.clear();
+        descriptionArea.clear();
+
+        releaseDateField.setValue(null);
+        mediaTypeComboBox.setValue(null);
+        publisherComboBox.setValue(null);
+        seriesComboBox.setValue(null);
+
+        mediaRating.setRating(0);
+        coverImage.setImage(null);
+
+        genreContainer.getChildren().clear();
+        addGenreDropdown();
+
+        languageContainer.getChildren().clear();
+        addLanguageRow();
+
+        artistContainer.getChildren().clear();
+        addArtistDropRow();
+
+        franchiseContainer.getChildren().clear();
+        addFranchiseDropdown();
+
+        tagContainer.getChildren().clear();
+        addTagDropdown();
+
+        api_search_isbn_button.setVisible(true);
+        api_search_isbn_button.setManaged(true);
+        api_search_title_button.setVisible(true);
+        api_search_title_button.setManaged(true);
+    }
+
     private List<Genre> getSelectedGenres(){
         List<Genre> genres = new ArrayList<>();
         for(Node node : genreContainer.getChildren()){
@@ -1032,5 +1243,54 @@ public class MediaFormController implements MainControllerAware{
             return viewContainer.getScene().getWindow();
         }
         return null;
+    }
+
+    private LocalDate parseDate(String dateString){
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            dateString = dateString.trim();
+            if(dateString.length() == 4){
+                return LocalDate.of(Integer.parseInt(dateString), 1, 1);
+            } else if (dateString.length() == 7) {
+                String[] parts = dateString.split("-");
+                return  LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+            }else if (dateString.length() == 10) {
+                return LocalDate.parse(dateString);
+            }else{
+                return null;
+            }
+        }catch (Exception e){
+            return null;
+        }
+    }
+
+    private String sanitizeForFilename(String input) {
+        if (input == null) {
+            return "";
+        }
+
+        String localized = input.trim()
+                .replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")
+                .replace("Ä", "Ae").replace("Ö", "Oe").replace("Ü", "Ue")
+                .replace("ß", "ss");
+
+        return localized.replaceAll("\\s+", "_")
+                .replaceAll("[^a-zA-Z0-9_]", "");
+    }
+
+    private void displayImage(){
+        coverImage.setImage(null);
+        if(currentMedia != null && currentMedia.getCoverFileName() != null && !currentMedia.getCoverFileName().isEmpty()){
+            String fullServerURL = imageManager.getFullImageUrl(currentMedia.getCoverFileName());
+
+            Image serverImage = new Image(fullServerURL, true); //true for background loading
+
+            coverImage.setImage(serverImage);
+        }else if(remoteCoverUrl != null && !remoteCoverUrl.isEmpty()){
+            String secureURL = remoteCoverUrl.replace("http://", "https://");
+            coverImage.setImage(new Image(secureURL, true)); //true for background loading
+        }
     }
 }

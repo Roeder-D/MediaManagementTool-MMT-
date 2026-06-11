@@ -12,10 +12,14 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class ImageManager {
     //using "io.github.cdimascio.dotenv.java" to load .env-files
@@ -47,6 +51,71 @@ public class ImageManager {
             );
         }
     }
+
+    public boolean uploadImageFromUrl(String remoteUrl, String generatedName){
+        if (remoteUrl == null || remoteUrl.isEmpty()) {
+            System.err.println("Remote URL is empty, skipping image upload.");
+            return false;
+        }
+
+        Path tempFile = null;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(remoteUrl))
+                    .GET()
+                    .build();
+
+            HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+            if (response.statusCode() != 200) {
+                System.err.println("Failed to download image from URL: " + remoteUrl + " : " + response.statusCode());
+                return false;
+            }
+
+            String contentType = response.headers().firstValue("Content-Type").orElse("image/jpeg");
+
+            String extension = ".jpg";
+            if (contentType.contains("png")) {
+                extension = ".png";
+            } else if (contentType.contains("webp")) {
+                extension = ".webp";
+            }
+
+            tempFile = Files.createTempFile("mmt_download_", extension);
+
+            try (InputStream is = response.body()) {
+                Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            String correctedFileName = generatedName;
+            if(!correctedFileName.toLowerCase().endsWith(extension)){
+                int lastDotIndex = correctedFileName.lastIndexOf(".");
+                if(lastDotIndex > 0){
+                    correctedFileName = correctedFileName.substring(0, lastDotIndex);
+                }
+                correctedFileName += extension;
+            }
+
+            File fileToUpload = tempFile.toFile();
+            return uploadImage(fileToUpload, correctedFileName);
+
+        }catch(Exception e){
+            System.err.println("Error streaming remote image from URL: " + remoteUrl);
+            e.printStackTrace();
+            return false;
+        }finally {
+            if (tempFile != null) {
+                try {
+                    Files.deleteIfExists(tempFile);
+                } catch (IOException e) {
+                    System.err.println("Warning: Could not delete temporary file: " + tempFile);
+                }
+            }
+        }
+
+
+    }
+
 
     // DELETE
     public void deleteImage(String filename){

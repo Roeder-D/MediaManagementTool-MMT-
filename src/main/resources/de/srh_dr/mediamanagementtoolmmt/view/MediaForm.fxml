@@ -34,65 +34,71 @@
                         </columnConstraints>
 
                         <Label text="%ui.isbn" styleClass="field-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="isbnField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <TextField fx:id="isbnField"/>
+                        <Button fx:id="api_search_isbn_button" text="%ui.remote.isbn" onAction="#handleSearchRemoteByIsbn"/>
+                        </HBox>
 
                         <Label text="%ui.title" styleClass="field-label" GridPane.rowIndex="1"/>
-                        <TextField fx:id="titleField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="1" >
+                        <TextField fx:id="titleField" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="api_search_title_button" text="%ui.remote.title" onAction="#handleSearchRemoteByTitle" />
+                        </HBox>
 
                         <Label text="%ui.originalTitle" styleClass="field-label" GridPane.rowIndex="2"/>
                         <TextField fx:id="originalTitleField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                        <Label text="%ui.releasedate" styleClass="field-label" GridPane.rowIndex="3"/>
-                        <DatePicker fx:id="releaseDateField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        <Label text="%ui.artist" styleClass="field-label" GridPane.rowIndex="3" GridPane.valignment="TOP"/>
+                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                            <VBox fx:id="artistContainer" spacing="5"/>
+                            <Button text="%ui.addArtistRow" onAction="#addArtistDropRow"/>
+                        </VBox>
 
-                        <Label text="%ui.mediaType" styleClass="field-label" GridPane.rowIndex="4"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <Label text="%ui.releasedate" styleClass="field-label" GridPane.rowIndex="4"/>
+                        <DatePicker fx:id="releaseDateField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                        <Label text="%ui.mediaType" styleClass="field-label" GridPane.rowIndex="5"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
                             <SearchableComboBox fx:id="mediaTypeComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                             <Button text="+" onAction="#handleAddNewMediaType"/>
                         </HBox>
 
-                        <Label text="%ui.publisher" styleClass="field-label" GridPane.rowIndex="5"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <Label text="%ui.publisher" styleClass="field-label" GridPane.rowIndex="6"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="6">
                             <SearchableComboBox fx:id="publisherComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                             <Button text="+" onAction="#handleAddNewPublisher"/>
                         </HBox>
 
-                        <Label text="%ui.series" styleClass="field-label" GridPane.rowIndex="6"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                        <Label text="%ui.series" styleClass="field-label" GridPane.rowIndex="7"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="7">
                             <SearchableComboBox fx:id="seriesComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                             <Label text="%ui.volume" minWidth="-Infinity"/>
                             <TextField fx:id="seriesOrderField" promptText="Vol." prefWidth="60.0"/>
                             <Button text="+" onAction="#handleAddNewSeries"/>
                         </HBox>
 
-                        <Label text="%ui.franchise" styleClass="field-label" GridPane.rowIndex="7" GridPane.valignment="TOP"/>
-                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                        <Label text="%ui.franchise" styleClass="field-label" GridPane.rowIndex="8" GridPane.valignment="TOP"/>
+                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="8">
                             <VBox fx:id="franchiseContainer" spacing="5"/>
                             <Button text="%ui.addFranchiseRow" onAction="#addFranchiseDropdown"/>
                         </VBox>
 
-                        <Label text="%ui.genre" styleClass="field-label" GridPane.rowIndex="8" GridPane.valignment="TOP"/>
-                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                        <Label text="%ui.genre" styleClass="field-label" GridPane.rowIndex="9" GridPane.valignment="TOP"/>
+                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="9">
                             <VBox fx:id="genreContainer" spacing="5"/>
                             <Button text="%ui.addGenreRow" onAction="#addGenreDropdown"/>
                         </VBox>
 
-                        <Label text="%ui.tag" styleClass="field-label" GridPane.rowIndex="9" GridPane.valignment="TOP"/>
-                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                        <Label text="%ui.tag" styleClass="field-label" GridPane.rowIndex="10" GridPane.valignment="TOP"/>
+                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="10">
                             <VBox fx:id="tagContainer" spacing="5"/>
                             <Button text="%ui.addTagRow" onAction="#addTagDropdown"/>
                         </VBox>
 
-                        <Label text="%ui.language" styleClass="field-label" GridPane.rowIndex="10" GridPane.valignment="TOP"/>
-                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                        <Label text="%ui.language" styleClass="field-label" GridPane.rowIndex="11" GridPane.valignment="TOP"/>
+                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="11">
                             <VBox fx:id="languageContainer" spacing="5"/>
                             <Button text="%ui.addNewLanguage" onAction="#addLanguageRow"/>
-                        </VBox>
-
-                        <Label text="%ui.artist" styleClass="field-label" GridPane.rowIndex="11" GridPane.valignment="TOP"/>
-                        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="11">
-                            <VBox fx:id="artistContainer" spacing="5"/>
-                            <Button text="%ui.addArtistRow" onAction="#addArtistDropRow"/>
                         </VBox>
                     </GridPane>
                 </HBox>

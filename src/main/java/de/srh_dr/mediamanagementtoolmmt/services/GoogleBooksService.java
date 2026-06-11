@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
+import de.srh_dr.mediamanagementtoolmmt.model.Publisher;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -94,11 +95,13 @@ public class GoogleBooksService implements BookLookupService{
 
         String mainTitle = volumeInfo.path("title").asText("");
         String subtitle = volumeInfo.path("subtitle").asText("");
-        String publisher = volumeInfo.path("publisher").asText("Unknown Publisher");
+        String publisherName = volumeInfo.path("publisher").asText("Unknown Publisher");
         String releaseDate = volumeInfo.path("publishedDate").asText("");
         String description = volumeInfo.path("description").asText("Unknown Description");
         String languageCode = volumeInfo.path("language").asText("en");
         String imageUrl = volumeInfo.path("imageLinks").path("thumbnail").asText("");
+
+        Publisher publisher = new Publisher(0, publisherName, true);
 
         List<Artist> artists = new ArrayList<>();
         JsonNode authorsNode = volumeInfo.path("authors");

@@ -58,7 +58,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
         if (publisher.isNewItem()) return;
         if (!publisher.isDirty()) return;
 
-        String sql = "UPDATE tag SET publisher_name = ? WHERE publisher_id = ?";
+        String sql = "UPDATE publisher SET publisher_name = ? WHERE publisher_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -89,5 +89,28 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
             }
             return false;
         }
+    }
+
+    // READ
+    public Publisher findByName(String name) {
+        String sql = "SELECT * FROM publisher WHERE publisher_name=?";
+        Publisher publisher = null;
+
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1,name);
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    publisher = new Publisher(
+                            rs.getInt("publisher_id"),
+                            rs.getString("publisher_name"),
+                            false
+                    );
+                }
+            }
+        }catch (SQLException e){
+            System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
+        }
+        return publisher;
     }
 }
