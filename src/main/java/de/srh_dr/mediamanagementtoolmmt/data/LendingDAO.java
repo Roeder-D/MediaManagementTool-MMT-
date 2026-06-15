@@ -97,7 +97,7 @@ public class LendingDAO {
 
                     Date sqlReturnDate = rs.getDate("return_date");
 
-                    return new Lending(
+                    Lending lending =  new Lending(
                             rs.getInt("lending_id"),
                             media,
                             lendee,
@@ -105,6 +105,8 @@ public class LendingDAO {
                             sqlReturnDate != null ? sqlReturnDate.toLocalDate() : null,
                             false
                     );
+                    lending.setNote(rs.getString("note"));
+                    return lending;
                 }
             }
         }catch(SQLException e){
@@ -147,6 +149,7 @@ public class LendingDAO {
                 String returnedOn = rs.getString("returned_on");
                 String status = rs.getString("lending_status");
 
+                lendeeInfo = lendeeInfo.replace("()", "");
                 LendingDashboardItem li = new LendingDashboardItem(lendingId,mediaTitle, lendeeInfo, borrowedOn, returnedOn, status);
                 lendingDashboardItems.add(li);
 

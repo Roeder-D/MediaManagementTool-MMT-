@@ -125,6 +125,7 @@ public class PublisherOverviewController{
             }
             return null;
         });
+        dialog.initOwner(getWindow());
         dialog.showAndWait();
         loadPublishers();
     }

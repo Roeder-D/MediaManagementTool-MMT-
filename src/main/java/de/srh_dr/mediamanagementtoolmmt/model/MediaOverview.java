@@ -14,24 +14,39 @@ public class MediaOverview {
     private final StringProperty releaseDate;
     private final StringProperty publisher;
     private final StringProperty status;
+    private final StringProperty artistsDisplay;
     private final List<String> tags = new ArrayList<>();
+    private final List<String> artists = new ArrayList<>();
 
-    public MediaOverview(int mediaId, String type, String title, String releaseDate, String publisher, String status, String tags){
+    public MediaOverview(int mediaId, String type, String title, String releaseDate, String publisher, String status, String tags, String artists){
         this.mediaId = mediaId;
         this.type = new SimpleStringProperty(type);
         this.title = new SimpleStringProperty(title);
         this.releaseDate = new SimpleStringProperty(releaseDate);
         this.publisher = new SimpleStringProperty(publisher);
         this.status = new SimpleStringProperty(status);
+        this.artistsDisplay = new SimpleStringProperty(artists);
 
         if(!tags.isEmpty()){
             this.tags.addAll(Arrays.asList(tags.split(",")));
+        }
+        if(!artists.isEmpty()){
+            this.artists.addAll(Arrays.asList(artists.split(",")));
         }
     }
 
     public List<String> getTags() {
         return tags;
     }
+
+    public String getArtistsDisplay() {
+        return artistsDisplay.get();
+    }
+    public StringProperty artistsDisplayProperty() {
+        return artistsDisplay;
+    }
+
+    public List<String> getArtists() {return artists;}
 
     public int getMediaId(){
         return mediaId;

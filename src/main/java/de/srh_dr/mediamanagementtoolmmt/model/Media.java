@@ -396,7 +396,6 @@ public class Media {
         }
     }
 
-
     // builder pattern
     public static class Builder {
         private boolean isNewItem;
@@ -428,8 +427,14 @@ public class Media {
             return this;
         }
         public Builder isbn(String isbn) {
-            if(isbn.length() == 10 ||  isbn.length() == 13){
-                this.isbn = isbn;
+            if(isbn == null || isbn.isEmpty()){
+                this.isbn = null;
+                return this;
+            }
+
+            String cleanIsbn = isbn.trim().replace(" ", "").replace("_", "").replace("-", "");
+            if(cleanIsbn.length() == 10 ||  isbn.length() == 13) {
+                this.isbn = cleanIsbn;
                 return this;
             }else {
                 throw new IllegalArgumentException(LanguageManager.getString("error.media.isbn_invalid"));

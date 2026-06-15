@@ -60,21 +60,21 @@
                         <Label text="%ui.mediaType" styleClass="field-label" GridPane.rowIndex="5"/>
                         <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
                             <SearchableComboBox fx:id="mediaTypeComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                            <Button text="+" onAction="#handleAddNewMediaType"/>
+                            <Button text="%ui.add" onAction="#handleAddNewMediaType"/>
                         </HBox>
 
                         <Label text="%ui.publisher" styleClass="field-label" GridPane.rowIndex="6"/>
                         <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="6">
                             <SearchableComboBox fx:id="publisherComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                            <Button text="+" onAction="#handleAddNewPublisher"/>
+                            <Button text="%ui.add" onAction="#handleAddNewPublisher"/>
                         </HBox>
 
                         <Label text="%ui.series" styleClass="field-label" GridPane.rowIndex="7"/>
                         <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="7">
                             <SearchableComboBox fx:id="seriesComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                             <Label text="%ui.volume" minWidth="-Infinity"/>
+                            <Button text="%ui.add" onAction="#handleAddNewSeries"/>
                             <TextField fx:id="seriesOrderField" promptText="Vol." prefWidth="60.0"/>
-                            <Button text="+" onAction="#handleAddNewSeries"/>
                         </HBox>
 
                         <Label text="%ui.franchise" styleClass="field-label" GridPane.rowIndex="8" GridPane.valignment="TOP"/>

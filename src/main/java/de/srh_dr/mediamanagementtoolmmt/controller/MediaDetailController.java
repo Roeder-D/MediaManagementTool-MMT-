@@ -1,22 +1,23 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.MediaDAO;
-import de.srh_dr.mediamanagementtoolmmt.model.Genre;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
 import de.srh_dr.mediamanagementtoolmmt.model.MediaArtist;
-import de.srh_dr.mediamanagementtoolmmt.model.Tag;
+import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Window;
 import org.controlsfx.control.Rating;
 
+import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MediaDetailController implements MainControllerAware {
     @FXML private BorderPane viewContainer;
@@ -24,20 +25,26 @@ public class MediaDetailController implements MainControllerAware {
     @FXML private Label isbnLabel;
     @FXML private Label isbnField;
     @FXML private FlowPane genreContainer;
-    @FXML private FlowPane tagsContainer;
+    @FXML private FlowPane tagContainer;
     @FXML private VBox artistContainer;
     @FXML private HBox ratingBox;
     @FXML private Label seriesField;
     @FXML private Label publisherField;
     @FXML private Label releaseDateField;
     @FXML private Label descriptionField;
+    @FXML private Label franchiseLabel;
     @FXML private FlowPane franchiseContainer;
+    @FXML private Label seriesLabel;
     @FXML private Label seriesOrderField;
+    @FXML private FlowPane languageContainer;
+    @FXML private Label tagLabel;
+    @FXML private ImageView coverImage;
 
 
     MainController mainController;
     Media currentMedia;
     MediaDAO mediaDAO =  new MediaDAO();
+    ImageManager imageManager = new ImageManager();
 
 
     @Override
@@ -95,6 +102,9 @@ public class MediaDetailController implements MainControllerAware {
 
           this.currentMedia = media;
 
+          //populate image
+          displayImage();
+
           // populate title field
           titleLabel.setText(media.getTitle());
 
@@ -120,6 +130,10 @@ public class MediaDetailController implements MainControllerAware {
           if(showISBN){
               isbnField.setText(media.getIsbn() != null ? media.getIsbn() : "");
           }
+          if(isbnField.getText().isEmpty()){
+              isbnLabel.setVisible(false);
+              isbnLabel.setManaged(false);
+          }
 
           // populate genres
           genreContainer.getChildren().clear();
@@ -133,24 +147,49 @@ public class MediaDetailController implements MainControllerAware {
           });
 
           //populate franchises
-          franchiseContainer.getChildren().clear();
-          media.getFranchises().forEach(franchise -> {
-              if(franchise.getName() != null && !franchise.getName().trim().isEmpty()){
-                  Label badge = new Label(franchise.getName());
-                  badge.getStyleClass().addAll("badge", "franchise-badge");
+          if(media.getFranchises().isEmpty()){
+              franchiseLabel.setVisible(false);
+              franchiseLabel.setManaged(false);
+              franchiseContainer.setVisible(false);
+              franchiseContainer.setManaged(false);
+          }else {
+              franchiseContainer.getChildren().clear();
+              media.getFranchises().forEach(franchise -> {
+                  if (franchise.getName() != null && !franchise.getName().trim().isEmpty()) {
+                      Label badge = new Label(franchise.getName());
+                      badge.getStyleClass().addAll("badge", "franchise-badge");
 
-                  franchiseContainer.getChildren().add(badge);
-              }
-          });
+                      franchiseContainer.getChildren().add(badge);
+                  }
+              });
+          }
 
           // populate tags
-          tagsContainer.getChildren().clear();
-          media.getTags().forEach(tag -> {
-              if(tag != null && !tag.getName().trim().isEmpty()){
-                  Label badge = new Label(tag.getName());
-                  badge.getStyleClass().addAll("badge", "tag-badge");
+          if(media.getTags().isEmpty()){
+              tagLabel.setVisible(false);
+              tagLabel.setManaged(false);
+              tagContainer.setVisible(false);
+              tagContainer.setManaged(false);
+          }else {
+              tagContainer.getChildren().clear();
+              media.getTags().forEach(tag -> {
+                  if (tag != null && !tag.getName().trim().isEmpty()) {
+                      Label badge = new Label(tag.getName());
+                      badge.getStyleClass().addAll("badge", "tag-badge");
 
-                  tagsContainer.getChildren().add(badge);
+                      tagContainer.getChildren().add(badge);
+                  }
+              });
+          }
+
+          //populate languages
+          languageContainer.getChildren().clear();
+          media.getLanguages().forEach(language -> {
+              if(language != null && !language.getLanguage().trim().isEmpty()){
+                  Label badge = new Label(language.getLanguage());
+                  badge.getStyleClass().addAll("badge", "language-badge");
+
+                  languageContainer.getChildren().add(badge);
               }
           });
 
@@ -203,7 +242,10 @@ public class MediaDetailController implements MainControllerAware {
           if(media.getSeries() != null){
               seriesField.setText(media.getSeries().getName());
           }else{
-              seriesField.setText("/");
+              seriesField.setVisible(false);
+              seriesField.setManaged(false);
+              seriesLabel.setVisible(false);
+              seriesLabel.setManaged(false);
           }
 
           if(media.getPublisher() != null){
@@ -254,5 +296,21 @@ public class MediaDetailController implements MainControllerAware {
             return viewContainer.getScene().getWindow();
         }
         return null;
+    }
+
+    private void displayImage(){
+        coverImage.setImage(null);
+        if(currentMedia != null && currentMedia.getCoverFileName() != null && !currentMedia.getCoverFileName().isEmpty()){
+            String fullServerURL = imageManager.getFullImageUrl(currentMedia.getCoverFileName());
+            Image serverImage = new Image(fullServerURL, true); //true for background loading
+            coverImage.setImage(serverImage);
+        }else {
+            String defaultImagePath = "/de/srh_dr/mediamanagementtoolmmt/Images/1920px-No-Image-Placeholder.svg.png";
+            URL defaultImageURL = getClass().getResource(defaultImagePath);
+            if(defaultImageURL != null){
+                Image defaultImage = new Image(defaultImageURL.toExternalForm());
+                coverImage.setImage(defaultImage);
+            }
+        }
     }
 }

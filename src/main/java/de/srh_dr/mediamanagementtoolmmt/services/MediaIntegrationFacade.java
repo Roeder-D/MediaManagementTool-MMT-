@@ -94,7 +94,7 @@ public class MediaIntegrationFacade {
         return syncedResults;
     }
 
-    public void persistConfirmedBook(Media media){
+    public void persistConfirmedBook(Media media) throws SQLException{
         List<Language> languages = media.getLanguages();
         List<Artist> artists = new ArrayList<>();
         Publisher publisher = media.getPublisher();

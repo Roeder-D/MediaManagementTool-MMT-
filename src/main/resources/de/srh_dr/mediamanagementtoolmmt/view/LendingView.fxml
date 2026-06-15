@@ -25,8 +25,11 @@
 
                 <Label styleClass="section-header" text="%ui.lendee" GridPane.rowIndex="1" />
                 <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                    <SearchableComboBox fx:id="lendeeComboBox" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
-                    <Button text="+" onAction="#handleManageLendee" />
+                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <SearchableComboBox fx:id="lendeeComboBox" prefWidth="250"/>
+                        <TextField fx:id="lendeeReadOnlyField" prefWidth="250" editable="false" visible="false" managed="false" styleClass="read-only-display"/>
+                    </StackPane>
+                    <Button fx:id="manageLendeeButton" onAction="#handleManageLendee" />
                 </HBox>
 
                 <Label styleClass="section-header" text="%ui.lent_on" GridPane.rowIndex="2" />

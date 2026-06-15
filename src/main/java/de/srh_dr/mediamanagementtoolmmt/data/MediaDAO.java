@@ -12,7 +12,7 @@ import java.util.List;
 public class MediaDAO {
 
     // HELPER
-    public void save(Media media){
+    public void save(Media media) throws SQLException{
         Connection conn = null;
         try{
             conn = DBConnection.getConnection();
@@ -40,6 +40,7 @@ public class MediaDAO {
                 }
             }
             System.err.println("SQLException: " + e.getMessage());
+            throw e;
         }finally{
             if(conn != null){
                 try{
@@ -281,16 +282,22 @@ public class MediaDAO {
     }
     // Helpers for synchronization of affected tables
     private void updateRelations(Media media, Connection conn) throws SQLException {
-        // simple Many-to-Many relations
-        syncJunction(conn, media.getId(), "media_tag", "tag_id", media.getTagsToAdd(), media.getTagsToRemove());
-        syncJunction(conn, media.getId(), "media_genre", "genre_id", media.getGenresToAdd(), media.getGenresToRemove());
-        syncJunction(conn, media.getId(), "media_language", "language_id", media.getLanguagesToAdd(), media.getLanguagesToRemove());
-        syncJunction(conn, media.getId(), "media_franchise", "franchise_id", media.getFranchisesToAdd(), media.getFranchisesToRemove());
+        List<Tag> tagsToAdd = media.isNewItem() ? media.getTags() : media.getTagsToAdd();
+        List<Genre> genresToAdd = media.isNewItem() ? media.getGenres() : media.getGenresToAdd();
+        List<Language> languagesToAdd = media.isNewItem() ? media.getLanguages() : media.getLanguagesToAdd();
+        List<Franchise> franchisesToAdd = media.isNewItem() ?  media.getFranchises() : media.getFranchisesToAdd();
+        List<MediaArtist> creditsToAdd = media.isNewItem() ? media.getCredits() : media.getCreditsToAdd();
+
+        // synchronize Lists
+        syncJunction(conn, media.getId(), "media_tag", "tag_id", tagsToAdd, media.getTagsToRemove());
+        syncJunction(conn, media.getId(), "media_genre", "genre_id", genresToAdd, media.getGenresToRemove());
+        syncJunction(conn, media.getId(), "media_language", "language_id", languagesToAdd, media.getLanguagesToRemove());
+        syncJunction(conn, media.getId(), "media_franchise", "franchise_id", franchisesToAdd, media.getFranchisesToRemove());
 
         // MediaArtist(Credits)
         String insSql = "INSERT INTO media_artist (media_id, artist_id, artist_role_id) VALUES (?,?,?)";
         try (PreparedStatement stmt = conn.prepareStatement(insSql)) {
-            for (MediaArtist ma : media.getCreditsToAdd()) {
+            for (MediaArtist ma : creditsToAdd) {
                 stmt.setInt(1, media.getId());
                 stmt.setInt(2, ma.getArtist().getId());
                 stmt.setInt(3, ma.getArtistRole().getId());
@@ -299,15 +306,17 @@ public class MediaDAO {
             stmt.executeBatch();
         }
 
-        String delSql = "DELETE FROM media_artist WHERE media_id=? AND artist_id=? AND artist_role_id=?";
-        try (PreparedStatement stmt = conn.prepareStatement(delSql)) {
-            for (MediaArtist ma : media.getCreditsToRemove()) {
-                stmt.setInt(1, media.getId());
-                stmt.setInt(2, ma.getArtist().getId());
-                stmt.setInt(3, ma.getArtistRole().getId());
-                stmt.addBatch(); // Batching is better for performance here too
+        if(!media.isNewItem()) {
+            String delSql = "DELETE FROM media_artist WHERE media_id=? AND artist_id=? AND artist_role_id=?";
+            try (PreparedStatement stmt = conn.prepareStatement(delSql)) {
+                for (MediaArtist ma : media.getCreditsToRemove()) {
+                    stmt.setInt(1, media.getId());
+                    stmt.setInt(2, ma.getArtist().getId());
+                    stmt.setInt(3, ma.getArtistRole().getId());
+                    stmt.addBatch(); // Batching is better for performance here too
+                }
+                stmt.executeBatch();
             }
-            stmt.executeBatch();
         }
     }
 

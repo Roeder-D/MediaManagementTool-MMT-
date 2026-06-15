@@ -202,6 +202,35 @@
     -fx-background-color: -fx-badge-color;
 }
 
+.genre-badge {
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-border-width: 1px;
+    -fx-background-color: -fx-badge-color;
+}
+
+.franchise-badge {
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-border-width: 1px;
+    -fx-background-color: -fx-badge-color;
+}
+
+.language-badge {
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-border-width: 1px;
+    -fx-background-color: -fx-badge-color;
+}
 /* ==========================================================================
    REMOVE DOUBLE FRAME
    ========================================================================== */

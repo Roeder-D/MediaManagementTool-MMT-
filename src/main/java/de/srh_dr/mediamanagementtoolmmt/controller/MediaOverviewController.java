@@ -9,6 +9,7 @@ import de.srh_dr.mediamanagementtoolmmt.viewmodel.FilterOption;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -25,6 +26,7 @@ public class MediaOverviewController implements MainControllerAware {
     @FXML private TableView<MediaOverview> mediaTable;
     @FXML private TableColumn<MediaOverview, String> titleCol;
     @FXML private TableColumn<MediaOverview, String> typeCol;
+    @FXML private TableColumn<MediaOverview, String> artistCol;
     @FXML private TableColumn<MediaOverview, String> releaseDateCol;
     @FXML private TableColumn<MediaOverview, String> publisherCol;
     @FXML private TableColumn<MediaOverview, String> availableCol;
@@ -55,6 +57,7 @@ public class MediaOverviewController implements MainControllerAware {
 
         titleCol.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
         typeCol.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
+        artistCol.setCellValueFactory(cellData -> cellData.getValue().artistsDisplayProperty());
         releaseDateCol.setCellValueFactory(cellData -> cellData.getValue().releaseDateProperty());
         publisherCol.setCellValueFactory(cellData -> cellData.getValue().publisherProperty());
         availableCol.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
@@ -84,7 +87,9 @@ public class MediaOverviewController implements MainControllerAware {
             setMediaTypes();
             setTags();
             filteredMediaOverviews = new FilteredList<>(mediaOverviews, p -> true);
-           mediaTable.setItems(filteredMediaOverviews);
+            SortedList<MediaOverview> sortedMediaOverview = new SortedList<>(filteredMediaOverviews);
+            sortedMediaOverview.comparatorProperty().bind(mediaTable.comparatorProperty());
+           mediaTable.setItems(sortedMediaOverview);
         }catch(SQLException e){
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
@@ -127,7 +132,7 @@ public class MediaOverviewController implements MainControllerAware {
 
     @FXML
     public void applyFilter() {
-        String searchText = searchField.getText();
+        String searchText = searchField.getText().toLowerCase();
         FilterOption selectedStatus = filterStatusComboBox.getSelectionModel().getSelectedItem();
         String selectedMediaType = filterMediaTypeComboBox.getSelectionModel().getSelectedItem();
         String selectedTag = filterTagComboBox.getSelectionModel().getSelectedItem();

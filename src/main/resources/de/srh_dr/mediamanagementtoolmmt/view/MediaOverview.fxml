@@ -13,7 +13,7 @@
 
         <Region HBox.hgrow="ALWAYS"/>
 
-        <Label styleClass="control-label" text="%ui.label.sort_by"/>
+        <Label styleClass="control-label" text="%ui.label.filter_by"/>
         <Label styleClass="control-label" text="%ui.mediaTag"/>
         <SearchableComboBox fx:id="filterTagComboBox" prefWidth="150" promptText="%ui.mediaTag" onAction="#applyFilter"/>
         <Label styleClass="control-label" text="%ui.mediaType"/>
@@ -28,6 +28,7 @@
         <columns>
             <TableColumn fx:id="titleCol" prefWidth="300" text="%ui.title" styleClass="left-aligned-column"/>
             <TableColumn fx:id="typeCol" prefWidth="200" text="%ui.mediaType" styleClass="left-aligned-column"/>
+            <TableColumn fx:id="artistCol" prefWidth="200" text="%ui.artist" styleClass="left-aligned-column"/>
             <TableColumn fx:id="releaseDateCol" prefWidth="150" text="%ui.releasedate" styleClass="center-aligned-column"/>
             <TableColumn fx:id="publisherCol" prefWidth="200" text="%ui.publisher" styleClass="left-aligned-column"/>
             <TableColumn fx:id="availableCol" prefWidth="100" text="%ui.available" styleClass="right-aligned-column"/>

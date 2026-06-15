@@ -1,12 +1,15 @@
 package de.srh_dr.mediamanagementtoolmmt.app;
 
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
+import de.srh_dr.mediamanagementtoolmmt.util.WindowPositionManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.prefs.Preferences;
 
 public class MMT_Application extends Application {
@@ -29,10 +32,19 @@ public class MMT_Application extends Application {
             stage.sizeToScene();
             stage.centerOnScreen();
         }else{
-            stage.setX(prefs.getDouble("x", 0));
-            stage.setY(prefs.getDouble("y", 0));
-            stage.setWidth(prefs.getDouble("width", 1050));
-            stage.setHeight(prefs.getDouble("height", 800));
+            double savedX = prefs.getDouble("x", 0);
+            double savedY = prefs.getDouble("y", 0);
+            double savedWidth = prefs.getDouble("width", 1050);
+            double savedHeight = prefs.getDouble("height", 800);
+
+            WindowPositionManager.restoreWindowBounds(stage, savedX, savedY, savedWidth, savedHeight);
+
+            String defaultImagePath = "/de/srh_dr/mediamanagementtoolmmt/Images/MMT_icon.png";
+            URL iconURL = getClass().getResource(defaultImagePath);
+            if(iconURL != null){
+            Image icon = new Image(iconURL.toExternalForm());
+            stage.getIcons().add(icon);
+            }
         }
 
         //save window size and position

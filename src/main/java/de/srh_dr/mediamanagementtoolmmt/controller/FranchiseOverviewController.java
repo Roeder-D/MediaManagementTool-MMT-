@@ -123,10 +123,10 @@ public class FranchiseOverviewController implements MainControllerAware{
 
         HBox altTitleControls = new HBox(10, newAltTitleField, addAltTitleBtn, removeAltTitleBtn);
 
-        gridPane.add(new Label(LanguageManager.getString("ui.franchise_name")), 0, 0);
+        gridPane.add(new Label(LanguageManager.getString("ui.franchise")), 0, 0);
         gridPane.add(franchiseNameField, 1, 0);
 
-        gridPane.add(new Label(LanguageManager.getString("ui.alt_titles")), 0, 1);
+        gridPane.add(new Label(LanguageManager.getString("ui.altTitles")), 0, 1);
         gridPane.add(altTitleListView,  1, 1);
         gridPane.add(altTitleControls, 1, 2);
 

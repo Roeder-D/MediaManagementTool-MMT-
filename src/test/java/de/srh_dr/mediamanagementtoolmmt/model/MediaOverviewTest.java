@@ -10,7 +10,7 @@ class MediaOverviewTest {
 
     @Test
     void testConstructorAndStandardGetters() {
-        MediaOverview overview = new MediaOverview(42, "Book", "Head First Java", "2022-05-10", "O Reilly", "AVAILABLE", "");
+        MediaOverview overview = new MediaOverview(42, "Book", "Head First Java", "2022-05-10", "O Reilly", "AVAILABLE", "", "");
 
         assertEquals(42, overview.getMediaId());
         assertEquals("Book", overview.getType());
@@ -22,7 +22,7 @@ class MediaOverviewTest {
 
     @Test
     void testJavaFXProperties() {
-        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", "");
+        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", "", "");
 
         assertNotNull(overview.titleProperty(), "JavaFX titleProperty should not be null.");
         assertEquals("Title", overview.titleProperty().get());
@@ -32,7 +32,7 @@ class MediaOverviewTest {
     void testTagParsingWithValidData() {
         String rawTags = "Programming,JavaFX,Learning";
 
-        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", rawTags);
+        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", rawTags, "");
 
         List<String> parsedTags = overview.getTags();
 
@@ -46,7 +46,7 @@ class MediaOverviewTest {
     void testTagParsingWithEmptyData() {
         String rawTags = "";
 
-        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", rawTags);
+        MediaOverview overview = new MediaOverview(1, "Book", "Title", "2026", "Pub", "AVAILABLE", rawTags, "");
 
         List<String> parsedTags = overview.getTags();
 

@@ -102,6 +102,7 @@ public class MainController {
             return null;
         });
 
+        languageDialog.initOwner(getWindow());
         languageDialog.showAndWait();
 
     }
@@ -193,6 +194,7 @@ public class MainController {
                 }
                 return null;
             });
+            isbnDialog.initOwner(getWindow());
             isbnDialog.showAndWait();
         } catch (Exception e) {
            AlertManager.showAlert(
@@ -203,8 +205,6 @@ public class MainController {
            );
         }
     }
-
-// TODO: implement db / api settings
 
     // Action
     @FXML

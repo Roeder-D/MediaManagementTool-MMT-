@@ -20,12 +20,11 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import javafx.util.converter.LocalDateStringConverter;
-import javafx.util.converter.LocalDateTimeStringConverter;
 import org.controlsfx.control.Rating;
 import org.controlsfx.control.SearchableComboBox;
 
 import java.io.File;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
@@ -34,7 +33,6 @@ import java.util.function.Consumer;
 
 public class MediaFormController implements MainControllerAware{
     @FXML private ScrollPane viewContainer;
-    @FXML private StackPane imageDropZone;
     @FXML private ImageView coverImage;
     @FXML private Rating mediaRating;
     @FXML private TextField isbnField;
@@ -98,6 +96,7 @@ public class MediaFormController implements MainControllerAware{
         allSeries = seriesDAO.findAll();
         allTags = tagDAO.findAll();
         allFranchises = franchiseDAO.findAll();
+        mediaRating.setRating(0);
 
         publisherComboBox.getItems().addAll(allPublishers);
         mediaTypeComboBox.getItems().addAll(allMediaTypes);
@@ -711,7 +710,7 @@ public class MediaFormController implements MainControllerAware{
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle(LanguageManager.getString("ui.newFranchise"));
         dialog.setHeaderText(LanguageManager.getString("ui.addNewFranchise"));
-        dialog.setContentText(LanguageManager.getString("ui.FranchiseName"));
+        dialog.setContentText(LanguageManager.getString("ui.franchiseName"));
 
         dialog.initOwner(getWindow());
         Optional<String> result = dialog.showAndWait();
@@ -747,7 +746,7 @@ public class MediaFormController implements MainControllerAware{
 
     @FXML
     private void handleSearchRemoteByIsbn(){
-        String isbn = isbnField.getText().trim();
+        String isbn = isbnField.getText().trim().replace("-", "").replace("_", "");
 
         if(isbn.isEmpty() || isbn.length() != 10 && isbn.length() != 13){
             AlertManager.showAlert(Alert.AlertType.INFORMATION, LanguageManager.getString("ui.info"), LanguageManager.getString("ui.invalidIsbn"), getWindow());
@@ -904,6 +903,14 @@ public class MediaFormController implements MainControllerAware{
             );
             return;
         }
+
+        //centralized data collection
+        List<Genre> selectedGenres = getSelectedGenres();
+        List<Tag> selectedTags = getSelectedTags();
+        List<Franchise> selectedFranchises = getSelectedFranchises();
+        List<Language> selectedLanguages = getSelectedLanguages();
+        MediaType selectedMediaType = mediaTypeComboBox.getValue();
+
         int seriesOrder = 0;
         try {
             String orderText = seriesOrderField.getText().trim();
@@ -913,11 +920,8 @@ public class MediaFormController implements MainControllerAware{
         }catch(NumberFormatException e){
             System.err.println("Invalid order number, defaulting to 0");
         }
-        List<Genre> selectedGenres = getSelectedGenres();
-        List<Tag> selectedTags = getSelectedTags();
-        List<Franchise> selectedFranchises = getSelectedFranchises();
-        List<Language> selectedLanguages = getSelectedLanguages();
-        MediaType selectedMediaType = mediaTypeComboBox.getValue();
+
+        // check mandatory fields
         if (selectedMediaType == null || selectedGenres.isEmpty() || selectedLanguages.isEmpty()) {
             StringBuilder errorMsg = new StringBuilder();
             if(selectedGenres.isEmpty()){errorMsg.append(LanguageManager.getString("error.media.genre_unset"));}
@@ -933,14 +937,14 @@ public class MediaFormController implements MainControllerAware{
             return;
         }
 
+        // save logic
         try{
-            String imageFileName = (currentMedia != null) ? currentMedia.getCoverFileName() : null;
-
+            //image upload
             String cleanTitle = sanitizeForFilename(titleField.getText());
-
             int maxLength = Math.min(cleanTitle.length(), 30);
             String truncatedTitle = cleanTitle.substring(0, maxLength);
             String timestamp = String.valueOf(System.currentTimeMillis());
+            String imageFileName = (currentMedia != null) ? currentMedia.getCoverFileName() : null;
 
             //User image upload
             if(selectedCoverImage != null){
@@ -975,6 +979,8 @@ public class MediaFormController implements MainControllerAware{
                 }
             }
 
+            int targetViewId;
+
             if(currentMedia == null){ //fresh item
                 Media newMedia = new Media.Builder()
                         .isNewItem(true)
@@ -999,6 +1005,7 @@ public class MediaFormController implements MainControllerAware{
                         .build();
 
                 mediaIntegrationFacade.persistConfirmedBook(newMedia);
+                targetViewId = newMedia.getId();
             }else{ //existing item
                 currentMedia.setIsbn(isbnField.getText().trim());
                 currentMedia.setTitle(titleField.getText().trim());
@@ -1018,7 +1025,10 @@ public class MediaFormController implements MainControllerAware{
                 syncList(currentMedia.getFranchises(), selectedFranchises, currentMedia::removeFranchise, currentMedia::addFranchise);
 
                 mediaDAO.save(currentMedia); // Don't allow API-Search on existing Media
+                targetViewId = currentMedia.getId();
             }
+
+            mainController.showMediaDetail(targetViewId);
         }catch(Exception e){
             System.err.println("Failed to save Media: " + e.getMessage());
         }
@@ -1060,7 +1070,7 @@ public class MediaFormController implements MainControllerAware{
         seriesComboBox.setValue(null);
 
         mediaRating.setRating(0);
-        coverImage.setImage(null);
+        displayImage();
 
         genreContainer.getChildren().clear();
         addGenreDropdown();
@@ -1284,13 +1294,18 @@ public class MediaFormController implements MainControllerAware{
         coverImage.setImage(null);
         if(currentMedia != null && currentMedia.getCoverFileName() != null && !currentMedia.getCoverFileName().isEmpty()){
             String fullServerURL = imageManager.getFullImageUrl(currentMedia.getCoverFileName());
-
             Image serverImage = new Image(fullServerURL, true); //true for background loading
-
             coverImage.setImage(serverImage);
         }else if(remoteCoverUrl != null && !remoteCoverUrl.isEmpty()){
             String secureURL = remoteCoverUrl.replace("http://", "https://");
             coverImage.setImage(new Image(secureURL, true)); //true for background loading
+        }else {
+            String defaultImagePath = "/de/srh_dr/mediamanagementtoolmmt/Images/1920px-No-Image-Placeholder.svg.png";
+            URL defaultImageURL = getClass().getResource(defaultImagePath);
+            if(defaultImageURL != null){
+                Image defaultImage = new Image(defaultImageURL.toExternalForm());
+                coverImage.setImage(defaultImage);
+            }
         }
     }
 }

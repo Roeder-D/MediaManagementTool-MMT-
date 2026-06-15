@@ -66,10 +66,10 @@ CREATE TABLE media(
                       media_id			INTEGER			PRIMARY KEY AUTO_INCREMENT,
                       isbn				VARCHAR(13),
                       title				VARCHAR(350)	NOT NULL,
-                      original_title		VARCHAR(350),
+                      original_title	VARCHAR(350),
                       cover_url			VARCHAR(255),
-                      description			TEXT,
-                      rating				INTEGER,
+                      description		TEXT,
+                      rating			INTEGER,
                       release_date		DATE,
                       series_order		INTEGER,
                       series_id			INTEGER,
@@ -81,7 +81,7 @@ CREATE TABLE media(
                       refresh_t_s			TIMESTAMP,
 
 
-                      CONSTRAINT chk_media_rating CHECK (rating >= 1 AND rating <= 5),
+                      CONSTRAINT chk_media_rating CHECK (rating >= 0 AND rating <= 5),
 
                       FOREIGN KEY (series_id) REFERENCES series (series_id),
                       FOREIGN KEY (media_type_id) REFERENCES media_type (media_type_id),
@@ -93,7 +93,7 @@ CREATE TABLE media_franchise(
                                 media_id			INTEGER,
                                 franchise_id		INTEGER,
 
-                                FOREIGN KEY (media_id) REFERENCES media (media_id),
+                                FOREIGN KEY (media_id) REFERENCES media (media_id)   ON DELETE CASCADE,
                                 FOREIGN KEY (franchise_id) REFERENCES franchise (franchise_id)
 );
 
@@ -195,7 +195,23 @@ SELECT
     m.release_date,
     p.publisher_name,
     m.status,
-    t.type_name
+    t.type_name,
+    (SELECT GROUP_CONCAT(
+                DISTINCT CASE
+			WHEN (a.first_name IS NULL OR a.first_name = '') AND (a.last_name IS NULL OR a.last_name = '') THEN a.alias
+			ELSE CONCAT_WS(' ', NULLIF(a.first_name, ''), NULLIF(a.last_name, ''))
+			END SEPARATOR ', '
+	)
+     FROM media_artist ma
+              JOIN artist a ON ma.artist_id = a.artist_id
+     WHERE ma.media_id = m.media_id
+    ) AS artists,
+    (
+        SELECT GROUP_CONCAT(t.tag SEPARATOR ',')
+        FROM media_tag mt
+                 JOIN tag t ON mt.tag_id = t.tag_id
+        WHERE mt.media_id = m.media_id
+    ) AS tags
 FROM media AS m
          LEFT JOIN publisher AS p ON m.publisher_id = p.publisher_id
          LEFT JOIN media_type AS t ON m.media_type_id = t.media_type_id;
