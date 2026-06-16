@@ -39,6 +39,24 @@ public class LendingOverviewController implements MainControllerAware{
         returnedCol.setCellValueFactory(cellData -> cellData.getValue().returnedOnProperty());
         statusCol.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
 
+        statusCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if(empty || item == null) {
+                    setText(null);
+                }else{
+                    switch (item.toUpperCase()) {
+                        case "ACTIVE" -> setText(LanguageManager.getString("ui.ACTIVE"));
+                        case "RETURNED" -> setText(LanguageManager.getString("ui.RETURNED"));
+                        case "LOST" -> setText(LanguageManager.getString("ui.LOST"));
+                        default -> setText(item);
+                    }
+                }
+            }
+        });
+
         lendingTable.setRowFactory(tv -> {
             TableRow<LendingDashboardItem> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -59,6 +77,9 @@ public class LendingOverviewController implements MainControllerAware{
                 LanguageManager.getString("ui.LOST")
         );
         statusFilterComboBox.getSelectionModel().selectFirst();
+        statusFilterComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            applyFilter();
+        });
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             applyFilter();
@@ -75,10 +96,22 @@ public class LendingOverviewController implements MainControllerAware{
         String selectedStatus = statusFilterComboBox.getValue();
         String allLabel = LanguageManager.getString("ui.All");
 
+        String internalStatusTarget = "";
+        if (selectedStatus != null && !selectedStatus.equals(allLabel)) {
+            if (selectedStatus.equals(LanguageManager.getString("ui.ACTIVE"))) {
+                internalStatusTarget = "ACTIVE";
+            } else if (selectedStatus.equals(LanguageManager.getString("ui.RETURNED"))) {
+                internalStatusTarget = "RETURNED";
+            } else if (selectedStatus.equals(LanguageManager.getString("ui.LOST"))) {
+                internalStatusTarget = "LOST";
+            }
+        }
+
+        final String finalTarget = internalStatusTarget;
         filteredItems.setPredicate(item -> {
                     boolean statusMatch = true;
-                    if(selectedStatus != null && !selectedStatus.equals(allLabel)){
-                        statusMatch = item.statusProperty().get().equalsIgnoreCase(selectedStatus);
+                    if(!finalTarget.isEmpty()){
+                        statusMatch = item.statusProperty().get().equalsIgnoreCase(finalTarget);
                     }
                     boolean textMatch = true;
                     if(!searchText.isEmpty()){

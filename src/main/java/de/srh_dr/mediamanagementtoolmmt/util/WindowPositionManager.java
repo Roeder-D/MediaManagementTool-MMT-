@@ -16,7 +16,7 @@ public class WindowPositionManager {
         for(Screen screen : screens) {
             Rectangle2D bounds = screen.getVisualBounds();
 
-            if(savedX >= bounds.getMinX() && savedX <= bounds.getMaxX() && savedY >= bounds.getMinY() && savedY <= bounds.getMaxY()) {
+            if(savedX >= bounds.getMinX()&& savedX <= bounds.getMaxX() && savedY >= bounds.getMinY()&& savedY <= bounds.getMaxY()) {
                 positionValid = true;
                 break;
             }

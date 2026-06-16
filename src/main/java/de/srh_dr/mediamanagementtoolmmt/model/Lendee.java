@@ -89,7 +89,7 @@ public class Lendee {
             identifier += this.lastName + " ";
         }
         if(this.alias != null && !this.alias.trim().isEmpty()){
-            identifier += this.alias;
+            identifier += "(" + this.alias + ")";
         }
         identifier = identifier.trim();
         return identifier;

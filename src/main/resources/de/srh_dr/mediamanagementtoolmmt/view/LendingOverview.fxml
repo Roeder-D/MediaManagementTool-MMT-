@@ -12,7 +12,7 @@
 
         <Region HBox.hgrow="ALWAYS"/>
 
-        <Label styleClass="control-label" text="%ui.label.sort_by"/>
+        <Label styleClass="control-label" text="%ui.label.filter_by"/>
         <ComboBox fx:id="statusFilterComboBox" prefWidth="150" promptText="Status Filter"/>
     </HBox>
     <TableView fx:id="lendingTable" VBox.vgrow="ALWAYS">

@@ -82,7 +82,7 @@ public class LendingViewController implements MainControllerAware{
             if(viaMedia){
                 targetMedia = mediaDAO.read(id);
                 if(targetMedia != null) {
-                    toggleLendeeInputMode(true);
+                    toggleLendeeInputMode(false);
 
                     if (targetMedia.getStatus().name().equalsIgnoreCase("LENT")) {
                         int LendingId = lendingDAO.findActiveIdByMediaId(targetMedia.getId());
@@ -99,6 +99,7 @@ public class LendingViewController implements MainControllerAware{
                     targetMedia = currentLending.getMedia();
                     mediaTitleField.setText(targetMedia.getTitle());
                     lendeeReadOnlyField.setText(currentLending.getLendee().toString().replace("()", ""));
+                    lendeeComboBox.setValue(currentLending.getLendee());
                     borrowDateField.setValue(currentLending.getBorrowDate());
                     returnDateField.setValue(currentLending.getReturnDate());
                     if(currentLending.getNote() != null){
@@ -181,18 +182,38 @@ public class LendingViewController implements MainControllerAware{
         Optional<Lendee> result  = dialog.showAndWait();
 
         result.ifPresent(lendee -> {
-            lendeeDAO.save(lendee);
-            if(!lendeeComboBox.getItems().contains(lendee)){
-                lendeeComboBox.getItems().add(lendee);
+            try {
+                boolean isDuplicate = allLendees.stream()
+                        .anyMatch(l -> l.getFirstName().equalsIgnoreCase(lendee.getFirstName()) &&
+                                l.getLastName().equalsIgnoreCase(lendee.getLastName()) &&
+                                l.getAlias().equalsIgnoreCase(lendee.getAlias()));
+
+                if(isDuplicate){
+                    boolean continueAnyway = AlertManager.requestConfirmation(
+                            LanguageManager.getString("ui.warning"),
+                            LanguageManager.getString("warning.duplicateLendee"),
+                            getWindow()
+                    );
+
+                    if(!continueAnyway){
+                        return;
+                    }
+                }
+                lendeeDAO.save(lendee);
+                if(!lendeeComboBox.getItems().contains(lendee)){
+                    lendeeComboBox.getItems().add(lendee);
+                }
+                lendeeComboBox.setValue(lendee);
+            }catch (Exception e){
+                AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
-            lendeeComboBox.setValue(lendee);
         });
     }
 
     @FXML
     private void executeEditLendeeWorkflow(Lendee selectedLendee){
         Dialog<Lendee> dialog = new Dialog<>();
-        dialog.setTitle(LanguageManager.getString("ui.edit_Lendee"));
+        dialog.setTitle(LanguageManager.getString("ui.edit_lendee"));
         dialog.setHeaderText(LanguageManager.getString("ui.edit_lendee_header"));
 
         ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
