@@ -62,7 +62,7 @@ class MediaTest {
 
         assertFalse(media.getTags().contains(tag1), "Tag should be removed from main list.");
         assertTrue(media.getTagsToRemove().contains(tag1), "Tag should be queued in tagsToRemove for the database.");
-        assertTrue(media.getDirtyFields().contains(MediaField.TAG), "The TAG field should be marked as dirty.");
+        assertTrue(media.getDirtyFields().contains(Media.MediaField.TAG), "The TAG field should be marked as dirty.");
     }
 
     @Test
@@ -86,7 +86,7 @@ class MediaTest {
         assertFalse(media.getTags().contains(tag2), "Tag should be removed from list.");
         assertFalse(media.getTagsToAdd().contains(tag2), "Tag shouldn't be queued in tagsToAdd for the database.");
         assertFalse(media.getTagsToRemove().contains(tag2), "Tag shouldn't be queued in tagsToRemove for the database.");
-        assertFalse(media.getDirtyFields().contains(MediaField.TAG), "The TAG field should be marked as dirty.");
+        assertFalse(media.getDirtyFields().contains(Media.MediaField.TAG), "The TAG field should be marked as dirty.");
     }
 
     @Test
@@ -131,13 +131,13 @@ class MediaTest {
                 .build();
 
         newMedia.setTitle("Test Title");
-        assertFalse(newMedia.getDirtyFields().contains(MediaField.TITLE));
+        assertFalse(newMedia.getDirtyFields().contains(Media.MediaField.TITLE));
 
         oldMedia.setTitle("Test Book");
-        assertFalse(oldMedia.getDirtyFields().contains(MediaField.TITLE));
+        assertFalse(oldMedia.getDirtyFields().contains(Media.MediaField.TITLE));
 
         oldMedia.setTitle("Test Title");
-        assertTrue(oldMedia.getDirtyFields().contains(MediaField.TITLE));
+        assertTrue(oldMedia.getDirtyFields().contains(Media.MediaField.TITLE));
     }
 
 }

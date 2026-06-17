@@ -30,4 +30,5 @@ module de.srh_dr.mediamanagementtoolmmt {
     exports de.srh_dr.mediamanagementtoolmmt.dto;
     exports de.srh_dr.mediamanagementtoolmmt.model;
     opens de.srh_dr.mediamanagementtoolmmt.Images to javafx.graphics;
+    exports de.srh_dr.mediamanagementtoolmmt.viewmodel;
 }

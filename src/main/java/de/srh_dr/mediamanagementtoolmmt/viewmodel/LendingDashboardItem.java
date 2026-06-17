@@ -1,4 +1,4 @@
-package de.srh_dr.mediamanagementtoolmmt.model;
+package de.srh_dr.mediamanagementtoolmmt.viewmodel;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;

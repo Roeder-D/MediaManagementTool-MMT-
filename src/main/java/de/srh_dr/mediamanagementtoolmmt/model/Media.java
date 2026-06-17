@@ -25,9 +25,36 @@ public class Media {
     private final List<Franchise> franchises = new ArrayList<>();
     private final List<Genre> genres = new ArrayList<>();
     private final List<Language> languages = new ArrayList<>();
+
+    public enum MediaStatus {
+        AVAILABLE,
+        LENT,
+        LOST
+    }
+
     private MediaStatus status;
 
     // change tracking for DAO
+    public enum MediaField {
+        ISBN,
+        TITLE,
+        ORIGINAL_TITLE,
+        COVER,
+        DESCRIPTION,
+        RATING,
+        RELEASE_DATE,
+        TAG,
+        CREDITS,
+        PUBLISHER,
+        SERIES,
+        SERIES_ORDER,
+        FRANCHISE,
+        GENRES,
+        LANGUAGE,
+        STATUS
+    }
+
+
     private final EnumSet<MediaField> dirtyFields = EnumSet.noneOf(MediaField.class);
     private final List<Tag> tagsToAdd = new ArrayList<>();
     private final List<Tag> tagsToRemove = new ArrayList<>();

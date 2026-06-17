@@ -998,7 +998,7 @@ public class MediaFormController implements MainControllerAware{
                         .genres(selectedGenres)
                         .languages(selectedLanguages)
                         .credits(getSelectedMediaArtists())
-                        .status(MediaStatus.AVAILABLE)
+                        .status(Media.MediaStatus.AVAILABLE)
                         .tags(selectedTags)
                         .franchises(selectedFranchises)
                         .seriesOrder(seriesOrder)

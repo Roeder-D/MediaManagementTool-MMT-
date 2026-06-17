@@ -1,7 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.LendingDAO;
-import de.srh_dr.mediamanagementtoolmmt.model.LendingDashboardItem;
+import de.srh_dr.mediamanagementtoolmmt.viewmodel.LendingDashboardItem;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

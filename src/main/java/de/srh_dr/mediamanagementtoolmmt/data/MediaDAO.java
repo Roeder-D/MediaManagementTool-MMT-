@@ -76,7 +76,7 @@ public class MediaDAO {
                                 .rating(rs.getInt("rating"))
                                 .releaseDate(rs.getDate("release_date") != null ? rs.getDate("release_date").toLocalDate() : null)
                                 .seriesOrder(rs.getInt("series_order"))
-                                .status(MediaStatus.valueOf(rs.getString("status")));
+                                .status(Media.MediaStatus.valueOf(rs.getString("status")));
 
                         // Fetch linked entities
                         int publisherId = rs.getInt("publisher_id");
@@ -206,14 +206,14 @@ public class MediaDAO {
 
     // UPDATE
     private void update(Media media, Connection conn) throws SQLException {
-        EnumSet<MediaField> dirty = media.getDirtyFields();
+        EnumSet<Media.MediaField> dirty = media.getDirtyFields();
         if (dirty.isEmpty()) return;
 
         StringBuilder sql = new StringBuilder("UPDATE media SET ");
         List<Object> values = new ArrayList<>();
 
         // Map Enum to Column Names
-        for (MediaField field : dirty) {
+        for (Media.MediaField field : dirty) {
             switch (field) {
                 case ISBN -> appendUpdate(sql, "isbn", values, media.getIsbn());
                 case TITLE -> appendUpdate(sql, "title", values, media.getTitle());
