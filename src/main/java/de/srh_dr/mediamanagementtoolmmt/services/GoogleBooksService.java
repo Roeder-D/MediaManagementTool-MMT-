@@ -87,6 +87,12 @@ public class GoogleBooksService implements BookLookupService{
         }
     }
 
+    @Override
+    public ExternalMediaSearchResult fetchDetails(String remoteId) {
+        System.err.println("--Broken Path-- Tried to fetch Google Books details for: " + remoteId + " --Broken Path--");
+        return null;
+    }
+
     //helper
     private ExternalMediaSearchResult mapItemToSearchResult(JsonNode itemNode){
         String remoteId = itemNode.path("id").asText("");

@@ -18,6 +18,7 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires java.prefs;
     requires jdk.compiler;
     requires com.fasterxml.jackson.databind;
+    requires org.kordamp.ikonli.fontawesome5;
 
     exports de.srh_dr.mediamanagementtoolmmt.app;
     opens de.srh_dr.mediamanagementtoolmmt.app to javafx.fxml;

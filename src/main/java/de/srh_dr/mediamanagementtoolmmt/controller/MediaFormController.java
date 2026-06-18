@@ -9,8 +9,11 @@ import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -18,8 +21,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
+import javafx.stage.*;
 import org.controlsfx.control.Rating;
 import org.controlsfx.control.SearchableComboBox;
 
@@ -28,8 +30,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
-
-//TODO: add APIs
 
 public class MediaFormController implements MainControllerAware{
     @FXML private ScrollPane viewContainer;
@@ -434,7 +434,7 @@ public class MediaFormController implements MainControllerAware{
                             0,
                             cleanTitle,
                             titleCount,
-                            (int) seriesStartYearSpinner.getValue(),
+                            seriesStartYearSpinner.getValue(),
                             altTitles
                     );
                 }
@@ -796,90 +796,73 @@ public class MediaFormController implements MainControllerAware{
 
     @FXML
     private void handleSearchRemoteByTitle(){
-        String searchText = titleField.getText().trim();
-        if(searchText.isEmpty()){
-            AlertManager.showAlert(Alert.AlertType.INFORMATION, LanguageManager.getString("ui.info"), LanguageManager.getString("ui.titleEmpty"), getWindow());
-            return;
-        }
+       String searchText = titleField.getText().trim();
+       if(searchText.isEmpty()){
+           AlertManager.showAlert(Alert.AlertType.INFORMATION, LanguageManager.getString("ui.info"), LanguageManager.getString("ui.titleEmpty"), getWindow());
+           return;
+       }
 
-        List<ExternalMediaSearchResult> results = mediaIntegrationFacade.fetchAndSyncBookTitle(searchText);
-        ExternalMediaSearchResult selectedResult;
-        if(results == null ||results.isEmpty()){
-            return;
-        }
-        if(results.size() == 1){
-            selectedResult = results.getFirst();
-        }else {
+       try {
+           FXMLLoader loader = new FXMLLoader(getClass().getResource("/de/srh_dr/mediamanagementtoolmmt/view/MediaSearchDialog.fxml"));
+           loader.setResources(LanguageManager.getBundle());
+           Parent root = loader.load();
 
-            //Dialog
-            Dialog<ExternalMediaSearchResult> dialog = new Dialog<>();
-            dialog.setTitle(LanguageManager.getString("ui.selectOnlineResult"));
-            dialog.setHeaderText(LanguageManager.getString("ui.multipleOnlineResults"));
-            dialog.initOwner(getWindow());
+           MediaSearchDialogController dialogController = loader.getController();
+           dialogController.setupDialog(mediaIntegrationFacade, searchText);
 
-            ListView<ExternalMediaSearchResult> listView = new ListView<>();
-            listView.getItems().addAll(results);
-            listView.setPrefWidth(500);
-            listView.setPrefHeight(250);
+           Stage dialogStage = new Stage();
+           dialogStage.setTitle(LanguageManager.getString("ui.searchAPI"));
+           dialogStage.initModality(Modality.WINDOW_MODAL); //disable the main window while running
+           dialogStage.initOwner(getWindow());
 
-            dialog.getDialogPane().setContent(listView);
+           Scene scene = new Scene(root);
+           scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/de/srh_dr/mediamanagementtoolmmt/css/style.css")).toExternalForm());
+           dialogStage.setScene(scene);
 
-            listView.setCellFactory(param -> new ListCell<>(){
-                @Override
-                protected void updateItem(ExternalMediaSearchResult item, boolean empty){
-                    super.updateItem(item, empty);
-                    if(empty || item == null){
-                        setText(null);
-                    }else{
-                        setText(item.title() + " " + item.publisher() + " " + item.releaseDate());
-                    }
-                }
-            });
+           dialogStage.showAndWait();
 
-            ButtonType importButtonType = new ButtonType(LanguageManager.getString("ui.buttonImport"), ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
+           ExternalMediaSearchResult selectedResult = dialogController.getSelectedMedia();
 
-            dialog.setResultConverter(clickedButton -> {
-                if(clickedButton == importButtonType){
-                    return listView.getSelectionModel().getSelectedItem();
-                }
-                return null;
-            });
+           if(selectedResult == null){
+               return;
+           }
 
-            Optional<ExternalMediaSearchResult> selection = dialog.showAndWait();
+           LocalDate releaseDate = parseDate(selectedResult.releaseDate());
 
-            selectedResult = selection.orElse(null);
-            if (selectedResult == null) {return;}
-        }
-        LocalDate releaseDate = parseDate(selectedResult.releaseDate());
+           isbnField.setText(selectedResult.remoteId());
+           titleField.setText(selectedResult.title());
+           releaseDateField.setValue(releaseDate);
+           descriptionArea.setText(selectedResult.description());
 
-        isbnField.setText(selectedResult.remoteId());
-        titleField.setText(selectedResult.title());
-        releaseDateField.setValue(releaseDate);
-        descriptionArea.setText(selectedResult.description());
+           if(!allPublishers.contains(selectedResult.publisher())){
+               allPublishers.add(selectedResult.publisher());
+               publisherComboBox.getItems().add(selectedResult.publisher());
+           }
+           publisherComboBox.setValue(selectedResult.publisher());
 
-        if(!allPublishers.contains(selectedResult.publisher())){
-            allPublishers.add(selectedResult.publisher());
-            publisherComboBox.getItems().add(selectedResult.publisher());
-        }
-        publisherComboBox.setValue(selectedResult.publisher());
+           artistContainer.getChildren().clear();
+           for(Artist artist : selectedResult.artists()){
+               MediaArtist partialCredit = new MediaArtist(artist, null, true);
+               addMediaArtistRow(partialCredit);
+           }
 
-        artistContainer.getChildren().clear();
-        for(Artist artist : selectedResult.artists()){
-            MediaArtist partialCredit = new MediaArtist(artist, null, true);
-            addMediaArtistRow(partialCredit);
-        }
+           languageContainer.getChildren().clear();
+           for(Language language : selectedResult.languages()){
+               if(!allLanguages.contains(language)){
+                   allLanguages.add(language);
+               }
+               addDynamicDropdownRow(languageContainer, allLanguages, language, null);
+           }
 
-        languageContainer.getChildren().clear();
-        for(Language language : selectedResult.languages()){
-            if(!allLanguages.contains(language)){
-                allLanguages.add(language);
-            }
-            addDynamicDropdownRow(languageContainer, allLanguages, language, null);
-        }
+           this.remoteCoverUrl = selectedResult.imageUrl();
+           displayImage();
+       } catch (Exception e) {
+           System.err.println("Failed to load MediaSearchDialog.fxml");
+           e.printStackTrace();
+           AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
+       }
 
-        this.remoteCoverUrl = selectedResult.imageUrl();
-        displayImage();
+
     }
 
 
@@ -1004,7 +987,7 @@ public class MediaFormController implements MainControllerAware{
                         .seriesOrder(seriesOrder)
                         .build();
 
-                mediaIntegrationFacade.persistConfirmedBook(newMedia);
+                mediaIntegrationFacade.persistConfirmedMedia(newMedia);
                 targetViewId = newMedia.getId();
             }else{ //existing item
                 currentMedia.setIsbn(isbnField.getText().trim());

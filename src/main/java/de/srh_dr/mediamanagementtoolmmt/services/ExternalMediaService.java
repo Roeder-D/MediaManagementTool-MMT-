@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ExternalMediaService {
     List<ExternalMediaSearchResult> searchByTitle(String title);
+    ExternalMediaSearchResult searchByIsbn(String isbn);
+    ExternalMediaSearchResult fetchDetails(String remoteId);
 }

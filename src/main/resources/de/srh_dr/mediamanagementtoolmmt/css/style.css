@@ -232,6 +232,42 @@
     -fx-background-color: -fx-badge-color;
 }
 /* ==========================================================================
+   API SELECTION
+   ========================================================================== */
+
+.api-tile {
+    -fx-background-color: #f4f4f4;
+    -fx-background-radius: 10;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-padding: 40 30 40 30;
+    -fx-pref-width: 200;
+    -fx-pref-height: 200;
+    -fx-cursor: hand;
+}
+
+.api-tile:hover {
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #0078D7;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+}
+
+.tile-icon {
+    -fx-icon-color: #555555;
+}
+
+.api-tile:hover .tile-icon {
+    -fx-icon-color: #0078D7;
+}
+
+.tile-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+/* ==========================================================================
    REMOVE DOUBLE FRAME
    ========================================================================== */
 .searchable-combo-box {
