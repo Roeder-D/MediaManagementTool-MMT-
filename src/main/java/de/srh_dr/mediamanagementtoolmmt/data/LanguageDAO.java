@@ -1,12 +1,17 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
+import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LanguageDAO extends AbstractDAO<Language> {
+    Logger LOGGER = Logger.getLogger(LanguageDAO.class.getName());
+
     @Override protected String getTableName() { return "language"; }
     @Override protected String getIdColumnName() { return "language_id"; }
     @Override protected String getValueColumnName() { return "language"; }
@@ -40,7 +45,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
                 if (rs.next()) return mapResultSet(rs);
             }
         } catch (SQLException e) {
-            System.err.println("Error looking up language by name: " + name);
+            LOGGER.log(Level.WARNING,"Error looking up language by name: " + name, e);
         }
         return null;
     }
@@ -65,7 +70,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
             language.clearChangeTracking();
 
         }catch(SQLException e){
-            System.err.println("Error saving language " + language.getLanguage());
+            LOGGER.log(Level.SEVERE,"Error saving language " + language.getLanguage(), e);
         }
     }
 
@@ -86,24 +91,22 @@ public class LanguageDAO extends AbstractDAO<Language> {
             language.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error updating language " + language.getLanguage());
+            LOGGER.log(Level.SEVERE,"Error updating language " + language.getLanguage(), e);
         }
     }
 
-    // DELETE
-    public boolean delete(int id) {
-        String sql = "DELETE FROM language WHERE language_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            // Error code 1451 is the standard MySQL code for a Foreign Key violation
-            if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
-            }
-            return false;
-        }
+    //Media relations
+    public void saveLanguagesForMedia(int mediaId, List<Language> languages, Connection conn) throws SQLException {
+        String sql = "INSERT INTO language (media_id, language_id) VALUES (?, ?)";
+        saveJunctionBatch(mediaId, languages, sql, conn);
+    }
+
+    public void deleteLanguagesForMedia(int mediaId, List<Language> languagesToDelete, Connection conn) throws SQLException {
+        String sql = "DELETE FROM media_language WHERE media_id = ? AND language_id = ?";
+        deleteJunctionBatch(mediaId, languagesToDelete, sql, conn);
+    }
+
+    public List<Language> fetchByMediaId(int mediaId) {
+        return fetchViaJunction(mediaId, "media_language", "language_id");
     }
 }

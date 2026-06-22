@@ -10,8 +10,6 @@ import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -19,14 +17,16 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
-import org.controlsfx.control.spreadsheet.Grid;
-
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LendingViewController implements MainControllerAware{
+    Logger LOGGER = Logger.getLogger(LendingViewController.class.getName());
+
     @FXML private BorderPane viewContainer;
     @FXML private TextField mediaTitleField;
     @FXML private SearchableComboBox<Lendee> lendeeComboBox;
@@ -108,6 +108,7 @@ public class LendingViewController implements MainControllerAware{
                 }
             }
         }catch(Exception e){
+            LOGGER.log(Level.SEVERE,"Failed to load lending data: " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
@@ -205,6 +206,7 @@ public class LendingViewController implements MainControllerAware{
                 }
                 lendeeComboBox.setValue(lendee);
             }catch (Exception e){
+                LOGGER.log(Level.SEVERE, "Failed to save lendee: " + e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
@@ -321,6 +323,7 @@ public class LendingViewController implements MainControllerAware{
             }
             handleCancel();
         }catch(Exception e){
+            LOGGER.log(Level.SEVERE, "Failed to save lending: " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),

@@ -4,10 +4,38 @@ import de.srh_dr.mediamanagementtoolmmt.model.Lendee;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class LendeeDAO {
+public class LendeeDAO extends AbstractDAO<Lendee> {
+    Logger LOGGER = Logger.getLogger(LendeeDAO.class.getName());
+
+    @Override
+    protected String getTableName() {
+        return "lendee";
+    }
+
+    @Override
+    protected String getIdColumnName() {
+        return "lendee_id";
+    }
+
+    @Override
+    protected String getValueColumnName() {
+        return "first_name, last_name, alias";
+    }
+
+    @Override
+    protected Lendee mapResultSet(ResultSet rs) throws SQLException {
+        return new Lendee(
+                rs.getInt("lendee_id"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("alias"),
+                false
+        );
+    }
+
     // HELPER
     public void save(Lendee lendee) {
         if (lendee.isNewItem()) {
@@ -42,61 +70,8 @@ public class LendeeDAO {
             lendee.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Failed to create lendee " + lendee.getFirstName() + " " + lendee.getLastName());
+            LOGGER.log(Level.SEVERE,"Failed to create lendee " + lendee.getFirstName() + " " + lendee.getLastName(), e);
         }
-    }
-
-    // READ (by ID)
-    public Lendee findById(int id) {
-        String sql = "SELECT * FROM lendee WHERE lendee_id = ?";
-        Lendee lendee = null;
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    lendee = new Lendee(
-                            rs.getInt("lendee_id"),
-                            rs.getString("first_name"),
-                            rs.getString("last_name"),
-                            rs.getString("alias"),
-                            false
-                    );
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error finding lendee " + id);
-        }
-        return lendee;
-    }
-
-    // READ (all)
-    public List<Lendee> findAll() {
-        String sql = "SELECT * FROM lendee";
-        List<Lendee> lendees = new ArrayList<>();
-
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                lendees.add(new Lendee(
-                        rs.getInt("lendee_id"),
-                        rs.getString("first_name"),
-                        rs.getString("last_name"),
-                        rs.getString("alias"),
-                        false
-                ));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error finding lendees " + lendees.size());
-        }
-
-        return lendees;
     }
 
     // UPDATE
@@ -118,22 +93,7 @@ public class LendeeDAO {
             lendee.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error updating lendee " + lendee.getId());
-        }
-    }
-
-    // DELETE
-    public void delete(int id) {
-        String sql = "DELETE FROM lendee WHERE lendee_id = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            System.err.println("Error deleting lendee " + id);
+            LOGGER.log(Level.SEVERE,"Error updating lendee " + lendee.getId(), e);
         }
     }
 }

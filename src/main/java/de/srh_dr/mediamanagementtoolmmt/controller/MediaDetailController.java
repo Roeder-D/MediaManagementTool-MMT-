@@ -1,9 +1,9 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
-import de.srh_dr.mediamanagementtoolmmt.data.MediaDAO;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
 import de.srh_dr.mediamanagementtoolmmt.model.MediaArtist;
 import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
+import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
@@ -18,8 +18,12 @@ import org.controlsfx.control.Rating;
 
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MediaDetailController implements MainControllerAware {
+    Logger LOGGER  = Logger.getLogger(MediaDetailController.class.getName());
+
     @FXML private BorderPane viewContainer;
     @FXML private Label titleLabel;
     @FXML private Label isbnLabel;
@@ -41,10 +45,10 @@ public class MediaDetailController implements MainControllerAware {
     @FXML private ImageView coverImage;
 
 
-    MainController mainController;
-    Media currentMedia;
-    MediaDAO mediaDAO =  new MediaDAO();
-    ImageManager imageManager = new ImageManager();
+    private MainController mainController;
+    private Media currentMedia;
+    private final MediaService mediaService = new MediaService();
+    private final ImageManager imageManager = new ImageManager();
 
 
     @Override
@@ -64,12 +68,13 @@ public class MediaDetailController implements MainControllerAware {
 
         if(confirmDelete){
             try{
-                mediaDAO.deleteById(currentMedia.getId());
+                mediaService.deleteMedia(currentMedia.getId());
 
                 if(mainController != null){
                     mainController.showDefaultView();
                 }
             }catch(Exception e){
+                LOGGER.log(Level.SEVERE, "Error while deleting media : " + e.getMessage(), e);
                 AlertManager.showAlert(
                         Alert.AlertType.ERROR,
                         LanguageManager.getString("ui.error"),
@@ -97,7 +102,7 @@ public class MediaDetailController implements MainControllerAware {
       if(mediaId == 0) return;
 
       try{
-          Media media = mediaDAO.read(mediaId);
+          Media media = mediaService.getMediaById(mediaId);
           if(media == null) return;
 
           this.currentMedia = media;
@@ -115,6 +120,7 @@ public class MediaDetailController implements MainControllerAware {
               String currentMediaType = currentMedia.getMediatype().getTypeName();
               showISBN = isbnTypes.stream().anyMatch(mt -> mt.equalsIgnoreCase(currentMediaType));
           }catch(Exception e){
+              LOGGER.log(Level.SEVERE, "Error while getting isbn types : " + e.getMessage(), e);
               AlertManager.showAlert(
                       Alert.AlertType.ERROR,
                       LanguageManager.getString("ui.error"),
@@ -226,15 +232,16 @@ public class MediaDetailController implements MainControllerAware {
               if(currentMedia != null){
                   try{
                       currentMedia.setRating(newRating.intValue());
-                      mediaDAO.save(currentMedia);
+                      mediaService.saveMedia(currentMedia);
 
                       System.out.println("Database auto-updated! New rating stored: " + newRating.intValue());
                   }catch(Exception e){
-                        AlertManager.showAlert(
-                                Alert.AlertType.ERROR,
-                                LanguageManager.getString("error.failedToSave"),
-                                e.getMessage(),
-                                getWindow());
+                      LOGGER.log(Level.SEVERE, "Error while saving new rating!", e);
+                      AlertManager.showAlert(
+                              Alert.AlertType.ERROR,
+                              LanguageManager.getString("error.failedToSave"),
+                              e.getMessage(),
+                              getWindow());
                   }
               }
           });
@@ -268,6 +275,7 @@ public class MediaDetailController implements MainControllerAware {
 
 
       }catch(Exception e){
+          LOGGER.log(Level.SEVERE, "Error while loading media: " + e.getMessage(), e);
           AlertManager.showAlert(
                   Alert.AlertType.ERROR,
                   LanguageManager.getString("error.failedToLoad"),

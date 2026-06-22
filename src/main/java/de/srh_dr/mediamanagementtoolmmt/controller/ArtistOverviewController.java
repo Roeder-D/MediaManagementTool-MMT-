@@ -16,8 +16,12 @@ import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ArtistOverviewController{
+    Logger LOGGER = Logger.getLogger(ArtistOverviewController.class.getName());
+
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private SearchableComboBox<String> nationalityFilterComboBox;
@@ -28,7 +32,6 @@ public class ArtistOverviewController{
     @FXML private TableColumn<Artist, String> nationality;
 
     private final ArtistDAO artistDAO = new ArtistDAO();
-    private List<String> allNationalities;
     private final ObservableList<Artist> artists = FXCollections.observableArrayList();
     private FilteredList<Artist> filteredArtists;
 
@@ -134,6 +137,7 @@ public class ArtistOverviewController{
                 try{
                     artistDAO.save(selectedArtist);
                 }catch(Exception e){
+                    LOGGER.log(Level.SEVERE,"Failed to save artist: " + e.getMessage(),e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"),LanguageManager.getString("error.failedToSave") + e.getMessage(), getWindow());
                 }
                 return null;
@@ -147,6 +151,7 @@ public class ArtistOverviewController{
                     try {
                         artistDAO.delete(selectedArtist.getId());
                     }catch(Exception e){
+                        LOGGER.log(Level.SEVERE,"Failed to delete artist: " + e.getMessage(),e);
                         AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                     }
                 }
@@ -159,7 +164,7 @@ public class ArtistOverviewController{
     }
 
     private void loadNationalities(){
-        allNationalities = artistDAO.getAllNationalities();
+        List<String> allNationalities = artistDAO.getAllNationalities();
 
         nationalityFilterComboBox.getItems().clear();
         nationalityFilterComboBox.getItems().add(LanguageManager.getString("ui.selectNationality"));

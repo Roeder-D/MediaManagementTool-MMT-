@@ -22,17 +22,19 @@ import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class MainController {
+    Logger LOGGER =  Logger.getLogger(MainController.class.getName());
+
     public enum ViewState{
         DEFAULT_VIEW, MEDIA_OVERVIEW, ARTIST_OVERVIEW, FRANCHISE_OVERVIEW, LENDING_OVERVIEW, MEDIA_DETAIL, MEDIA_FORM, PUBLISHER_OVERVIEW, LENDING_DETAIL_VIEW, SERIES_OVERVIEW
     }
     private ViewState currentView =  ViewState.DEFAULT_VIEW;
     private int currentPramId = -1;
     private boolean lendingParam = false;
-
-
 
     @FXML
     private void initialize(){
@@ -65,7 +67,7 @@ public class MainController {
         try {
             currentLanguage = ConfigManager.getAppLanguage();
         }catch (Exception e){
-            System.err.println("Error while loading language : " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error while loading language : " + e.getMessage(), e);
         }
         for(FilterOption filterOption : langCombo.getItems()){
             if( filterOption.getInternalValue().equals(currentLanguage)){
@@ -88,6 +90,7 @@ public class MainController {
                 try {
                     ConfigManager.setProperty("APP_LANGUAGE", newLanguage);
                 }catch (Exception e){
+                    LOGGER.log(Level.SEVERE, "Error while setting language : " + e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
@@ -184,6 +187,7 @@ public class MainController {
                     try {
                         ConfigManager.setProperty("APP_ISBN_MEDIA_TYPES", isbnString);
                     }catch (Exception e){
+                        LOGGER.log(Level.SEVERE, "Error while setting isbn type : " + e.getMessage(), e);
                         AlertManager.showAlert(
                                 Alert.AlertType.ERROR,
                                 LanguageManager.getString("ui.error"),
@@ -197,6 +201,7 @@ public class MainController {
             isbnDialog.initOwner(getWindow());
             isbnDialog.showAndWait();
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error while setting isbn type : " + e.getMessage(), e);
            AlertManager.showAlert(
                    Alert.AlertType.ERROR,
                    LanguageManager.getString("ui.error"),
@@ -222,6 +227,7 @@ public class MainController {
             lendingParam = false;
             viewContainer.setCenter(view);
         }catch(IOException e){
+            LOGGER.log(Level.SEVERE, "Error while setting default view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
@@ -281,7 +287,7 @@ public class MainController {
         try{
             URL resource = getClass().getResource(fxmlFile);
             if(resource == null){
-                System.err.println("Couldn't find view: " + fxmlFile);
+                LOGGER.log(Level.SEVERE, "Couldn't find view: " + fxmlFile);
                 return;
             }
             FXMLLoader loader = new FXMLLoader(resource);
@@ -296,6 +302,7 @@ public class MainController {
 
             viewContainer.setCenter(view);
         }catch(IOException e){
+            LOGGER.log(Level.SEVERE, "Error while loading view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ConfigManager.failedToLoad"),
@@ -323,6 +330,7 @@ public class MainController {
             lendingParam = false;
             viewContainer.setCenter(view);
         }catch(IOException e){
+            LOGGER.log(Level.SEVERE, "Error while loading view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ConfigManager.failedToLoad"),
@@ -355,6 +363,7 @@ public class MainController {
                 viewContainer.setCenter(view);
             }
         }catch(IOException e){
+            LOGGER.log(Level.SEVERE, "Error while loading view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
@@ -382,6 +391,7 @@ public class MainController {
             lendingParam = true;
             viewContainer.setCenter(view);
         }catch(IOException e){
+            LOGGER.log(Level.SEVERE, "Error while loading view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("ui.error"),
@@ -404,6 +414,7 @@ public class MainController {
 
             stage.getScene().setRoot(newRoot);
         } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error while loading view : " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     "UI Error",

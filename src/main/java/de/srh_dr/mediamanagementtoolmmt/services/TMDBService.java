@@ -19,8 +19,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TMDBService implements ExternalMediaService{
+    Logger LOGGER = Logger.getLogger(TMDBService.class.getName());
+
     private static final Dotenv dotenv = Dotenv.load();
     private static final String apiToken = dotenv.get("TMDB_API_TOKEN");
     private static final String baseUrl = dotenv.get("TMDB_BASE_URL", "https://api.themoviedb.org/3");
@@ -60,15 +64,14 @@ public class TMDBService implements ExternalMediaService{
             }
             return results;
         }catch (Exception e){
-            System.err.println("Error executing or parsing TMDB title lookup for: " + title);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE,"Error executing or parsing TMDB title lookup for: " + title, e);
             return null;
         }
     }
 
     @Override
     public ExternalMediaSearchResult searchByIsbn(String isbn) {
-        System.err.println("--BROKEN PATH-- Tried to search ISBN via TMDB --BROKEN PATH--");
+        LOGGER.log(Level.SEVERE,"--BROKEN PATH-- Tried to search ISBN via TMDB --BROKEN PATH--");
         return null;
     }
 
@@ -145,7 +148,7 @@ public class TMDBService implements ExternalMediaService{
                     remoteId
             );
         } catch (Exception e) {
-            System.err.println("Error fetching TMDB details for: " + remoteId);
+            LOGGER.log(Level.SEVERE,"Error fetching TMDB details for: " + remoteId);
             return null;
         }
     }

@@ -4,7 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.util.Objects;
 
-public class ArtistRole {
+public class ArtistRole implements Identifiable {
     private int id;
     private String role;
     private boolean isNewItem;

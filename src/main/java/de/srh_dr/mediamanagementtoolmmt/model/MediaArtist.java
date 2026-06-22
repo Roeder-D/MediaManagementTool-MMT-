@@ -3,7 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 import java.util.Objects;
 
 public class
-MediaArtist {
+MediaArtist{
     private final Artist artist;
     private ArtistRole artistRole;
     private boolean isNewItem;

@@ -16,7 +16,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class FranchiseOverviewController implements MainControllerAware{
+    Logger LOGGER = Logger.getLogger(FranchiseOverviewController.class.getName());
+
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Franchise> franchiseList;
@@ -159,6 +164,7 @@ public class FranchiseOverviewController implements MainControllerAware{
                 try {
                     franchiseDAO.delete(selectedFranchise.getId());
                 } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to delete franchise: " + e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
@@ -175,6 +181,7 @@ public class FranchiseOverviewController implements MainControllerAware{
                     selectedFranchise.setName(franchiseNameField.getText().trim());
                     franchiseDAO.save(selectedFranchise);
                 }catch(Exception e){
+                    LOGGER.log(Level.SEVERE, "Failed to save franchise: " + e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),

@@ -1,9 +1,5 @@
 package de.srh_dr.mediamanagementtoolmmt.util;
 
-import com.sun.tools.javac.Main;
-import de.srh_dr.mediamanagementtoolmmt.controller.MainController;
-import javafx.scene.control.Alert;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;

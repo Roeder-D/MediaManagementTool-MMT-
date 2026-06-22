@@ -19,8 +19,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GoogleBooksService implements BookLookupService{
+    Logger LOGGER = Logger.getLogger(GoogleBooksService.class.getName());
+
     private static final Dotenv dotenv = Dotenv.load();
     private static final String apiToken = dotenv.get("GOOGLE_BOOKS_API_TOKEN");
     private static final String baseUrl = dotenv.get("GOOGLE_BOOKS_BASE_URL");
@@ -53,8 +57,7 @@ public class GoogleBooksService implements BookLookupService{
             }
             return results;
         }catch (Exception e){
-            System.err.println("Error executing or parsing Google Books title lookup for: " + title);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE,"Error executing or parsing Google Books title lookup for: " + title, e);
             return null;
         }
     }
@@ -81,15 +84,14 @@ public class GoogleBooksService implements BookLookupService{
             return mapItemToSearchResult(firstItem);
 
         }catch (Exception e) {
-            System.err.println("Error executing or parsing Google Books ISBN lookup for: " + isbn);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE,"Error executing or parsing Google Books ISBN lookup for: " + isbn, e);
             return null;
         }
     }
 
     @Override
     public ExternalMediaSearchResult fetchDetails(String remoteId) {
-        System.err.println("--Broken Path-- Tried to fetch Google Books details for: " + remoteId + " --Broken Path--");
+        LOGGER.log(Level.SEVERE,"--Broken Path-- Tried to fetch Google Books details for: " + remoteId + " --Broken Path--");
         return null;
     }
 

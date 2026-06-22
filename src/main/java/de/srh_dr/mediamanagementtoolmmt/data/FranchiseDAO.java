@@ -7,8 +7,39 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class FranchiseDAO {
+public class FranchiseDAO extends AbstractDAO<Franchise>{
+    Logger LOGGER = Logger.getLogger(FranchiseDAO.class.getName());
+
+    @Override
+    protected String getTableName() {
+        return "franchise";
+    }
+
+    @Override
+    protected String getIdColumnName() {
+        return "franchise_id";
+    }
+
+    @Override
+    protected String getValueColumnName() {
+        return "franchise_name";
+    }
+
+    @Override
+    protected Franchise mapResultSet(ResultSet rs) throws SQLException {
+        return new Franchise(
+                rs.getInt("franchise_id"),
+                rs.getString("franchise_name"),
+                List.of(),
+                false
+        );
+    }
+
+
+
     // HELPER
     public void save(Franchise franchise) {
         if (franchise.isNewItem()) {
@@ -44,7 +75,7 @@ public class FranchiseDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            System.err.println("Error saving franchise " + franchise.getName());
+            LOGGER.log(Level.SEVERE,"Error saving franchise " + franchise.getName(), e);
         }
     }
 
@@ -89,7 +120,7 @@ public class FranchiseDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            System.err.println("Error updating franchise " + franchise.getName());
+            LOGGER.log(Level.SEVERE,"Error updating franchise " + franchise.getName(), e);
         }
     }
 
@@ -129,97 +160,134 @@ public class FranchiseDAO {
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString("sql.error.franchise.cannot_delete"));
+                LOGGER.log(Level.SEVERE,"Couldn't delete Franchise: " + e.getMessage(), e);
             } else {
-                System.err.println("Error deleting franchise " + id);
+                LOGGER.log(Level.SEVERE,"Error deleting franchise " + id + ": " + e.getMessage(), e) ;
             }
             return false;
         }
     }
 
     // READ (findById)
-    public Franchise findById(int id) throws SQLException {
-        String franchiseSql = "SELECT * FROM franchise WHERE franchise_id = ?";
-        String titlesSql = "SELECT * FROM alt_title WHERE franchise_id = ?";
-        Franchise franchise = null;
+    @Override
+    public Franchise findById(int id) {
+        Franchise franchise = super.findById(id);
 
-        try (Connection conn = DBConnection.getConnection()) {
-            // Load franchise
-            try (PreparedStatement stmt = conn.prepareStatement(franchiseSql)) {
-                stmt.setInt(1, id);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    List<AltTitle> titles = new ArrayList<>();
-                    // Load altTitles
-                    try (PreparedStatement titleStmt = conn.prepareStatement(titlesSql)) {
-                        titleStmt.setInt(1, id);
-                        ResultSet rsTitles = titleStmt.executeQuery();
-                        while (rsTitles.next()) {
-                            titles.add(new AltTitle(
-                                    rsTitles.getInt("alt_title_id"),
-                                    rsTitles.getString("title"),
-                                    false
-                            ));
-                        }
-                    }
-
-                    franchise = new Franchise(
-                            rs.getInt("franchise_id"),
-                            rs.getString("franchise_name"),
-                            titles,
-                            false
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching franchise " + id);
+        if(franchise != null){
+            List<AltTitle> altTitles = fetchAltTitlesForFranchise(id);
+            franchise.setAltTitles(altTitles);
         }
         return franchise;
     }
 
     // READ all
-    public List<Franchise> findAll() {
+    @Override
+    public List<Franchise> findAll(){
         Map<Integer, Franchise> franchiseMap = new LinkedHashMap<>();
 
-        String franchiseSql = "SELECT * FROM franchise";
-        // Optimized: Only grab alt_titles associated with a franchise (ignoring series titles)
         String titlesSql = "SELECT * FROM alt_title WHERE franchise_id IS NOT NULL";
 
-        try (Connection conn = DBConnection.getConnection()) {
-            try (PreparedStatement stmt = conn.prepareStatement(franchiseSql);
-                 ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("franchise_id");
-                    Franchise franchise = new Franchise(
-                            id,
-                            rs.getString("franchise_name"),
-                            new ArrayList<>(),
-                            false
-                    );
-                    franchiseMap.put(id, franchise);
+        List<Franchise> franchises = super.findAll();
+
+        for (Franchise franchise : franchises) {
+            franchiseMap.put(franchise.getId(), franchise);
+        }
+
+        try (Connection conn = DBConnection.getConnection()){
+            try (PreparedStatement stmt = conn.prepareStatement(titlesSql);
+            ResultSet rs = stmt.executeQuery()){
+                while (rs.next()){
+                    int franchiseId = rs.getInt("franchise_id");
+                    Franchise franchise = franchiseMap.get(franchiseId);
+
+                    if (franchise != null) {
+                        franchise.getAltTitles().add(new AltTitle(
+                                rs.getInt("alt_title_id"),
+                                rs.getString("title"),
+                                false
+                        ));
+                    }
                 }
+
             }
+        }catch (SQLException e){
+            LOGGER.log(Level.SEVERE,"Error fetching franchise " + franchiseMap.size(), e);
+        }
+        return new ArrayList<>(franchiseMap.values());
+    }
 
-            if (!franchiseMap.isEmpty()) {
-                try (PreparedStatement stmt = conn.prepareStatement(titlesSql);
-                     ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        int franchiseId = rs.getInt("franchise_id");
-                        Franchise franchise = franchiseMap.get(franchiseId);
+    public void saveFranchisesForMedia(int mediaId, List<Franchise> franchises, Connection conn) throws SQLException {
+        String sql = "INSERT INTO media_franchise (media_id, franchise_id) VALUES (?, ?)";
+        saveJunctionBatch(mediaId, franchises, sql, conn);
+    }
 
-                        if (franchise != null) {
-                            franchise.getAltTitles().add(new AltTitle(
-                                    rs.getInt("alt_title_id"),
-                                    rs.getString("title"),
-                                    false
-                            ));
-                        }
+    public void deleteFranchisesForMedia(int mediaId, List<Franchise> franchisesToDelete, Connection conn) throws SQLException {
+        String sql = "DELETE FROM media_franchise WHERE media_id = ? AND franchise_id = ?";
+        deleteJunctionBatch(mediaId, franchisesToDelete, sql, conn);
+    }
+
+    public List<Franchise> fetchByMediaId(int mediaId){
+        String sql = "SELECT f.*, at.alt_title_id, at.title AS alt_title FROM media_franchise mf " +
+                "JOIN franchise f ON mf.franchise_id = f.franchise_id " +
+                "LEFT JOIN alt_title at ON f.franchise_id = at.franchise_id " +
+                "WHERE mf.media_id = ?";
+
+        Map<Integer, Franchise> franchiseMap = new HashMap<>();
+
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setInt(1, mediaId);
+
+            try(ResultSet rs = stmt.executeQuery()){
+                while (rs.next()){
+                    int currentFranchiseId = rs.getInt("franchise_id");
+                    Franchise currentFranchise;
+
+                    if(franchiseMap.containsKey(currentFranchiseId)){
+                        currentFranchise = franchiseMap.get(currentFranchiseId);
+                    }else{
+                        currentFranchise = new Franchise(
+                                rs.getInt("franchise_id"),
+                                rs.getString("franchise_name"),
+                                new ArrayList<>(),
+                        false
+                        );
+                        franchiseMap.put(currentFranchiseId, currentFranchise);
+                    }
+
+                    if(rs.getString("alt_title_id") != null) {
+                        currentFranchise.addAltTitle(new AltTitle(rs.getInt("alt_title_id"), rs.getString("alt_title"), false));
+                        currentFranchise.clearChangeTracking();
                     }
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching franchise " + franchiseMap.size());
+        }catch (SQLException e){
+            LOGGER.log(Level.SEVERE,"Error fetching franchise " + franchiseMap.size(), e);
         }
         return new ArrayList<>(franchiseMap.values());
+    }
+
+    //helper
+    private List<AltTitle> fetchAltTitlesForFranchise(int franchiseId){
+        List<AltTitle> altTitles = new ArrayList<>();
+        String sql = "SELECT * FROM alt_title WHERE franchise_id = ?";
+            try (Connection conn = DBConnection.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setInt(1, franchiseId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        AltTitle altTitle = new AltTitle(
+                                rs.getInt("alt_title_id"),
+                                rs.getString("title"),
+                                false
+                        );
+                        altTitles.add(altTitle);
+                    }
+                }
+            }
+        catch (SQLException e){
+            LOGGER.log(Level.SEVERE,"Error fetching alt titles " + franchiseId, e);
+        }
+        return altTitles;
     }
 }

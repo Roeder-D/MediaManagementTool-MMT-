@@ -4,7 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.util.Objects;
 
-public class Language{
+public class Language implements Identifiable {
     private int id;
     private String language;
     private boolean isNewItem;

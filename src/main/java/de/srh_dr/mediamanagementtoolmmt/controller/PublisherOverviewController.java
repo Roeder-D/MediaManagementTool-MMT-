@@ -14,7 +14,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class PublisherOverviewController{
+    Logger LOGGER = Logger.getLogger(PublisherOverviewController.class.getName());
+
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Publisher> publisherList;
@@ -99,6 +104,7 @@ public class PublisherOverviewController{
                 try{
                    publisherDAO.save(selectedPublisher);
                 }catch(Exception e){
+                    LOGGER.log(Level.SEVERE, "Failed to save publisher: " + e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
@@ -115,6 +121,7 @@ public class PublisherOverviewController{
                     try {
                         publisherDAO.delete(selectedPublisher.getId());
                     } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Failed to delete publisher: " + e.getMessage(), e);
                         AlertManager.showAlert(
                                 Alert.AlertType.ERROR,
                                 LanguageManager.getString("ui.error"),

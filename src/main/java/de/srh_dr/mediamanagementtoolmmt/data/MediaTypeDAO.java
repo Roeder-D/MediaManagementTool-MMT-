@@ -2,13 +2,37 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.MediaType;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class MediaTypeDAO {
+public class MediaTypeDAO extends AbstractDAO<MediaType> {
+    Logger LOGGER = Logger.getLogger(MediaTypeDAO.class.getName());
+
+    @Override
+    protected String getTableName() {
+        return "media_type";
+    }
+
+    @Override
+    protected String getIdColumnName() {
+        return "media_type_id";
+    }
+
+    @Override
+    protected String getValueColumnName() {
+        return "type_name";
+    }
+
+    @Override
+    protected MediaType mapResultSet(ResultSet rs) throws SQLException {
+        return new MediaType(
+                rs.getInt("media_type_id"),
+                rs.getString("type_name"),
+                false
+        );
+    }
 
     // HELPER
     public void save(MediaType type) {
@@ -38,57 +62,8 @@ public class MediaTypeDAO {
             type.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to insert new media " + e.getMessage(), e);
         }
-    }
-
-    // READ (by ID)
-    public MediaType findById(int id) {
-        String sql = "SELECT * FROM media_type WHERE media_type_id = ?";
-        MediaType type = null;
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    type = new MediaType(
-                            rs.getInt("media_type_id"),
-                            rs.getString("type_name"),
-                            false
-                    );
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-        return type;
-    }
-
-    // READ (all)
-    public List<MediaType> findAll() {
-        String sql = "SELECT * FROM media_type";
-        List<MediaType> types = new ArrayList<>();
-
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                types.add(new MediaType(
-                        rs.getInt("media_type_id"),
-                        rs.getString("type_name"),
-                        false
-                ));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-
-        return types;
     }
 
     // UPDATE
@@ -108,29 +83,8 @@ public class MediaTypeDAO {
             type.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to update media: " + e.getMessage(), e);
         }
     }
 
-    // DELETE
-    public boolean delete(int id) {
-        String sql = "DELETE FROM media_type WHERE media_type_id = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            int affectedRows = stmt.executeUpdate();
-
-            return affectedRows > 0;
-
-        } catch (SQLException e) {
-            if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString("sql.error.mediaType.cannot_delete"));
-            } else {
-                System.err.println("SQLException: " + e.getMessage());
-            }
-            return false;
-        }
-    }
 }

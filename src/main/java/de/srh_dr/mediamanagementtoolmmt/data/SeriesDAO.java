@@ -7,8 +7,11 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SeriesDAO {
+    Logger LOGGER = Logger.getLogger(SeriesDAO.class.getName());
 
     // HELPER
     public void save(Series series) {
@@ -48,7 +51,7 @@ public class SeriesDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to insert new series: " + e.getMessage(), e);
         }
     }
 
@@ -95,7 +98,7 @@ public class SeriesDAO {
                 throw e;
             }
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to update new Series: " + e.getMessage());
         }
     }
 
@@ -135,9 +138,9 @@ public class SeriesDAO {
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString("sql.error.series.cannot_delete"));
+                LOGGER.log(Level.WARNING,"Cannot delete series: " + e.getMessage(), e);
             } else {
-                System.err.println("SQLException: " + e.getMessage());
+                LOGGER.log(Level.SEVERE,"Failed to delete series: " + e.getMessage(), e);
             }
             return false;
         }
@@ -180,7 +183,7 @@ public class SeriesDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.WARNING,"Failed to find series: " + e.getMessage(), e);
         }
         return series;
     }
@@ -227,7 +230,7 @@ public class SeriesDAO {
                 }
             }
         }catch(SQLException e){
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.WARNING,"Failed to find all series:  " + e.getMessage(), e);
         }
         return new ArrayList<>(seriesMap.values());
     }

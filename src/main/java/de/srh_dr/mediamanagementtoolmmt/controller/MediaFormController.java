@@ -4,6 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.data.*;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.*;
 import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
+import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
@@ -30,8 +31,12 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MediaFormController implements MainControllerAware{
+    private static final Logger LOGGER = Logger.getLogger(MediaFormController.class.getName());
+
     @FXML private ScrollPane viewContainer;
     @FXML private ImageView coverImage;
     @FXML private Rating mediaRating;
@@ -53,6 +58,7 @@ public class MediaFormController implements MainControllerAware{
     @FXML private Button api_search_title_button;
 
     // DAOs
+    private final MediaService mediaService = new MediaService();
     private final PublisherDAO publisherDAO = new PublisherDAO();
     private final GenreDAO genreDAO = new GenreDAO();
     private final ArtistDAO artistDAO = new ArtistDAO();
@@ -62,7 +68,6 @@ public class MediaFormController implements MainControllerAware{
     private final MediaTypeDAO  mediaTypeDAO = new MediaTypeDAO();
     private final SeriesDAO seriesDAO = new SeriesDAO();
     private final LanguageDAO languageDAO = new LanguageDAO();
-    private final MediaDAO mediaDAO = new MediaDAO();
     private final MediaIntegrationFacade mediaIntegrationFacade = new  MediaIntegrationFacade();
 
     MainController mainController;
@@ -115,7 +120,7 @@ public class MediaFormController implements MainControllerAware{
 
         if(mediaId != 0){
             try{
-                Media media = mediaDAO.read(mediaId);
+                Media media = mediaService.getMediaById(mediaId);
                 this.currentMedia = media;
 
                 if(media.getIsbn() != null &&  !media.getIsbn().isEmpty()){
@@ -194,6 +199,7 @@ public class MediaFormController implements MainControllerAware{
                     api_search_title_button.setManaged(false);
                 }
             }catch(Exception e){
+                LOGGER.log(Level.SEVERE, "Failed to load Media :" + e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToLoad") + ": " + e.getMessage(), getWindow());
             }
         }
@@ -221,7 +227,7 @@ public class MediaFormController implements MainControllerAware{
                 coverImage.setImage(new Image(file.toURI().toString()));
                 success = true;
             }else{
-                System.err.println("Invalid file type dropped");
+                LOGGER.log(Level.INFO,"Invalid file type dropped");
             }
         }
         event.setDropCompleted(success);
@@ -357,6 +363,7 @@ public class MediaFormController implements MainControllerAware{
                 targetComboBox.getItems().add(artist);
                 targetComboBox.setValue(artist);
             }catch(Exception e){
+                LOGGER.log(Level.SEVERE,"Failed to add new artist: " + e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
@@ -463,6 +470,7 @@ public class MediaFormController implements MainControllerAware{
                 targetComboBox.getItems().add(series);
                 targetComboBox.setValue(series);
             }catch(Exception e){
+                LOGGER.log(Level.SEVERE, "Failed to add new series: " +e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
@@ -501,6 +509,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(artistRole);
                     }
                 }catch(Exception e){
+                    LOGGER.log(Level.SEVERE, "Failed to add new artist role: " +e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
@@ -546,6 +555,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(publisher);
                     }
                 }catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add new publisher: " +e.getMessage(), e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(),  getWindow());
                 }
             }
@@ -587,6 +597,7 @@ public class MediaFormController implements MainControllerAware{
                        targetComboBox.setValue(mediaType);
                    }
                }catch(Exception e){
+                   LOGGER.log(Level.SEVERE, "Failed to add new media type: " +e.getMessage(), e);
                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                }
            }
@@ -625,6 +636,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(genre);
                     }
                 } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add new genre: " +e.getMessage(), e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
@@ -662,6 +674,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(lang);
                     }
                 } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add new language: " +e.getMessage(), e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
@@ -700,6 +713,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(tag);
                     }
                 } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add new tag: " +e.getMessage(), e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
@@ -738,6 +752,7 @@ public class MediaFormController implements MainControllerAware{
                         targetComboBox.setValue(franchise);
                     }
                 } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add new franchise: " +e.getMessage(), e);
                     AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
             }
@@ -857,8 +872,7 @@ public class MediaFormController implements MainControllerAware{
            this.remoteCoverUrl = selectedResult.imageUrl();
            displayImage();
        } catch (Exception e) {
-           System.err.println("Failed to load MediaSearchDialog.fxml");
-           e.printStackTrace();
+           LOGGER.log(Level.SEVERE, "Failed to remote search by title: " + e.getMessage(), e);
            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
        }
 
@@ -871,7 +885,7 @@ public class MediaFormController implements MainControllerAware{
         if(mainController != null){
             mainController.showDefaultView();
         }else{
-            System.err.println("MainController reference is missing. Cannot navigate back.");
+            LOGGER.log(Level.INFO,"MainController reference is missing. Cannot navigate back.");
         }
     }
 
@@ -901,7 +915,7 @@ public class MediaFormController implements MainControllerAware{
                 seriesOrder = Integer.parseInt(orderText);
             }
         }catch(NumberFormatException e){
-            System.err.println("Invalid order number, defaulting to 0");
+            LOGGER.log(Level.SEVERE, "Invalid order number, defaulting to 0",e);
         }
 
         // check mandatory fields
@@ -958,7 +972,7 @@ public class MediaFormController implements MainControllerAware{
                     }
                     imageFileName = newName;
                 }else {
-                    System.err.println("Failed to download or upload remote cover image from: " + remoteCoverUrl);
+                    LOGGER.log(Level.SEVERE, "Failed to download or upload remote cover image from: " + remoteCoverUrl);
                 }
             }
 
@@ -1007,12 +1021,13 @@ public class MediaFormController implements MainControllerAware{
                 syncList(currentMedia.getTags(), selectedTags, currentMedia::removeTag, currentMedia::addTag);
                 syncList(currentMedia.getFranchises(), selectedFranchises, currentMedia::removeFranchise, currentMedia::addFranchise);
 
-                mediaDAO.save(currentMedia); // Don't allow API-Search on existing Media
+                mediaService.saveMedia(currentMedia); // Don't allow API-Search on existing Media
                 targetViewId = currentMedia.getId();
             }
 
             mainController.showMediaDetail(targetViewId);
         }catch(Exception e){
+            LOGGER.log(Level.SEVERE, "Failed to save Media: " + e.getMessage(), e);
             System.err.println("Failed to save Media: " + e.getMessage());
         }
     }
@@ -1255,6 +1270,7 @@ public class MediaFormController implements MainControllerAware{
                 return null;
             }
         }catch (Exception e){
+            LOGGER.log(Level.WARNING, "Failed to parse date: " + e.getMessage(), e);
             return null;
         }
     }

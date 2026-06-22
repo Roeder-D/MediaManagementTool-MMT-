@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class Franchise {
+public class Franchise implements Identifiable {
     private int id;
     private String name;
     private final List<AltTitle> altTitles;
@@ -62,6 +62,11 @@ public class Franchise {
         }else{
             throw new NullPointerException(LanguageManager.getString("error.title_null"));
         }
+    }
+
+    public void setAltTitles(List<AltTitle> altTitles) { //Instantiation only
+        this.altTitles.clear();
+        this.altTitles.addAll(altTitles);
     }
     public void addAltTitle(AltTitle altTitle) {
         if(!altTitles.contains(altTitle)) {

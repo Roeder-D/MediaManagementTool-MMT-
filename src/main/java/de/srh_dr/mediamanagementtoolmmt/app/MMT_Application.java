@@ -1,5 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.app;
 
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.WindowPositionManager;
 import javafx.application.Application;
@@ -18,7 +19,6 @@ public class MMT_Application extends Application {
         //save window size and position
         Preferences prefs = Preferences.userNodeForPackage(MMT_Application.class);
         boolean isFirstLaunch = prefs.getBoolean("first_launch", true);
-
 
         FXMLLoader fxmlLoader = new FXMLLoader(MMT_Application.class.getResource("/de/srh_dr/mediamanagementtoolmmt/view/Main_Shell.fxml"));
         fxmlLoader.setResources(LanguageManager.getBundle());
@@ -57,5 +57,10 @@ public class MMT_Application extends Application {
         });
 
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        DBConnection.closePool();
     }
 }

@@ -79,7 +79,7 @@ public class MediaSearchDialogController {
             List<ExternalMediaSearchResult> results = searchTask.getValue();
             if(results == null || results.isEmpty()){
                 resultsListView.getItems().clear();
-                resultsLabel.setText("Nothing here but us chickens");
+                resultsLabel.setText("Ain't nobody here but us chickens");
                 showLayer(layerResults);
             }else{
                 resultsListView.getItems().setAll(results);

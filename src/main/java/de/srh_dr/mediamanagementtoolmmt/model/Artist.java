@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 import java.util.Objects;
 
-public class Artist {
+public class Artist implements Identifiable {
     private int id;
     private String firstName;
     private String lastName;

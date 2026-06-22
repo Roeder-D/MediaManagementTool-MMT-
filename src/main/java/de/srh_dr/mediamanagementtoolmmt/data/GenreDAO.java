@@ -2,11 +2,15 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Genre;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GenreDAO extends AbstractDAO<Genre> {
+    Logger LOGGER = Logger.getLogger(GenreDAO.class.getName());
+
     @Override protected String getTableName() { return "genre"; }
     @Override protected String getIdColumnName() { return "genre_id"; }
     @Override protected String getValueColumnName() { return "genre_name"; }
@@ -49,7 +53,7 @@ public class GenreDAO extends AbstractDAO<Genre> {
             genre.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error saving genre " + genre.getGenreName());
+            LOGGER.log(Level.SEVERE,"Error saving genre " + genre.getGenreName(), e);
         }
     }
 
@@ -70,24 +74,23 @@ public class GenreDAO extends AbstractDAO<Genre> {
             genre.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error updating genre " + genre.getGenreName());
+            LOGGER.log(Level.SEVERE,"Error updating genre " + genre.getGenreName(), e);
         }
     }
 
-    // DELETE
-    public boolean delete(int id) {
-        String sql = "DELETE FROM genre WHERE genre_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            // Error code 1451 is the standard MySQL code for a Foreign Key violation
-            if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
-            }
-            return false;
-        }
+    //Media relations
+
+    public void saveGenresForMedia(int mediaId, List<Genre> genres, Connection conn) throws SQLException {
+        String sql = "INSERT INTO media_genre (media_id, genre_id) VALUES (?, ?)";
+        saveJunctionBatch(mediaId, genres, sql, conn);
+    }
+
+    public void deleteGenresForMedia(int mediaId, List<Genre> genresToDelete, Connection conn) throws SQLException {
+        String sql = "DELETE FROM media_genre WHERE media_id = ? AND genre_id = ?";
+        deleteJunctionBatch(mediaId, genresToDelete, sql, conn);
+    }
+
+    public List<Genre> fetchByMediaId(int mediaId) throws SQLException {
+        return fetchViaJunction(mediaId, "media_genre", "genre_id");
     }
 }

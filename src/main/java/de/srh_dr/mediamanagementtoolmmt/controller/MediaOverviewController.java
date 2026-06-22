@@ -2,7 +2,6 @@ package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.MediaOverviewDAO;
 import de.srh_dr.mediamanagementtoolmmt.model.MediaOverview;
-import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import de.srh_dr.mediamanagementtoolmmt.viewmodel.FilterOption;
@@ -12,7 +11,6 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
@@ -20,8 +18,12 @@ import org.controlsfx.control.SearchableComboBox;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MediaOverviewController implements MainControllerAware {
+    Logger LOGGER = Logger.getLogger(MediaOverviewController.class.getName());
+
     @FXML private VBox viewContainer;
     @FXML private TableView<MediaOverview> mediaTable;
     @FXML private TableColumn<MediaOverview, String> titleCol;
@@ -91,6 +93,7 @@ public class MediaOverviewController implements MainControllerAware {
             sortedMediaOverview.comparatorProperty().bind(mediaTable.comparatorProperty());
            mediaTable.setItems(sortedMediaOverview);
         }catch(SQLException e){
+            LOGGER.log(Level.SEVERE, "Failed to load table data: " + e.getMessage(), e);
             AlertManager.showAlert(
                     Alert.AlertType.ERROR,
                     LanguageManager.getString("error.failedToLoad"),

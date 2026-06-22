@@ -7,17 +7,19 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class DefaultViewController{
+    Logger LOGGER =  Logger.getLogger(DefaultViewController.class.getName());
+
     @FXML private Label totalTitlesField;
     @FXML private Label lentTitlesField;
     @FXML private Label lostTitlesField;
     @FXML private PieChart mediaTypePieChart;
-
 
     private final StatisticsDAO statisticsDAO =  new StatisticsDAO();
 
@@ -43,7 +45,7 @@ public class DefaultViewController{
             }
             mediaTypePieChart.setData(pieChartData);
         }catch(Exception e){
-            System.err.println("Failed to load dashboard statistics: " + e.getMessage());
+            LOGGER.log(Level.WARNING, "Failed to load dashboard statistics: " + e.getMessage(), e);
         }
     }
 }

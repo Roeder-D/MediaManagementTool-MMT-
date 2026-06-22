@@ -1,5 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
+import de.srh_dr.mediamanagementtoolmmt.dto.MediaEntity;
 import de.srh_dr.mediamanagementtoolmmt.model.*;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 
@@ -7,53 +8,46 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class MediaDAO {
-
-    // HELPER
-    public void save(Media media) throws SQLException{
-        Connection conn = null;
-        try{
-            conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); //Prevent partial updates
-
-            if(media.isNewItem()){
-                create(media, conn);
-            }else{
-                update(media, conn);
-            }
-
-            // Synchronize junction tables
-            updateRelations(media, conn);
-
-            conn.commit();
-            media.clearChangeTracking();
-        }catch(SQLException e){
-            // Rollback in case of failure
-            if (conn != null) {
-                try {
-                    System.err.println("Transaction is being rolled back due to: " + e.getMessage());
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    System.err.println("SQLException: " + ex.getMessage());
-                }
-            }
-            System.err.println("SQLException: " + e.getMessage());
-            throw e;
-        }finally{
-            if(conn != null){
-                try{
-                    conn.setAutoCommit(true); // Reset to default behavior
-                    conn.close();
-                }catch(SQLException e){
-                    System.err.println("SQLException: " + e.getMessage());
-                }
-            }
-        }
-    }
+    Logger LOGGER = Logger.getLogger(MediaDAO.class.getName());
 
     // READ by ID
+    public MediaEntity readMediaEntity(int mediaId){
+        String sql = "SELECT * FROM media WHERE media_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setInt(1, mediaId);
+
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    return new MediaEntity(
+                            rs.getInt("media_id"),
+                            rs.getString("isbn"),
+                            rs.getString("title"),
+                            rs.getString("original_title"),
+                            rs.getString("cover_url"),
+                            rs.getString("description"),
+                            rs.getInt("rating"),
+                            rs.getDate("release_date") != null ? rs.getDate("release_date").toLocalDate() : null,
+                            rs.getInt("series_order"),
+                            rs.getInt("series_id"),
+                            rs.getInt("media_type_id"),
+                            rs.getInt("publisher_id"),
+                            Media.MediaStatus.valueOf(rs.getString("status"))
+                    );
+                }
+            }
+        }catch (SQLException e){
+            LOGGER.log(Level.SEVERE, "Failed to read media entity: " +e.getMessage(),e);
+        }
+        return null;
+    }
+
     public Media read(int mediaId) throws SQLException{
         Media media = null;
 
@@ -187,7 +181,7 @@ public class MediaDAO {
     }
 
     // CREATE
-    private void create(Media media, Connection conn) throws SQLException {
+        public int create(Media media, Connection conn) throws SQLException {
         String sql = "INSERT INTO media (isbn, title, original_title, cover_url, description, rating, release_date, series_order," +
                 " series_id, media_type_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
@@ -196,16 +190,19 @@ public class MediaDAO {
 
             stmt.executeUpdate();
             try(ResultSet rs = stmt.getGeneratedKeys()){
-                if(rs.next()){
-                    media.setId(rs.getInt(1));
+                if(rs.next()) {
+                    int mediaId = rs.getInt(1);
+                    media.setId(mediaId);
+                    return mediaId;
+                }else{
+                    throw new SQLException("Creating media failed, no ID obtained.");
                 }
             }
         }
-
     }
 
     // UPDATE
-    private void update(Media media, Connection conn) throws SQLException {
+    public void update(Media media, Connection conn) throws SQLException {
         EnumSet<Media.MediaField> dirty = media.getDirtyFields();
         if (dirty.isEmpty()) return;
 
@@ -279,79 +276,5 @@ public class MediaDAO {
             stmt.setNull(11, Types.INTEGER);
         }
         stmt.setString(12, m.getStatus().name());
-    }
-    // Helpers for synchronization of affected tables
-    private void updateRelations(Media media, Connection conn) throws SQLException {
-        List<Tag> tagsToAdd = media.isNewItem() ? media.getTags() : media.getTagsToAdd();
-        List<Genre> genresToAdd = media.isNewItem() ? media.getGenres() : media.getGenresToAdd();
-        List<Language> languagesToAdd = media.isNewItem() ? media.getLanguages() : media.getLanguagesToAdd();
-        List<Franchise> franchisesToAdd = media.isNewItem() ?  media.getFranchises() : media.getFranchisesToAdd();
-        List<MediaArtist> creditsToAdd = media.isNewItem() ? media.getCredits() : media.getCreditsToAdd();
-
-        // synchronize Lists
-        syncJunction(conn, media.getId(), "media_tag", "tag_id", tagsToAdd, media.getTagsToRemove());
-        syncJunction(conn, media.getId(), "media_genre", "genre_id", genresToAdd, media.getGenresToRemove());
-        syncJunction(conn, media.getId(), "media_language", "language_id", languagesToAdd, media.getLanguagesToRemove());
-        syncJunction(conn, media.getId(), "media_franchise", "franchise_id", franchisesToAdd, media.getFranchisesToRemove());
-
-        // MediaArtist(Credits)
-        String insSql = "INSERT INTO media_artist (media_id, artist_id, artist_role_id) VALUES (?,?,?)";
-        try (PreparedStatement stmt = conn.prepareStatement(insSql)) {
-            for (MediaArtist ma : creditsToAdd) {
-                stmt.setInt(1, media.getId());
-                stmt.setInt(2, ma.getArtist().getId());
-                stmt.setInt(3, ma.getArtistRole().getId());
-                stmt.addBatch();
-            }
-            stmt.executeBatch();
-        }
-
-        if(!media.isNewItem()) {
-            String delSql = "DELETE FROM media_artist WHERE media_id=? AND artist_id=? AND artist_role_id=?";
-            try (PreparedStatement stmt = conn.prepareStatement(delSql)) {
-                for (MediaArtist ma : media.getCreditsToRemove()) {
-                    stmt.setInt(1, media.getId());
-                    stmt.setInt(2, ma.getArtist().getId());
-                    stmt.setInt(3, ma.getArtistRole().getId());
-                    stmt.addBatch(); // Batching is better for performance here too
-                }
-                stmt.executeBatch();
-            }
-        }
-    }
-
-
-    private void syncJunction(Connection conn, int mediaId, String table, String column, List<?> toAdd, List<?> toRemove) throws SQLException {
-        if(!toAdd.isEmpty()){
-            String insSql = "INSERT INTO " + table + " (media_id,  " +  column + ") VALUES (?, ?)";
-
-            try(PreparedStatement stmt = conn.prepareStatement(insSql)){
-                for(Object o : toAdd){
-                    stmt.setInt(1, mediaId);
-                    stmt.setInt(2, getEntityId(o));
-                    stmt.addBatch();
-                }
-                stmt.executeBatch();
-            }
-        }
-        if(!toRemove.isEmpty()){
-            String insSql = "DELETE FROM " + table + " WHERE media_id = ? AND " + column + " = ?";
-
-            try(PreparedStatement stmt = conn.prepareStatement(insSql)){
-                for(Object o : toRemove){
-                    stmt.setInt(1, mediaId);
-                    stmt.setInt(2, getEntityId(o));
-                    stmt.addBatch();
-                }
-                stmt.executeBatch();
-            }
-        }
-    }
-    private int getEntityId(Object o){
-        if(o instanceof Tag){return ((Tag)o).getId();}
-        if(o instanceof Genre){return ((Genre)o).getId();}
-        if(o instanceof Language){return ((Language)o).getId();}
-        if(o instanceof Franchise){return ((Franchise)o).getId();}
-        throw new IllegalArgumentException("Unknown entity type: " + o.getClass().getName());
     }
 }

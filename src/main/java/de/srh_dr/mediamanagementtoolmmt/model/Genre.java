@@ -4,7 +4,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.util.Objects;
 
-public class Genre{
+public class Genre implements Identifiable {
     private int id;
     private String genreName;
     private boolean isNewItem;

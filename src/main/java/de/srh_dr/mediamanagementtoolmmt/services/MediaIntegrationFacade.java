@@ -9,14 +9,18 @@ import de.srh_dr.mediamanagementtoolmmt.model.*;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MediaIntegrationFacade {
+    Logger LOGGER = Logger.getLogger(MediaIntegrationFacade.class.getName());
+
     private final Map<ApiSource, ExternalMediaService> lookupServices;
 
     private  final ArtistDAO artistDAO;
     private final LanguageDAO languageDAO;
     private final PublisherDAO publisherDAO;
-    private final MediaDAO mediaDAO;
+    private final MediaService mediaService;
 
     public enum ApiSource {
         GOOGLE_BOOKS,
@@ -26,7 +30,7 @@ public class MediaIntegrationFacade {
     public MediaIntegrationFacade() {
         this.artistDAO = new ArtistDAO();
         this.languageDAO = new LanguageDAO();
-        this.mediaDAO = new MediaDAO();
+        this.mediaService = new MediaService();
         this.publisherDAO = new PublisherDAO();
 
         this.lookupServices = new HashMap<>();
@@ -154,8 +158,7 @@ public class MediaIntegrationFacade {
             try {
                 publisherDAO.save(publisher);
             }catch (Exception e){
-                System.err.println("Failed to cascade save publisher " + publisher.getPublisherName());
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE,"Failed to cascade save publisher " + publisher.getPublisherName(), e);
             }
         }
 
@@ -165,8 +168,7 @@ public class MediaIntegrationFacade {
                 try {
                     languageDAO.save(language);
                 }catch (SQLException e){
-                    System.err.println("Failed to cascade save language " + language.getLanguage());
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE,"Failed to cascade save language " + language.getLanguage(), e);
                 }
             }
         }
@@ -176,7 +178,7 @@ public class MediaIntegrationFacade {
                 artistDAO.save(artist);
             }
         }
-        mediaDAO.save(media);
+        mediaService.saveMedia(media);
     }
 
 }

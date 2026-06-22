@@ -19,8 +19,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SeriesOverviewController{
+    Logger LOGGER = Logger.getLogger(SeriesOverviewController.class.getName());
+
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private TextField yearFilterField;
@@ -185,12 +189,14 @@ public class SeriesOverviewController{
 
                     seriesDAO.save(selectedSeries);
                 } catch (NumberFormatException e) {
+                    LOGGER.log(Level.WARNING, "Inalid number format exception", e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
-                            "Year and Number of Titles must be valid numbers.",
+                            "warning.invalidNumberFormat",
                             getWindow());
                 } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to add series: " + e.getMessage(), e);
                     AlertManager.showAlert(
                             Alert.AlertType.ERROR,
                             LanguageManager.getString("ui.error"),
@@ -210,6 +216,7 @@ public class SeriesOverviewController{
                     try {
                         seriesDAO.delete(selectedSeries.getId());
                     } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Failed to delete series: " + e.getMessage(), e);
                         AlertManager.showAlert(
                                 Alert.AlertType.ERROR,
                                 LanguageManager.getString("ui.error"),

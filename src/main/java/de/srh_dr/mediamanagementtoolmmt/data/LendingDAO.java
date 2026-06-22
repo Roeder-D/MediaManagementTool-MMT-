@@ -9,9 +9,12 @@ import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class LendingDAO {
+    Logger LOGGER =  Logger.getLogger(LendingDAO.class.getName());
 
     // HELPER
     public void save(Lending lending){
@@ -44,7 +47,7 @@ public class LendingDAO {
             }
             lending.clearChangeTracking();
         }catch(SQLException e){
-            System.err.println("Error creating lending " + lending.getLendee().getId());
+            LOGGER.log(Level.SEVERE,"Error creating lending " + lending.getLendee().getId(), e);
         }
     }
 
@@ -65,7 +68,7 @@ public class LendingDAO {
             stmt.executeUpdate();
             lending.clearChangeTracking();
         }catch(SQLException e){
-            System.err.println("Error updating lending " + lending.getLendee().getId());
+            LOGGER.log(Level.SEVERE,"Error updating lending " + lending.getLendee().getId(), e);
         }
     }
 
@@ -79,7 +82,7 @@ public class LendingDAO {
 
             stmt.executeUpdate();
         }catch(SQLException e){
-            System.err.println("Error deleting lending " + id);
+            LOGGER.log(Level.SEVERE,"Error deleting lending " + id, e);
         }
     }
 
@@ -110,7 +113,7 @@ public class LendingDAO {
                 }
             }
         }catch(SQLException e){
-            System.err.println("Error fetching lending " + id);
+            LOGGER.log(Level.SEVERE,"Error fetching lending " + id, e);
         }
         return null;
     }
@@ -128,7 +131,7 @@ public class LendingDAO {
                 }
             }
         }catch(SQLException e){
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"SQLException: " + e.getMessage(), e);
         }
         return 0;
     }
@@ -155,7 +158,7 @@ public class LendingDAO {
 
             }
         }catch(SQLException e){
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"SQLException: " + e.getMessage(), e);
         }
         return lendingDashboardItems;
     }

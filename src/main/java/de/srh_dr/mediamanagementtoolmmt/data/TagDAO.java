@@ -5,8 +5,13 @@ import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TagDAO extends AbstractDAO<Tag> {
+    Logger LOGGER = Logger.getLogger(TagDAO.class.getName());
+
     @Override protected String getTableName() { return "tag"; }
     @Override protected String getIdColumnName() { return "tag_id"; }
     @Override protected String getValueColumnName() { return "tag"; }
@@ -49,7 +54,7 @@ public class TagDAO extends AbstractDAO<Tag> {
             tag.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to insert new tag: " + e.getMessage(), e);
         }
     }
 
@@ -70,7 +75,7 @@ public class TagDAO extends AbstractDAO<Tag> {
             tag.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
+            LOGGER.log(Level.SEVERE,"Failed to update tag: " + e.getMessage(), e);
         }
     }
 
@@ -85,9 +90,24 @@ public class TagDAO extends AbstractDAO<Tag> {
         } catch (SQLException e) {
             // Error code 1451 is the standard MySQL code for a Foreign Key violation
             if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
+                LOGGER.log(Level.WARNING,"Cannot delete tag:" + e.getMessage(), e);
             }
             return false;
         }
+    }
+
+//Media relations
+    public void saveTagsForMedia(int mediaId, List<Tag> tags, Connection conn) throws SQLException {
+        String sql = "INSERT INTO media_tag (media_id, tag_id) VALUES (?, ?)";
+        saveJunctionBatch(mediaId, tags, sql, conn);
+    }
+
+    public void deleteTagsForMedia(int mediaId, List<Tag> tagsToDelete, Connection conn) throws SQLException {
+        String sql = "DELETE FROM media_tag WHERE media_id = ? AND tag_id = ?";
+        deleteJunctionBatch(mediaId, tagsToDelete, sql, conn);
+    }
+
+    public List<Tag> fetchByMediaId(int mediaId) throws SQLException {
+        return fetchViaJunction(mediaId, "media_tag", "tag_id");
     }
 }

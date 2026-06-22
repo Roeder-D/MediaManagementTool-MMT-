@@ -5,8 +5,12 @@ import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PublisherDAO extends AbstractDAO<Publisher> {
+    Logger LOGGER = Logger.getLogger(PublisherDAO.class.getName());
+
     @Override protected String getTableName() { return "publisher"; }
     @Override protected String getIdColumnName() { return "publisher_id"; }
     @Override protected String getValueColumnName() { return "publisher_name"; }
@@ -49,7 +53,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
             publisher.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error creating publisher " + publisher.getPublisherName());
+            LOGGER.log(Level.SEVERE,"Error creating publisher " + publisher.getPublisherName(), e);
         }
     }
 
@@ -70,24 +74,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
             publisher.clearChangeTracking();
 
         } catch (SQLException e) {
-            System.err.println("Error updating publisher " + publisher.getPublisherName());
-        }
-    }
-
-    // DELETE
-    public boolean delete(int id) {
-        String sql = "DELETE FROM publisher WHERE publisher_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            // Error code 1451 is the standard MySQL code for a Foreign Key violation
-            if (e.getErrorCode() == 1451) {
-                System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
-            }
-            return false;
+            LOGGER.log(Level.SEVERE,"Error updating publisher " + publisher.getPublisherName(), e);
         }
     }
 
@@ -109,7 +96,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
                 }
             }
         }catch (SQLException e){
-            System.err.println(LanguageManager.getString(("sql.error.artist.cannot_delete")));
+            LOGGER.log(Level.SEVERE,LanguageManager.getString(("sql.error.artist.cannot_delete")), e);
         }
         return publisher;
     }

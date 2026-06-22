@@ -2,7 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.model;
 
 import java.util.Objects;
 
-public class Tag{
+public class Tag implements Identifiable{
     private int id;
     private String name;
     private boolean isNewItem;

@@ -20,8 +20,11 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ImageManager {
+    private static final Logger LOGGER = Logger.getLogger(ImageManager.class.getName());
     //using "io.github.cdimascio.dotenv.java" to load .env-files
     private static final Dotenv dotenv = Dotenv.load();
 
@@ -32,7 +35,7 @@ public class ImageManager {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     // UPLOAD
-    public boolean uploadImage(File file, String generatedName) throws IOException {
+    public boolean uploadImage(File file, String generatedName){
         String url = serverUrl + serverPhp;
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -49,12 +52,15 @@ public class ImageManager {
             return client.execute(post, response ->
                     response.getCode() == 200 && EntityUtils.toString(response.getEntity()).contains("success")
             );
+        }catch (IOException e){
+            LOGGER.log(Level.SEVERE, "Error uploading image", e);
+            return false;
         }
     }
 
     public boolean uploadImageFromUrl(String remoteUrl, String generatedName){
         if (remoteUrl == null || remoteUrl.isEmpty()) {
-            System.err.println("Remote URL is empty, skipping image upload.");
+            LOGGER.log(Level.WARNING, "Remote URL is empty, skipping image upload.");
             return false;
         }
 
@@ -68,7 +74,7 @@ public class ImageManager {
             HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
             if (response.statusCode() != 200) {
-                System.err.println("Failed to download image from URL: " + remoteUrl + " : " + response.statusCode());
+                LOGGER.log(Level.WARNING, "Failed to download image from URL: " + remoteUrl + " : " + response.statusCode());
                 return false;
             }
 
@@ -100,15 +106,14 @@ public class ImageManager {
             return uploadImage(fileToUpload, correctedFileName);
 
         }catch(Exception e){
-            System.err.println("Error streaming remote image from URL: " + remoteUrl);
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error streaming remote image from URL: " + remoteUrl, e);
             return false;
         }finally {
             if (tempFile != null) {
                 try {
                     Files.deleteIfExists(tempFile);
                 } catch (IOException e) {
-                    System.err.println("Warning: Could not delete temporary file: " + tempFile);
+                    LOGGER.log(Level.WARNING, "Warning: Could not delete temporary file: " + tempFile, e);
                 }
             }
         }
@@ -130,7 +135,7 @@ public class ImageManager {
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if(response.statusCode() != 200){
-                        System.err.println("Delete failed: " + response.body());
+                        LOGGER.log(Level.WARNING, "Delete failed: " + response.body());
                     }
                 });
     }
