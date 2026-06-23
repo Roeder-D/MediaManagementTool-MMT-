@@ -103,7 +103,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
 
     //Media relations
     public void saveLanguagesForMedia(int mediaId, List<Language> languages, Connection conn) throws SQLException {
-        String sql = "INSERT INTO language (media_id, language_id) VALUES (?, ?)";
+        String sql = "INSERT INTO media_language (media_id, language_id) VALUES (?, ?)";
         saveJunctionBatch(mediaId, languages, sql, conn);
     }
 

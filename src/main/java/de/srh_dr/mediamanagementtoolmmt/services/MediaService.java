@@ -25,6 +25,7 @@ public class MediaService {
     private final LanguageDAO languageDAO;
     private final ArtistDAO artistDAO;
     private final FranchiseDAO franchiseDAO;
+    private final MediaTypeDAO mediaTypeDAO;
 
     private MediaService(){
         this.mediaDAO = MediaDAO.getInstance();
@@ -35,6 +36,7 @@ public class MediaService {
         this.languageDAO = LanguageDAO.getInstance();
         this.artistDAO = ArtistDAO.getInstance();
         this.franchiseDAO = FranchiseDAO.getInstance();
+        this.mediaTypeDAO = MediaTypeDAO.getInstance();
     }
 
     public Media getMediaById(int id){
@@ -53,6 +55,11 @@ public class MediaService {
                 series = seriesDAO.findById(mediaCore.seriesId());
             }
 
+            MediaType mediaType = null;
+            if(mediaCore.mediaTypeId() != 0 ){
+                mediaType = mediaTypeDAO.findById(mediaCore.mediaTypeId());
+            }
+
             Media.Builder builder = new Media.Builder()
                     .isNewItem(false)
                     .id(mediaCore.id())
@@ -64,6 +71,7 @@ public class MediaService {
                     .releaseDate(mediaCore.releaseDate())
                     .publisher(publisher)
                     .series(series)
+                    .mediaType(mediaType)
                     .status(mediaCore.status())
                     //Fetch lists (all todo)
                     .tags(tagDAO.fetchByMediaId(id))

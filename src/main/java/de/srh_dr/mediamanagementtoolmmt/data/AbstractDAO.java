@@ -93,7 +93,7 @@ public abstract class AbstractDAO<T> {
     }
 
     protected List<T> fetchViaJunction(int mediaId, String junctionTable, String junctionIdColumn){
-        String sql = String.format("SELECT t.* FROM %s t JOIN  %s ON t.%s = j.%s WHERE j.media_id = ?",
+        String sql = String.format("SELECT t.* FROM %s t JOIN  %s j ON t.%s = j.%s WHERE j.media_id = ?",
                 getTableName(), junctionTable, getIdColumnName(), junctionIdColumn);
 
         List<T> items = new ArrayList<>();
