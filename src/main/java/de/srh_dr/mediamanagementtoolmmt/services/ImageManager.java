@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 
 public class ImageManager {
     private static final Logger LOGGER = Logger.getLogger(ImageManager.class.getName());
+    //using "io.github.cdimascio.dotenv.java" to load .env-files
+    private static final Dotenv dotenv = Dotenv.load();
+
     private static final ImageManager INSTANCE = new ImageManager();
 
     public static ImageManager getInstance() {
@@ -32,9 +35,6 @@ public class ImageManager {
     }
 
     private ImageManager() {}
-
-    //using "io.github.cdimascio.dotenv.java" to load .env-files
-    private static final Dotenv dotenv = Dotenv.load();
 
     private final String serverUrl = dotenv.get("IMAGE_SERVER_URL");
     private final String serverPhp = dotenv.get("IMAGE_SERVER_HANDLER");
