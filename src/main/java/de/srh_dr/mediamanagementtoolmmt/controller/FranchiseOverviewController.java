@@ -20,14 +20,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FranchiseOverviewController implements MainControllerAware{
-    Logger LOGGER = Logger.getLogger(FranchiseOverviewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FranchiseOverviewController.class.getName());
 
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Franchise> franchiseList;
 
     MainController mainController;
-    private final FranchiseDAO franchiseDAO = new FranchiseDAO();
+    private final FranchiseDAO franchiseDAO = FranchiseDAO.getInstance();
     private final ObservableList<Franchise> franchises = FXCollections.observableArrayList();
     private final FilteredList<Franchise> filteredFranchises = new FilteredList<>(franchises, p -> true);
 
@@ -89,7 +89,7 @@ public class FranchiseOverviewController implements MainControllerAware{
         altTitleListView.setItems(altTitles);
         altTitleListView.setPrefHeight(100);
 
-        altTitleListView.setCellFactory(param -> new ListCell<AltTitle>() {
+        altTitleListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(AltTitle item, boolean empty) {
                 super.updateItem(item, empty);

@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MediaOverviewController implements MainControllerAware {
-    Logger LOGGER = Logger.getLogger(MediaOverviewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MediaOverviewController.class.getName());
 
     @FXML private VBox viewContainer;
     @FXML private TableView<MediaOverview> mediaTable;
@@ -39,7 +39,7 @@ public class MediaOverviewController implements MainControllerAware {
 
 
     private MainController mainController;
-    private final MediaOverviewDAO mediaOverviewDAO = new MediaOverviewDAO();
+    private final MediaOverviewDAO mediaOverviewDAO = MediaOverviewDAO.getInstance();
     private final ObservableList<MediaOverview> mediaOverviews = FXCollections.observableArrayList();
     private FilteredList<MediaOverview> filteredMediaOverviews;
 
@@ -162,9 +162,7 @@ public class MediaOverviewController implements MainControllerAware {
             }
 
             if(selectedMediaType != null && !selectedMediaType.equals(LanguageManager.getString("ui.All"))) {
-                if(!media.getType().equalsIgnoreCase(selectedMediaType)) {
-                    return false;
-                }
+                return media.getType().equalsIgnoreCase(selectedMediaType);
             }
             return true;
         });

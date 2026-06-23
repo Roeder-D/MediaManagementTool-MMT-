@@ -8,7 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
-    Logger LOGGER = Logger.getLogger(ArtistRoleDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ArtistRoleDAO.class.getName());
+    private final static ArtistRoleDAO INSTANCE = new ArtistRoleDAO();
+
+    public static ArtistRoleDAO getInstance() {
+        return INSTANCE;
+    }
+
+    private ArtistRoleDAO(){}
 
     @Override
     protected String getTableName() { return "artist_role"; }

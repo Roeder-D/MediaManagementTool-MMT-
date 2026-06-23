@@ -2,7 +2,6 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 import java.util.List;
@@ -10,7 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TagDAO extends AbstractDAO<Tag> {
-    Logger LOGGER = Logger.getLogger(TagDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TagDAO.class.getName());
+    private static final TagDAO INSTANCE = new TagDAO();
+
+    public static TagDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private TagDAO(){}
 
     @Override protected String getTableName() { return "tag"; }
     @Override protected String getIdColumnName() { return "tag_id"; }
@@ -35,7 +41,7 @@ public class TagDAO extends AbstractDAO<Tag> {
     }
 
     // CREATE
-    private void create(Tag tag) throws SQLException {
+    private void create(Tag tag){
         String sql = "INSERT INTO tag (tag) VALUES (?)";
 
         try (Connection conn = DBConnection.getConnection();

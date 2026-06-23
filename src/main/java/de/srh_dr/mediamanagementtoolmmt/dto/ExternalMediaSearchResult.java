@@ -14,6 +14,7 @@ public record ExternalMediaSearchResult(
         String imageUrl,
         List<Artist> artists,
         List<Language> languages,
-        String remoteId
+        String remoteId,
+        ApiSource source
 ) {
 }

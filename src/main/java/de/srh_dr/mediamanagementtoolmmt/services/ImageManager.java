@@ -25,6 +25,14 @@ import java.util.logging.Logger;
 
 public class ImageManager {
     private static final Logger LOGGER = Logger.getLogger(ImageManager.class.getName());
+    private static final ImageManager INSTANCE = new ImageManager();
+
+    public static ImageManager getInstance() {
+        return INSTANCE;
+    }
+
+    private ImageManager() {}
+
     //using "io.github.cdimascio.dotenv.java" to load .env-files
     private static final Dotenv dotenv = Dotenv.load();
 
@@ -117,10 +125,7 @@ public class ImageManager {
                 }
             }
         }
-
-
     }
-
 
     // DELETE
     public void deleteImage(String filename){

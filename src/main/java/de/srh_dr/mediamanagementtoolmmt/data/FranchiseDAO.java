@@ -3,7 +3,6 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
 import de.srh_dr.mediamanagementtoolmmt.model.Franchise;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 import java.util.*;
@@ -11,8 +10,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FranchiseDAO extends AbstractDAO<Franchise>{
-    Logger LOGGER = Logger.getLogger(FranchiseDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FranchiseDAO.class.getName());
+    private final static FranchiseDAO INSTANCE = new FranchiseDAO();
 
+    public static FranchiseDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private FranchiseDAO(){}
     @Override
     protected String getTableName() {
         return "franchise";
@@ -37,7 +42,6 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
                 false
         );
     }
-
 
 
     // HELPER

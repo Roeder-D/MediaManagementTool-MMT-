@@ -2,10 +2,10 @@ package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.LendeeDAO;
 import de.srh_dr.mediamanagementtoolmmt.data.LendingDAO;
-import de.srh_dr.mediamanagementtoolmmt.data.MediaDAO;
 import de.srh_dr.mediamanagementtoolmmt.model.Lendee;
 import de.srh_dr.mediamanagementtoolmmt.model.Lending;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
+import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.application.Platform;
@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LendingViewController implements MainControllerAware{
-    Logger LOGGER = Logger.getLogger(LendingViewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LendingViewController.class.getName());
 
     @FXML private BorderPane viewContainer;
     @FXML private TextField mediaTitleField;
@@ -37,9 +37,9 @@ public class LendingViewController implements MainControllerAware{
     @FXML private TextField lendeeReadOnlyField;
 
     MainController mainController;
-    LendingDAO lendingDAO =  new LendingDAO();
-    LendeeDAO lendeeDAO = new LendeeDAO();
-    MediaDAO mediaDAO = new MediaDAO();
+    LendingDAO lendingDAO = LendingDAO.getInstance();
+    LendeeDAO lendeeDAO = LendeeDAO.getInstance();
+    MediaService mediaService = MediaService.getInstance();
 
     private Lending currentLending;
     private Media targetMedia;
@@ -80,7 +80,7 @@ public class LendingViewController implements MainControllerAware{
 
         try{
             if(viaMedia){
-                targetMedia = mediaDAO.read(id);
+                targetMedia = mediaService.getMediaById(id);
                 if(targetMedia != null) {
                     toggleLendeeInputMode(false);
 

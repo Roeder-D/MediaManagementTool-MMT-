@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 
 public class MainController {
-    Logger LOGGER =  Logger.getLogger(MainController.class.getName());
+    private static final Logger LOGGER =  Logger.getLogger(MainController.class.getName());
 
     public enum ViewState{
         DEFAULT_VIEW, MEDIA_OVERVIEW, ARTIST_OVERVIEW, FRANCHISE_OVERVIEW, LENDING_OVERVIEW, MEDIA_DETAIL, MEDIA_FORM, PUBLISHER_OVERVIEW, LENDING_DETAIL_VIEW, SERIES_OVERVIEW
@@ -131,14 +131,14 @@ public class MainController {
 
             typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
             typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
-            typeCol.setOnEditCommit(event -> {
-                values.set(event.getTablePosition().getRow(), event.getNewValue());
-            });
+            typeCol.setOnEditCommit(event ->
+                values.set(event.getTablePosition().getRow(), event.getNewValue())
+            );
 
             TableColumn<String, Void> deleteCol = new TableColumn<>(LanguageManager.getString("ui.delete"));
             deleteCol.setPrefWidth(60);
 
-            deleteCol.setCellFactory(param -> new TableCell<String, Void>() {
+            deleteCol.setCellFactory(param -> new TableCell<>() {
                 private final Button deleteBtn = new Button(LanguageManager.getString("ui.delete"));
 
                 {
@@ -221,7 +221,6 @@ public class MainController {
 
             Node view = loader.load();
 
-            DefaultViewController defaultViewController = loader.getController();
             currentView = ViewState.DEFAULT_VIEW;
             currentPramId = -1;
             lendingParam = false;

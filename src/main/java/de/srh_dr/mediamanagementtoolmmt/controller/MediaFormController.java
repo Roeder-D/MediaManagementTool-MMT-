@@ -1,6 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
 import de.srh_dr.mediamanagementtoolmmt.data.*;
+import de.srh_dr.mediamanagementtoolmmt.dto.ApiSource;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.*;
 import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
@@ -8,7 +9,9 @@ import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
-import javafx.application.Platform;
+import de.srh_dr.mediamanagementtoolmmt.view.ArtistDialog;
+import de.srh_dr.mediamanagementtoolmmt.view.SeriesDialog;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -31,8 +34,11 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static javafx.collections.FXCollections.observableArrayList;
 
 public class MediaFormController implements MainControllerAware{
     private static final Logger LOGGER = Logger.getLogger(MediaFormController.class.getName());
@@ -58,33 +64,33 @@ public class MediaFormController implements MainControllerAware{
     @FXML private Button api_search_title_button;
 
     // DAOs
-    private final MediaService mediaService = new MediaService();
-    private final PublisherDAO publisherDAO = new PublisherDAO();
-    private final GenreDAO genreDAO = new GenreDAO();
-    private final ArtistDAO artistDAO = new ArtistDAO();
-    private final ArtistRoleDAO artistRoleDAO = new ArtistRoleDAO();
-    private final TagDAO tagDAO = new TagDAO();
-    private final FranchiseDAO franchiseDAO = new FranchiseDAO();
-    private final MediaTypeDAO  mediaTypeDAO = new MediaTypeDAO();
-    private final SeriesDAO seriesDAO = new SeriesDAO();
-    private final LanguageDAO languageDAO = new LanguageDAO();
+    private final MediaService mediaService = MediaService.getInstance();
+    private final PublisherDAO publisherDAO = PublisherDAO.getInstance();
+    private final GenreDAO genreDAO = GenreDAO.getInstance();
+    private final ArtistDAO artistDAO = ArtistDAO.getInstance();
+    private final ArtistRoleDAO artistRoleDAO = ArtistRoleDAO.getInstance();
+    private final TagDAO tagDAO = TagDAO.getInstance();
+    private final FranchiseDAO franchiseDAO = FranchiseDAO.getInstance();
+    private final MediaTypeDAO  mediaTypeDAO = MediaTypeDAO.getInstance();
+    private final SeriesDAO seriesDAO = SeriesDAO.getInstance();
+    private final LanguageDAO languageDAO = LanguageDAO.getInstance();
     private final MediaIntegrationFacade mediaIntegrationFacade = new  MediaIntegrationFacade();
 
     MainController mainController;
-    ImageManager imageManager = new ImageManager();
+    ImageManager imageManager = ImageManager.getInstance();
     private File selectedCoverImage;
     private String remoteCoverUrl;
 
     Media currentMedia;
-    private List<Genre> allGenres;
-    private List<Language> allLanguages;
-    private List<Artist> allArtists;
-    private List<ArtistRole> allArtistRoles;
-    private List<Publisher> allPublishers;
-    private List<MediaType> allMediaTypes;
-    private List<Series> allSeries;
-    private List<Tag> allTags;
-    private List<Franchise> allFranchises;
+    private ObservableList<Genre> allGenres;
+    private ObservableList<Language> allLanguages;
+    private ObservableList<Artist> allArtists;
+    private ObservableList<ArtistRole> allArtistRoles;
+    private ObservableList<Publisher> allPublishers;
+    private ObservableList<MediaType> allMediaTypes;
+    private ObservableList<Series> allSeries;
+    private ObservableList<Tag> allTags;
+    private ObservableList<Franchise> allFranchises;
 
     @Override
     public void setMainController(MainController mainController) {
@@ -92,20 +98,20 @@ public class MediaFormController implements MainControllerAware{
     }
 
     public void initialize() {
-        allGenres = genreDAO.findAll();
-        allLanguages = languageDAO.findAll();
-        allArtists = artistDAO.findAll();
-        allArtistRoles = artistRoleDAO.findAll();
-        allPublishers = publisherDAO.findAll();
-        allMediaTypes = mediaTypeDAO.findAll();
-        allSeries = seriesDAO.findAll();
-        allTags = tagDAO.findAll();
-        allFranchises = franchiseDAO.findAll();
+        allGenres = observableArrayList(genreDAO.findAll());
+        allLanguages = observableArrayList(languageDAO.findAll());
+        allArtists = observableArrayList(artistDAO.findAll());
+        allArtistRoles = observableArrayList(artistRoleDAO.findAll());
+        allPublishers = observableArrayList(publisherDAO.findAll());
+        allMediaTypes = observableArrayList(mediaTypeDAO.findAll());
+        allSeries = observableArrayList(seriesDAO.findAll());
+        allTags = observableArrayList(tagDAO.findAll());
+        allFranchises = observableArrayList(franchiseDAO.findAll());
         mediaRating.setRating(0);
 
-        publisherComboBox.getItems().addAll(allPublishers);
-        mediaTypeComboBox.getItems().addAll(allMediaTypes);
-        seriesComboBox.getItems().addAll(allSeries);
+        publisherComboBox.setItems(allPublishers);
+        mediaTypeComboBox.setItems(allMediaTypes);
+        seriesComboBox.setItems(allSeries);
 
         addGenreDropdown();
         addLanguageRow();
@@ -278,485 +284,179 @@ public class MediaFormController implements MainControllerAware{
 
     @FXML
     private void handleAddNewArtist(SearchableComboBox<Artist> targetComboBox){
-        Dialog<Artist> dialog = new Dialog<>();
-        dialog.setTitle(LanguageManager.getString("ui.newArtist"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewArtist"));
-
-        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-
-        TextField firstNameField = new TextField();
-        firstNameField.setPromptText(LanguageManager.getString("ui.firstName"));
-        TextField lastNameField = new TextField();
-        lastNameField.setPromptText(LanguageManager.getString("ui.lastName"));
-        TextField aliasField = new TextField();
-        aliasField.setPromptText(LanguageManager.getString("ui.alias"));
-        TextField nationalityField = new TextField();
-        nationalityField.setPromptText(LanguageManager.getString("ui.nationality"));
-
-        gridPane.add(new Label(LanguageManager.getString("ui.firstName") + ": "), 0, 0);
-        gridPane.add(firstNameField, 1, 0);
-        gridPane.add(new Label(LanguageManager.getString("ui.lastName") + ": "), 0, 1);
-        gridPane.add(lastNameField, 1, 1);
-        gridPane.add(new Label(LanguageManager.getString("ui.alias") + ": "), 0, 2);
-        gridPane.add(aliasField, 1, 2);
-        gridPane.add(new Label(LanguageManager.getString("ui.nationality") + ": "), 0, 3);
-        gridPane.add(nationalityField, 1, 3);
-
-        dialog.getDialogPane().setContent(gridPane);
-
-        Platform.runLater(lastNameField::requestFocus);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                String cleanFirstName = firstNameField.getText().trim();
-                String cleanLastName = lastNameField.getText().trim();
-                String cleanAlias = aliasField.getText().trim();
-                String cleanNationality = nationalityField.getText().trim();
-
-                if(!cleanLastName.isEmpty() || !cleanAlias.isEmpty()){
-                    return new Artist(0, cleanFirstName, cleanLastName, cleanAlias, cleanNationality, true);
-                }
-            }
-            return null;
-        });
+        ArtistDialog dialog = new ArtistDialog(allArtists, getWindow());
 
         dialog.initOwner(getWindow());
         Optional<Artist> result = dialog.showAndWait();
 
         result.ifPresent(artist -> {
-            try{
-                boolean isDuplicate = allArtists.stream()
-                                .anyMatch(a -> a.getFirstName().equalsIgnoreCase(artist.getFirstName()) &&
-                                        a.getLastName().equalsIgnoreCase(artist.getLastName()) ||
-                                        a.getAlias().equalsIgnoreCase(artist.getAlias()));
-                if(isDuplicate){
-                    String fullName = "";
-                    if(!artist.getFirstName().isEmpty()){
-                        fullName = artist.getFirstName() + " ";
-                    }
-                    if(!artist.getLastName().isEmpty()){
-                        fullName += artist.getLastName() + " ";
-                    }
-                    if(!artist.getAlias().isEmpty()){
-                        fullName += artist.getAlias() + " ";
-                    }
-                    fullName = fullName.trim();
-
-                    boolean continueAnyway = AlertManager.requestConfirmation(
-                            LanguageManager.getString("ui.warning"),
-                            LanguageManager.getString("warning.theArtistAlreadyExists_p1") + fullName + LanguageManager.getString("warning.theArtistAlreadyExists_p2"),
-                            getWindow()
-                    );
-
-                    if(!continueAnyway){
-                        return;
-                    }
-                }
-
+            try {
                 artistDAO.save(artist);
                 allArtists.add(artist);
-                targetComboBox.getItems().add(artist);
                 targetComboBox.setValue(artist);
             }catch(Exception e){
-                LOGGER.log(Level.SEVERE,"Failed to add new artist: " + e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, "Failed to add new artist :" + e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
     }
     @FXML
     public void handleAddNewSeries(){
-        SearchableComboBox<Series> targetComboBox = seriesComboBox;
-        int currentYear = LocalDate.now().getYear();
-
-        Dialog<Series> dialog = new Dialog<>();
-        dialog.setTitle(LanguageManager.getString("ui.addNewSeries"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewSeries"));
-
-        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-
-        TextField seriesNameField = new TextField();
-        seriesNameField.setPromptText(LanguageManager.getString("ui.seriesName"));
-        TextField seriesTitleCountField = new TextField();
-        seriesTitleCountField.setPromptText(LanguageManager.getString("ui.seriesTitleCount"));
-        Spinner<Integer> seriesStartYearSpinner = new Spinner<>(1800, 2200, currentYear);
-        seriesStartYearSpinner.setEditable(true);
-
-        VBox altTitleContainer = new VBox(5);
-        Button addAltTitleButton = new Button(LanguageManager.getString("ui.addAltTitle"));
-
-        addAltTitleButton.setOnAction(event -> {
-            HBox row = new HBox();
-            TextField altTitleField = new TextField();
-            altTitleField.setPromptText(LanguageManager.getString("ui.altTitle"));
-            Button removeBtn = new Button("X");
-            removeBtn.setOnAction(event1 -> altTitleContainer.getChildren().remove(row));
-            row.getChildren().addAll(altTitleField, removeBtn);
-            altTitleContainer.getChildren().add(row);
-        });
-
-        gridPane.add(new Label(LanguageManager.getString("ui.seriesName") + ": "), 0, 0);
-        gridPane.add(seriesNameField, 1, 0);
-        gridPane.add(new Label(LanguageManager.getString("ui.seriesTitleCount") + ": "), 0, 1);
-        gridPane.add(seriesTitleCountField, 1, 1);
-        gridPane.add(new Label(LanguageManager.getString("ui.seriesStartYear") + ": "), 0, 2);
-        gridPane.add(seriesStartYearSpinner, 1, 2);
-
-        gridPane.add(new Label(LanguageManager.getString("ui.altTitles") + ": "), 0, 3, 1, 1);
-        gridPane.add(new VBox(5, altTitleContainer, addAltTitleButton), 1, 3);
-
-        dialog.getDialogPane().setContent(gridPane);
-        Platform.runLater(seriesNameField::requestFocus);
-
-        dialog.setResultConverter(dialogButton -> {
-            if(dialogButton == saveButtonType) {
-                String cleanTitle = seriesNameField.getText().trim();
-                if(!cleanTitle.isEmpty()){
-                    int titleCount = 0;
-                    try{
-                        titleCount = Integer.parseInt(seriesTitleCountField.getText().trim());
-                    }catch (NumberFormatException ignored){}
-
-                    List<AltTitle> altTitles = new ArrayList<>();
-                    for(Node node : altTitleContainer.getChildren()){
-                        if(node instanceof HBox){
-                            TextField tf = (TextField)  ((HBox) node).getChildren().getFirst();
-                            if(!tf.getText().trim().isEmpty()){
-                                altTitles.add(new AltTitle(0, tf.getText().trim(), true));
-                            }
-                        }
-                    }
-
-                    return new Series(
-                            true,
-                            0,
-                            cleanTitle,
-                            titleCount,
-                            seriesStartYearSpinner.getValue(),
-                            altTitles
-                    );
-                }
-            }
-            return null;
-        });
+        SeriesDialog dialog = new SeriesDialog(allSeries, getWindow());
         dialog.initOwner(getWindow());
+
         Optional<Series> result = dialog.showAndWait();
 
         result.ifPresent(series -> {
             try{
-                boolean isDuplicate = allSeries.stream().anyMatch(s -> s.getName().equalsIgnoreCase(series.getName()));
-
-                if(isDuplicate){
-                    boolean continueAnyway = AlertManager.requestConfirmation(
-                            LanguageManager.getString("ui.warning"),
-                            LanguageManager.getString("warning.theSeriesAlreadyExists_p1") + series.getName() + LanguageManager.getString("warning.theSeriesAlreadyExists_p2"),
-                            getWindow()
-                    );
-                    if(!continueAnyway){
-                        return;
-                    }
-                }
                 seriesDAO.save(series);
                 allSeries.add(series);
-                targetComboBox.getItems().add(series);
-                targetComboBox.setValue(series);
+                seriesComboBox.setValue(series);
             }catch(Exception e){
-                LOGGER.log(Level.SEVERE, "Failed to add new series: " +e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, "Failed to add new series :" + e.getMessage(), e);
                 AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
             }
         });
     }
     @FXML
     private void handleAddNewArtistRole(SearchableComboBox<ArtistRole> targetComboBox){
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newArtistRole"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewArtistRole"));
-        dialog.setContentText(LanguageManager.getString("ui.artistRoleName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(roleName -> {
-            String cleanRoleName = roleName.trim();
-            if(!cleanRoleName.trim().isEmpty()){
-                try{
-                    Optional<ArtistRole> existingArtistRole = allArtistRoles.stream()
-                            .filter(ar -> ar.getRole().equalsIgnoreCase(cleanRoleName))
-                            .findFirst();
-
-                    if(existingArtistRole.isPresent()){
-                        targetComboBox.setValue(existingArtistRole.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("error.artistRoleExistsAndSelected"),
-                                getWindow()
-                        );
-                    }else{
-                        ArtistRole artistRole = new ArtistRole(0, roleName.trim(), true);
+        handleAddNewSimpleEntity(
+                targetComboBox,
+                allArtistRoles,
+                "ui.newArtistRole",
+                "ui.addNewArtistRole",
+                "ui.artistRoleName",
+                "info.artistRoleExistsAndSelected",
+                ArtistRole::getRole,
+                name -> new ArtistRole(0, name, true),
+                artistRole -> {
+                    try {
                         artistRoleDAO.save(artistRole);
-                        allArtistRoles.add(artistRole);
-                        targetComboBox.getItems().add(artistRole);
-                        targetComboBox.setValue(artistRole);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                }catch(Exception e){
-                    LOGGER.log(Level.SEVERE, "Failed to add new artist role: " +e.getMessage(), e);
-                    AlertManager.showAlert(
-                            Alert.AlertType.ERROR,
-                            LanguageManager.getString("ui.error"),
-                            e.getMessage(),
-                            getWindow()
-                    );
                 }
-            }
-        });
+        );
     }
     @FXML
     public void handleAddNewPublisher(){
-        SearchableComboBox<Publisher> targetComboBox = publisherComboBox;
-
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newPublisher"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewPublisher"));
-        dialog.setContentText(LanguageManager.getString("ui.publisherName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(publisherName -> {
-            String cleanPublisherName = publisherName.trim();
-            if(!cleanPublisherName.isEmpty()){
-                try{
-                    Optional<Publisher> existingPublisher = allPublishers.stream()
-                            .filter(p -> p.getPublisherName().equalsIgnoreCase(cleanPublisherName))
-                            .findFirst();
-
-                    if(existingPublisher.isPresent()){
-                        targetComboBox.setValue(existingPublisher.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("ui.publisherExistsAndSelected"),
-                                getWindow());
-                    }else{
-                        Publisher publisher = new Publisher(0, publisherName.trim(), true);
+        handleAddNewSimpleEntity(
+                publisherComboBox,
+                allPublishers,
+                "ui.newPublisher",
+                "ui.addNewPublisher",
+                "ui.publisherName",
+                "info.publisherExistsAndSelected",
+                Publisher::getPublisherName,
+                name -> new Publisher(0, name, true),
+                publisher -> {
+                    try {
                         publisherDAO.save(publisher);
-                        allPublishers.add(publisher);
-                        targetComboBox.getItems().add(publisher);
-                        targetComboBox.setValue(publisher);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                }catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to add new publisher: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(),  getWindow());
                 }
-            }
-        });
-
+        );
     }
     @FXML
     public void handleAddNewMediaType(){
-        SearchableComboBox<MediaType> targetComboBox = mediaTypeComboBox;
-
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.addNewMediaType"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewMediaType"));
-        dialog.setContentText(LanguageManager.getString("ui.mediaTypeName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(mediaTypeName -> {
-            String cleanMediaTypeName = mediaTypeName.trim();
-           if(!cleanMediaTypeName.isEmpty()){
-               try{
-                   Optional<MediaType> existingMediaType = allMediaTypes.stream()
-                           .filter(m -> m.getTypeName().equalsIgnoreCase(cleanMediaTypeName))
-                           .findFirst();
-                   if(existingMediaType.isPresent()){
-                       targetComboBox.setValue(existingMediaType.get());
-                       AlertManager.showAlert(
-                               Alert.AlertType.INFORMATION,
-                               LanguageManager.getString("ui.info"),
-                               LanguageManager.getString("info.mediaTypeExistsAndSelected"),
-                               getWindow()
-                       );
-                   } else{
-                       MediaType mediaType = new MediaType(0, mediaTypeName.trim(), true);
-                       mediaTypeDAO.save(mediaType);
-                       allMediaTypes.add(mediaType);
-                       targetComboBox.getItems().add(mediaType);
-                       targetComboBox.setValue(mediaType);
-                   }
-               }catch(Exception e){
-                   LOGGER.log(Level.SEVERE, "Failed to add new media type: " +e.getMessage(), e);
-                   AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
-               }
-           }
-        });
+        handleAddNewSimpleEntity(
+                mediaTypeComboBox,
+                allMediaTypes,
+                "ui.newMediaType",
+                "ui.addNewMediaType",
+                "ui.mediaTypeName",
+                "info.MediaTypeExistsAndSelected",
+                MediaType::getTypeName,
+                name -> new MediaType(0, name, true),
+                mediaType -> {
+                    try {
+                        mediaTypeDAO.save(mediaType);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
     }
     @FXML
     private void handleAddNewGenre(SearchableComboBox<Genre> targetComboBox){
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newGenre"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewGenre"));
-        dialog.setContentText(LanguageManager.getString("ui.genreName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            String cleanName = name.trim();
-            if(!cleanName.isEmpty()){
-                try {
-                    Optional<Genre> existingGenre = allGenres.stream()
-                            .filter(g -> g.getGenreName().equalsIgnoreCase(cleanName))
-                            .findFirst();
-
-                    if(existingGenre.isPresent()){
-                        targetComboBox.setValue(existingGenre.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.genreExistsAndSelected"),
-                                getWindow()
-                        );
-                    }else{
-                        Genre genre = new Genre(0, name.trim(), true);
+        handleAddNewSimpleEntity(
+                targetComboBox,
+                allGenres,
+                "ui.newGenre",
+                "ui.addNewGenre",
+                "ui.genreName",
+                "info.genreExistsAndSelected",
+                Genre::getGenreName,
+                name -> new Genre(0, name, true),
+                genre -> {
+                    try {
                         genreDAO.save(genre);
-                        allGenres.add(genre);
-                        targetComboBox.getItems().add(genre);
-                        targetComboBox.setValue(genre);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                } catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to add new genre: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
-            }
-        });
+        );
     }
     @FXML
     private void handleAddNewLanguage(SearchableComboBox<Language> targetComboBox) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newLanguage"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewLanguage"));
-        dialog.setContentText(LanguageManager.getString("ui.languageName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            String cleanName = name.trim();
-            if(!cleanName.isEmpty()){
-                Optional<Language> existingLanguage = allLanguages.stream()
-                        .filter(l -> l.getLanguage().equalsIgnoreCase(cleanName))
-                        .findFirst();
-                try {
-                    if(existingLanguage.isPresent()){
-                        targetComboBox.setValue(existingLanguage.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.languageExistsAndSelected"),
-                                getWindow()
-                        );
-                    }else {
-                        Language lang = new Language(0, name.trim(), true);
-                        languageDAO.save(lang);
-                        allLanguages.add(lang);
-                        targetComboBox.getItems().add(lang);
-                        targetComboBox.setValue(lang);
+        handleAddNewSimpleEntity(
+                targetComboBox,
+                allLanguages,
+                "ui.newLanguage",
+                "ui.addNewLanguage",
+                "ui.languageName",
+                "info.languageExistsAndSelected",
+                Language::getLanguage,
+                name -> new Language(0, name, true),
+                language -> {
+                    try {
+                        languageDAO.save(language);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                } catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to add new language: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
-            }
-        });
+        );
     }
     @FXML
     private void handleAddNewTag(SearchableComboBox<Tag> targetComboBox) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newTag"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewTag"));
-        dialog.setContentText(LanguageManager.getString("ui.tagName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            String cleanName = name.trim();
-            if(!cleanName.isEmpty()){
-                try {
-                    Optional<Tag> existingTag = allTags.stream()
-                            .filter(t -> t.getName().equalsIgnoreCase(cleanName))
-                            .findFirst();
-
-                    if(existingTag.isPresent()){
-                        targetComboBox.setValue(existingTag.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.tagExistsAndSelected"),
-                                getWindow()
-                        );
-                    }else{
-                        Tag tag = new Tag(0, name.trim(), true);
+        handleAddNewSimpleEntity(
+                targetComboBox,
+                allTags,
+                "ui.newTag",
+                "ui.addNewTag",
+                "ui.tagName",
+                "info.tagExistsAndSelected",
+                Tag::getName,
+                name -> new Tag(0, name, true),
+                tag -> {
+                    try {
                         tagDAO.save(tag);
-                        allTags.add(tag);
-                        targetComboBox.getItems().add(tag);
-                        targetComboBox.setValue(tag);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                } catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to add new tag: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
-            }
-        });
+        );
     }
     @FXML
     private void handleAddNewFranchise(SearchableComboBox<Franchise> targetComboBox) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString("ui.newFranchise"));
-        dialog.setHeaderText(LanguageManager.getString("ui.addNewFranchise"));
-        dialog.setContentText(LanguageManager.getString("ui.franchiseName"));
-
-        dialog.initOwner(getWindow());
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            String cleanName = name.trim();
-            if(!cleanName.isEmpty()){
-                try {
-                    Optional<Franchise> existingFranchise = allFranchises.stream()
-                            .filter(f -> f.getName().equalsIgnoreCase(cleanName))
-                            .findFirst();
-
-                    if(existingFranchise.isPresent()){
-                        targetComboBox.setValue(existingFranchise.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString("info.franchiseExistsAndSelected"),
-                                getWindow()
-                        );
-                    }else{
-                        Franchise franchise = new Franchise(0, name.trim(), null, true);
+        handleAddNewSimpleEntity(
+                targetComboBox,
+                allFranchises,
+                "ui.newFranchise",
+                "ui.addNewFranchise",
+                "ui.franchiseName",
+                "info.franchiseExistsAndSelected",
+                Franchise::getName,
+                name -> new Franchise(0, name, new ArrayList<>(), true),
+                franchise -> {
+                    try {
                         franchiseDAO.save(franchise);
-                        allFranchises.add(franchise);
-                        targetComboBox.getItems().add(franchise);
-                        targetComboBox.setValue(franchise);
+                    }catch(Exception e){
+                        throw new RuntimeException(e);
                     }
-                } catch(Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to add new franchise: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
                 }
-            }
-        });
+        );
     }
 
     @FXML
@@ -768,7 +468,7 @@ public class MediaFormController implements MainControllerAware{
             return;
         }
 
-        ExternalMediaSearchResult result = mediaIntegrationFacade.fetchAndSyncBookIsbn(isbn);
+        ExternalMediaSearchResult result = mediaIntegrationFacade.fetchAndSyncBookIsbn(isbn, ApiSource.GOOGLE_BOOKS);
         if (result == null) {
             AlertManager.showAlert(Alert.AlertType.INFORMATION,
                     LanguageManager.getString("ui.info"),
@@ -787,7 +487,6 @@ public class MediaFormController implements MainControllerAware{
 
         if(!allPublishers.contains(result.publisher())){
             allPublishers.add(result.publisher());
-            publisherComboBox.getItems().add(result.publisher());
         }
         publisherComboBox.setValue(result.publisher());
 
@@ -844,14 +543,18 @@ public class MediaFormController implements MainControllerAware{
 
            LocalDate releaseDate = parseDate(selectedResult.releaseDate());
 
-           isbnField.setText(selectedResult.remoteId());
+           if(selectedResult.source() == ApiSource.GOOGLE_BOOKS){
+               isbnField.setText(selectedResult.remoteId());
+           }else{
+               isbnField.clear();
+           }
+
            titleField.setText(selectedResult.title());
            releaseDateField.setValue(releaseDate);
            descriptionArea.setText(selectedResult.description());
 
            if(!allPublishers.contains(selectedResult.publisher())){
                allPublishers.add(selectedResult.publisher());
-               publisherComboBox.getItems().add(selectedResult.publisher());
            }
            publisherComboBox.setValue(selectedResult.publisher());
 
@@ -977,12 +680,13 @@ public class MediaFormController implements MainControllerAware{
             }
 
             int targetViewId;
+            String isbn = isbnField.getText() != null && (isbnField.getText().trim().length() == 10 || isbnField.getText().trim().length() == 13) ? isbnField.getText().trim() : null;
 
             if(currentMedia == null){ //fresh item
                 Media newMedia = new Media.Builder()
                         .isNewItem(true)
                         .id(0)
-                        .isbn(isbnField.getText().trim())
+                        .isbn(isbn)
                         .title(titleField.getText().trim())
                         .originalTitle(originalTitleField.getText().trim())
                         .coverFileName(imageFileName)
@@ -1004,7 +708,7 @@ public class MediaFormController implements MainControllerAware{
                 mediaIntegrationFacade.persistConfirmedMedia(newMedia);
                 targetViewId = newMedia.getId();
             }else{ //existing item
-                currentMedia.setIsbn(isbnField.getText().trim());
+                currentMedia.setIsbn(isbn);
                 currentMedia.setTitle(titleField.getText().trim());
                 currentMedia.setOriginalTitle(originalTitleField.getText().trim());
                 currentMedia.setCoverFileName(imageFileName);
@@ -1169,7 +873,7 @@ public class MediaFormController implements MainControllerAware{
 
         SearchableComboBox<Artist> artistComboBox = new SearchableComboBox<>();
         if(allArtists != null){
-            artistComboBox.getItems().addAll(allArtists);
+            artistComboBox.setItems(allArtists);
         }
         artistComboBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(artistComboBox, Priority.ALWAYS);
@@ -1179,7 +883,7 @@ public class MediaFormController implements MainControllerAware{
 
         SearchableComboBox<ArtistRole> artistRoleComboBox = new SearchableComboBox<>();
         if(allArtistRoles != null){
-            artistRoleComboBox.getItems().addAll(allArtistRoles);
+            artistRoleComboBox.setItems(allArtistRoles);
         }
         artistRoleComboBox.setMaxWidth(150);
         artistRoleComboBox.setPromptText(LanguageManager.getString("ui.selectArtistRole"));
@@ -1201,13 +905,13 @@ public class MediaFormController implements MainControllerAware{
 
     }
 
-    private <T> void addDynamicDropdownRow(VBox container, List<T> items, T selectedItem, Runnable onAddAction){
+    private <T> void addDynamicDropdownRow(VBox container, ObservableList<T> items, T selectedItem, Runnable onAddAction){
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
 
         SearchableComboBox<T> comboBox = new SearchableComboBox<>();
         if(items != null){
-            comboBox.getItems().addAll(items);
+            comboBox.setItems(items);
         }
         comboBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(comboBox, Priority.ALWAYS);
@@ -1243,6 +947,53 @@ public class MediaFormController implements MainControllerAware{
         });
         uiItems.forEach(item -> {
             if(!currentItems.contains(item)){adder.accept(item);}
+        });
+    }
+
+    private <T> void handleAddNewSimpleEntity(SearchableComboBox<T> targetComboBox,
+                                              List<T> allItemsList,
+                                              String titleKey,
+                                              String headerKey,
+                                              String contentKey,
+                                              String existsMsgKey,
+                                              Function<T, String> nameExtractor,
+                                              Function<String, T> entityCreator,
+                                              Consumer<T> daoSaver){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(LanguageManager.getString(titleKey));
+        dialog.setHeaderText(LanguageManager.getString(headerKey));
+        dialog.setContentText(LanguageManager.getString(contentKey));
+
+        dialog.initOwner(getWindow());
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(itemName -> {
+            String cleanItemName = itemName.trim();
+
+            if(!itemName.isEmpty()){
+                try{
+                    Optional<T> existingItem = allItemsList.stream()
+                            .filter(m -> nameExtractor.apply(m).equalsIgnoreCase(cleanItemName))
+                            .findFirst();
+                    if(existingItem.isPresent()){
+                        targetComboBox.setValue(existingItem.get());
+                        AlertManager.showAlert(
+                                Alert.AlertType.INFORMATION,
+                                LanguageManager.getString("ui.info"),
+                                LanguageManager.getString(existsMsgKey),
+                                getWindow()
+                        );
+                    } else{
+                        T item = entityCreator.apply(itemName);
+                        daoSaver.accept(item);
+                        allItemsList.add(item);
+                        targetComboBox.setValue(item);
+                    }
+                }catch(Exception e){
+                    LOGGER.log(Level.SEVERE, "Failed to add new entity: " +e.getMessage(), e);
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
+                }
+            }
         });
     }
 

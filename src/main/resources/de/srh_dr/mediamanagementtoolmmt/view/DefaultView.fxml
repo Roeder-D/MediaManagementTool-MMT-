@@ -34,4 +34,22 @@
         <PieChart fx:id="mediaTypePieChart" VBox.vgrow="ALWAYS"/>
     </VBox>
 
+    <HBox spacing="20.0" alignment="CENTER">
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+            <Label text="%ui.stats.total_tags" styleClass="stat-label"/>
+            <Label fx:id="totalTagsField" text="0" styleClass="stat-value"/>
+        </VBox>
+
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+            <Label text="%ui.stats.total_genres" styleClass="stat-label"/>
+            <Label fx:id="totalGenresField" text="0" styleClass="stat-value, stat-lent"/>
+        </VBox>
+
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+            <Label text="%ui.stats.total_franchises" styleClass="stat-label"/>
+            <Label fx:id="totalFranchisesField" text="0" styleClass="stat-value, stat-lost"/>
+        </VBox>
+
+    </HBox>
+
 </VBox>

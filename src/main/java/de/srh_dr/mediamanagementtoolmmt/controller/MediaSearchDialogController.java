@@ -1,5 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
+import de.srh_dr.mediamanagementtoolmmt.dto.ApiSource;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
@@ -26,7 +27,7 @@ public class MediaSearchDialogController {
 
     private MediaIntegrationFacade facade;
     private String searchQuery;
-    private MediaIntegrationFacade.ApiSource selectedSource;
+    private ApiSource selectedSource;
     private ExternalMediaSearchResult selectedResult = null;
 
     public void setupDialog(MediaIntegrationFacade facade, String searchQuery) {
@@ -54,13 +55,13 @@ public class MediaSearchDialogController {
 
     @FXML
     private void handleSelectGoogleBooks(){
-        this.selectedSource = MediaIntegrationFacade.ApiSource.GOOGLE_BOOKS;
+        this.selectedSource = ApiSource.GOOGLE_BOOKS;
         executeShallowSearch();
     }
 
     @FXML
     private void handleSelectTMDB(){
-        this.selectedSource = MediaIntegrationFacade.ApiSource.TMDB;
+        this.selectedSource = ApiSource.TMDB;
         executeShallowSearch();
     }
 
@@ -68,7 +69,7 @@ public class MediaSearchDialogController {
         loadingLabel.setText(LanguageManager.getString("ui.searching") + " " + selectedSource.name() + "...");
         showLayer(layerLoading);
 
-        Task<List<ExternalMediaSearchResult>> searchTask = new Task<List<ExternalMediaSearchResult>>() {
+        Task<List<ExternalMediaSearchResult>> searchTask = new Task<>() {
             @Override
             protected List<ExternalMediaSearchResult> call(){
                 return facade.fetchAndSyncByTitle(searchQuery, selectedSource);

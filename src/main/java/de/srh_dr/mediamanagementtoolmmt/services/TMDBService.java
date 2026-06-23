@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.srh_dr.mediamanagementtoolmmt.dto.ApiSource;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TMDBService implements ExternalMediaService{
-    Logger LOGGER = Logger.getLogger(TMDBService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TMDBService.class.getName());
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final String apiToken = dotenv.get("TMDB_API_TOKEN");
@@ -145,7 +146,8 @@ public class TMDBService implements ExternalMediaService{
                     imageUrl,
                     artists,
                     languages,
-                    remoteId
+                    remoteId,
+                    ApiSource.TMDB
             );
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE,"Error fetching TMDB details for: " + remoteId);
@@ -190,7 +192,8 @@ public class TMDBService implements ExternalMediaService{
                 imageUrl,
                 artists,
                 languages,
-                remoteId
+                remoteId,
+                ApiSource.TMDB
         );
     }
 }

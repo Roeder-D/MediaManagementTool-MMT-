@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.srh_dr.mediamanagementtoolmmt.dto.ApiSource;
 import de.srh_dr.mediamanagementtoolmmt.dto.ExternalMediaSearchResult;
 import de.srh_dr.mediamanagementtoolmmt.model.Artist;
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GoogleBooksService implements BookLookupService{
-    Logger LOGGER = Logger.getLogger(GoogleBooksService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GoogleBooksService.class.getName());
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final String apiToken = dotenv.get("GOOGLE_BOOKS_API_TOKEN");
@@ -163,7 +164,8 @@ public class GoogleBooksService implements BookLookupService{
                 imageUrl,
                 artists,
                 languages,
-                finalRemoteId
+                finalRemoteId,
+                ApiSource.GOOGLE_BOOKS
         );
     }
 }

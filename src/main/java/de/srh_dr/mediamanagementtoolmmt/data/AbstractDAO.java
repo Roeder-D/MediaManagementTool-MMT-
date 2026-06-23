@@ -10,12 +10,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class AbstractDAO<T> {
-    Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());
 
     protected abstract String getTableName();
     protected abstract String getIdColumnName();
     protected abstract String getValueColumnName();
     protected abstract T mapResultSet(ResultSet rs) throws SQLException;
+
+    public int countRows(){
+        String sql = "SELECT COUNT(" + getIdColumnName() + ") FROM " + getTableName();
+        int count = 0;
+
+        try (Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        }catch(SQLException e){
+            LOGGER.log(Level.WARNING, "Couldn't count rows for " + getTableName(), e);
+        }
+        return count;
+    }
 
     public List<T> findAll() {
         String sql = String.format("SELECT * FROM %s ORDER BY %s ASC",

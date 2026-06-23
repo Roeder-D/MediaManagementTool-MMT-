@@ -10,7 +10,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MediaService {
-    Logger LOGGER = Logger.getLogger(MediaService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MediaService.class.getName());
+    private final static MediaService INSTANCE = new MediaService();
+
+    public static MediaService getInstance() {
+        return INSTANCE;
+    }
 
     private final MediaDAO mediaDAO;
     private final PublisherDAO publisherDAO;
@@ -21,19 +26,18 @@ public class MediaService {
     private final ArtistDAO artistDAO;
     private final FranchiseDAO franchiseDAO;
 
-    public MediaService(){
-        this.mediaDAO = new MediaDAO();
-        this.publisherDAO = new PublisherDAO();
-        this.seriesDAO = new SeriesDAO();
-        this.tagDAO = new TagDAO();
-        this.genreDAO = new GenreDAO();
-        this.languageDAO = new LanguageDAO();
-        this.artistDAO = new ArtistDAO();
-        this.franchiseDAO = new FranchiseDAO();
+    private MediaService(){
+        this.mediaDAO = MediaDAO.getInstance();
+        this.publisherDAO = PublisherDAO.getInstance();
+        this.seriesDAO = SeriesDAO.getInstance();
+        this.tagDAO = TagDAO.getInstance();
+        this.genreDAO = GenreDAO.getInstance();
+        this.languageDAO = LanguageDAO.getInstance();
+        this.artistDAO = ArtistDAO.getInstance();
+        this.franchiseDAO = FranchiseDAO.getInstance();
     }
 
     public Media getMediaById(int id){
-        Connection conn = null;
         MediaEntity mediaCore = mediaDAO.readMediaEntity(id);
 
         if(mediaCore == null ||mediaCore.id() < 1){return null;}

@@ -9,7 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PublisherDAO extends AbstractDAO<Publisher> {
-    Logger LOGGER = Logger.getLogger(PublisherDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PublisherDAO.class.getName());
+    private static final PublisherDAO INSTANCE = new PublisherDAO();
+
+    public static PublisherDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private PublisherDAO(){}
 
     @Override protected String getTableName() { return "publisher"; }
     @Override protected String getIdColumnName() { return "publisher_id"; }

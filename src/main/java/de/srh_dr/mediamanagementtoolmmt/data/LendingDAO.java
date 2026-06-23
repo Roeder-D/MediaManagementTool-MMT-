@@ -2,6 +2,7 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Lendee;
 import de.srh_dr.mediamanagementtoolmmt.model.Lending;
+import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.viewmodel.LendingDashboardItem;
 import de.srh_dr.mediamanagementtoolmmt.model.Media;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
@@ -12,9 +13,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class LendingDAO {
-    Logger LOGGER =  Logger.getLogger(LendingDAO.class.getName());
+    private static final Logger LOGGER =  Logger.getLogger(LendingDAO.class.getName());
+    private static final LendingDAO INSTANCE = new LendingDAO();
+
+    public static LendingDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private LendingDAO(){}
 
     // HELPER
     public void save(Lending lending){
@@ -95,8 +102,8 @@ public class LendingDAO {
             stmt.setInt(1, id);
             try(ResultSet rs = stmt.executeQuery()){
                 if(rs.next()){
-                    Media media = new MediaDAO().read(rs.getInt("media_id"));
-                    Lendee lendee = new LendeeDAO().findById(rs.getInt("lendee_id"));
+                    Media media = MediaService.getInstance().getMediaById(rs.getInt("media_id"));
+                    Lendee lendee = LendeeDAO.getInstance().findById(rs.getInt("lendee_id"));
 
                     Date sqlReturnDate = rs.getDate("return_date");
 
@@ -139,7 +146,7 @@ public class LendingDAO {
     //DASHBOARD
     public List<LendingDashboardItem> getLendingDashboard(){
         String sql = "SELECT * FROM v_lending_dashboard";
-        List<LendingDashboardItem> lendingDashboardItems = new ArrayList<LendingDashboardItem>();
+        List<LendingDashboardItem> lendingDashboardItems = new ArrayList<>();
         try(Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery()) {

@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ArtistOverviewController{
-    Logger LOGGER = Logger.getLogger(ArtistOverviewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ArtistOverviewController.class.getName());
 
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
@@ -31,7 +31,7 @@ public class ArtistOverviewController{
     @FXML private TableColumn<Artist, String> alias;
     @FXML private TableColumn<Artist, String> nationality;
 
-    private final ArtistDAO artistDAO = new ArtistDAO();
+    private final ArtistDAO artistDAO = ArtistDAO.getInstance();
     private final ObservableList<Artist> artists = FXCollections.observableArrayList();
     private FilteredList<Artist> filteredArtists;
 

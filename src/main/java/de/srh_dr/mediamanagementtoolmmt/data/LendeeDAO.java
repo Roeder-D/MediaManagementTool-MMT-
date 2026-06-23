@@ -8,7 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LendeeDAO extends AbstractDAO<Lendee> {
-    Logger LOGGER = Logger.getLogger(LendeeDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LendeeDAO.class.getName());
+    private static final LendeeDAO INSTANCE = new LendeeDAO();
+
+    public static LendeeDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private LendeeDAO(){}
 
     @Override
     protected String getTableName() {

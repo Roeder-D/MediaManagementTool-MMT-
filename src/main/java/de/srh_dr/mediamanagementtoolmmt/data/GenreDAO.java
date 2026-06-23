@@ -9,7 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GenreDAO extends AbstractDAO<Genre> {
-    Logger LOGGER = Logger.getLogger(GenreDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GenreDAO.class.getName());
+    private static final GenreDAO INSTANCE = new GenreDAO();
+
+    public static GenreDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private GenreDAO(){}
 
     @Override protected String getTableName() { return "genre"; }
     @Override protected String getIdColumnName() { return "genre_id"; }
@@ -34,7 +41,7 @@ public class GenreDAO extends AbstractDAO<Genre> {
     }
 
     // CREATE
-    private void create(Genre genre) throws SQLException {
+    private void create(Genre genre){
         String sql = "INSERT INTO genre (genre_name) VALUES (?)";
 
         try (Connection conn = DBConnection.getConnection();

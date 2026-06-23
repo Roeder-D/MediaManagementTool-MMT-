@@ -13,9 +13,16 @@ import java.util.logging.Logger;
 
 
 public class MediaDAO {
-    Logger LOGGER = Logger.getLogger(MediaDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MediaDAO.class.getName());
+    private static final MediaDAO INSTANCE = new MediaDAO();
 
-    // READ by ID
+    public static MediaDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private MediaDAO(){}
+
+    // READ
     public MediaEntity readMediaEntity(int mediaId){
         String sql = "SELECT * FROM media WHERE media_id = ?";
 
@@ -46,138 +53,6 @@ public class MediaDAO {
             LOGGER.log(Level.SEVERE, "Failed to read media entity: " +e.getMessage(),e);
         }
         return null;
-    }
-
-    public Media read(int mediaId) throws SQLException{
-        Media media = null;
-
-        String media_sql = "SELECT * FROM media WHERE media_id = ?";
-
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(media_sql)){
-                stmt.setInt(1, mediaId);
-
-                try(ResultSet rs = stmt.executeQuery()){
-                    if(rs.next()){
-                        Media.Builder builder = new Media.Builder()
-                                .isNewItem(false)
-                                .id(rs.getInt("media_id"))
-                                .isbn(rs.getString("isbn"))
-                                .title(rs.getString("title"))
-                                .originalTitle(rs.getString("original_title"))
-                                .coverFileName(rs.getString("cover_url"))
-                                .description(rs.getString("description"))
-                                .rating(rs.getInt("rating"))
-                                .releaseDate(rs.getDate("release_date") != null ? rs.getDate("release_date").toLocalDate() : null)
-                                .seriesOrder(rs.getInt("series_order"))
-                                .status(Media.MediaStatus.valueOf(rs.getString("status")));
-
-                        // Fetch linked entities
-                        int publisherId = rs.getInt("publisher_id");
-                        if(!rs.wasNull()){
-                            builder.publisher(new PublisherDAO().findById(publisherId));
-                        }
-                        int seriesId = rs.getInt("series_id");
-                        if(!rs.wasNull()){
-                            builder.series(new SeriesDAO().findById(seriesId));
-                        }
-                        builder.mediaType(new MediaTypeDAO().findById(rs.getInt("media_type_id")));
-
-                        // Fetch lists
-                        builder.tags(fetchList(conn, mediaId, "media_tag", "tag_id", new TagDAO()));
-                        builder.genres(fetchList(conn, mediaId, "media_genre", "genre_id", new GenreDAO()));
-                        builder.languages(fetchList(conn, mediaId, "media_language", "language_id", new LanguageDAO()));
-
-                        builder.franchises(fetchFranchises(conn, mediaId));
-                        builder.credits(fetchCredits(conn, mediaId));
-
-                        media = builder.build();
-                        media.clearChangeTracking();
-                    }
-                }
-        }
-        return media;
-    }
-
-    private <T> List<T> fetchList(Connection conn, int mediaId, String table, String column, AbstractDAO<T> dao) throws SQLException {
-        List<T> items = new ArrayList<>();
-        String sql = "SELECT " + column + " FROM " + table + " WHERE media_id = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, mediaId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    items.add(dao.findById(rs.getInt(column)));
-                }
-            }
-        }
-        return items;
-    }
-
-    private List<Franchise> fetchFranchises(Connection conn, int mediaId) throws SQLException {
-        List<Franchise> franchises = new ArrayList<>();
-        String franchiseSql = "SELECT f.franchise_id, f.franchise_name " +
-                "FROM media_franchise mf " +
-                "JOIN franchise f ON mf.franchise_id = f.franchise_id " +
-                "WHERE mf.media_id = ?";
-
-        String titlesSql = "SELECT alt_title_id, title FROM alt_title WHERE franchise_id = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(franchiseSql)) {
-            stmt.setInt(1, mediaId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    int franchiseId = rs.getInt("franchise_id");
-                    String franchiseName = rs.getString("franchise_name");
-                    List<AltTitle> altTitles = new ArrayList<>();
-
-                    try(PreparedStatement titleStmt = conn.prepareStatement(titlesSql)){
-                        titleStmt.setInt(1, franchiseId);
-                        try(ResultSet rsTitles =  titleStmt.executeQuery()){
-                            while(rsTitles.next()){
-                                altTitles.add(new AltTitle(
-                                   rsTitles.getInt("alt_title_id"),
-                                   rsTitles.getString("title"),
-                                   false
-                                ));
-                            }
-                        }
-                    }
-                    franchises.add(new Franchise(franchiseId, franchiseName, altTitles, false));
-                }
-            }
-        }
-        return franchises;
-    }
-
-    private List<MediaArtist> fetchCredits(Connection conn, int mediaId) throws SQLException {
-        List<MediaArtist> credits = new ArrayList<>();
-        String sql = "SELECT a.artist_id, a.first_name, a.last_name, a.alias, a.nationality, ar.artist_role_id, ar.role " +
-                "FROM media_artist ma JOIN artist a ON ma.artist_id = a.artist_id JOIN artist_role ar ON ma.artist_role_id = ar.artist_role_id " +
-                "WHERE ma.media_id = ? ";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, mediaId);
-            try(ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Artist artist = new Artist(
-                            rs.getInt("artist_id"),
-                            rs.getString("first_name"),
-                            rs.getString("last_name"),
-                            rs.getString("alias"),
-                            rs.getString("nationality"),
-                            false);
-                    ArtistRole artistRole = new ArtistRole(
-                            rs.getInt("artist_role_id"),
-                            rs.getString("role"),
-                            false);
-
-                    credits.add(new MediaArtist(artist, artistRole, false));
-                }
-            }
-        }
-        return credits;
     }
 
     // CREATE
@@ -254,7 +129,7 @@ public class MediaDAO {
         }
     }
 
-    // Helper for preparedStatement
+    // Helper
     private void prepareMediaStatement(PreparedStatement stmt, Media m) throws SQLException {
         stmt.setString(1, m.getIsbn());
         stmt.setString(2, m.getTitle());

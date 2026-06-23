@@ -11,6 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaOverviewDAO {
+    private static final  MediaOverviewDAO INSTANCE = new MediaOverviewDAO();
+
+    public static MediaOverviewDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private MediaOverviewDAO(){}
+
     public List<MediaOverview> getMediaOverview() throws SQLException {
         List<MediaOverview> overviewList = new ArrayList<>();
         String sql = "SELECT media_id, title, release_date, publisher_name, status, type_name, artists, tags FROM v_media_overview";

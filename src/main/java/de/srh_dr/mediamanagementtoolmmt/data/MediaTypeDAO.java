@@ -8,7 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MediaTypeDAO extends AbstractDAO<MediaType> {
-    Logger LOGGER = Logger.getLogger(MediaTypeDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MediaTypeDAO.class.getName());
+    private static final MediaTypeDAO INSTANCE = new MediaTypeDAO();
+
+    public static MediaTypeDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private MediaTypeDAO(){}
 
     @Override
     protected String getTableName() {

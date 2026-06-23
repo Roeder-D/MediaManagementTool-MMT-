@@ -9,7 +9,6 @@ module de.srh_dr.mediamanagementtoolmmt {
     requires java.logging;
     requires java.sql;
     requires io.github.cdimascio.dotenv.java;
-    requires mysql.connector.j;
     requires java.net.http;
     requires jdk.jfr;
     requires org.apache.httpcomponents.client5.httpclient5;

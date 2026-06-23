@@ -3,7 +3,6 @@ package de.srh_dr.mediamanagementtoolmmt.data;
 import de.srh_dr.mediamanagementtoolmmt.model.AltTitle;
 import de.srh_dr.mediamanagementtoolmmt.model.Series;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
-import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 
 import java.sql.*;
 import java.util.*;
@@ -11,7 +10,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SeriesDAO {
-    Logger LOGGER = Logger.getLogger(SeriesDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SeriesDAO.class.getName());
+    private static final SeriesDAO INSTANCE = new SeriesDAO();
+
+    public static SeriesDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private SeriesDAO(){}
 
     // HELPER
     public void save(Series series) {

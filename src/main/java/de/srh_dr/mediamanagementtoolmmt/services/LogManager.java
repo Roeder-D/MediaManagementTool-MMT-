@@ -47,6 +47,4 @@ public class LogManager {
         fileHandler.setFormatter(new SimpleFormatter());
         return fileHandler;
     }
-
-
 }

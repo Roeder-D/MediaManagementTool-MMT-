@@ -10,6 +10,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StatisticsDAO {
+    private static final  StatisticsDAO INSTANCE = new StatisticsDAO();
+
+    public static StatisticsDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private StatisticsDAO(){}
+
     public Map<String, Integer> getCollectionStatistics() {
         Map<String, Integer> statistics = new HashMap<>();
         String sql = "Select total_titles, available_titles, lent_titles, lost_titles FROM v_collection_statistics LIMIT 1";

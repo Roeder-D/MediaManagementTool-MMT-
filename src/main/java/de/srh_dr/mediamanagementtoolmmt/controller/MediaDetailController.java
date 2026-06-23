@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MediaDetailController implements MainControllerAware {
-    Logger LOGGER  = Logger.getLogger(MediaDetailController.class.getName());
+    private static final Logger LOGGER  = Logger.getLogger(MediaDetailController.class.getName());
 
     @FXML private BorderPane viewContainer;
     @FXML private Label titleLabel;
@@ -47,8 +47,8 @@ public class MediaDetailController implements MainControllerAware {
 
     private MainController mainController;
     private Media currentMedia;
-    private final MediaService mediaService = new MediaService();
-    private final ImageManager imageManager = new ImageManager();
+    private final MediaService mediaService = MediaService.getInstance();
+    private final ImageManager imageManager = ImageManager.getInstance();
 
 
     @Override

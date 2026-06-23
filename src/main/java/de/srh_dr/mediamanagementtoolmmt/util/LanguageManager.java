@@ -4,8 +4,6 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LanguageManager {
     private static final String BUNDLE_PATH = "de.srh_dr.mediamanagementtoolmmt.messages";

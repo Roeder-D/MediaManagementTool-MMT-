@@ -1,7 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.data;
 
 import de.srh_dr.mediamanagementtoolmmt.model.Language;
-import de.srh_dr.mediamanagementtoolmmt.model.Tag;
 import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 
 import java.sql.*;
@@ -10,7 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LanguageDAO extends AbstractDAO<Language> {
-    Logger LOGGER = Logger.getLogger(LanguageDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LanguageDAO.class.getName());
+    private static final LanguageDAO INSTANCE = new LanguageDAO();
+
+    public static LanguageDAO getInstance(){
+        return INSTANCE;
+    }
+
+    private LanguageDAO(){}
 
     @Override protected String getTableName() { return "language"; }
     @Override protected String getIdColumnName() { return "language_id"; }
@@ -51,7 +57,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
     }
 
     // CREATE
-    private void create(Language language) throws SQLException {
+    private void create(Language language){
         String sql = "INSERT INTO language (language) VALUES (?)";
 
         try (Connection conn = DBConnection.getConnection();
@@ -75,7 +81,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
     }
 
     // UPDATE
-    private void update(Language language) throws SQLException {
+    private void update(Language language){
         if (language.isNewItem()) return;
         if (!language.isDirty()) return;
 

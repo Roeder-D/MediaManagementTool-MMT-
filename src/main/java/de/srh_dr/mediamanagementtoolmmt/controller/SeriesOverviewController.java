@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SeriesOverviewController{
-    Logger LOGGER = Logger.getLogger(SeriesOverviewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SeriesOverviewController.class.getName());
 
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
@@ -33,7 +33,7 @@ public class SeriesOverviewController{
     @FXML private TableColumn<Series, Number> yearCol;
     @FXML private TableColumn<Series, Number> countCol;
 
-    private final SeriesDAO seriesDAO = new SeriesDAO();
+    private final SeriesDAO seriesDAO = SeriesDAO.getInstance();
     private final ObservableList<Series> seriesList = FXCollections.observableArrayList();
     private FilteredList<Series> filteredSeries;
 
@@ -127,7 +127,7 @@ public class SeriesOverviewController{
         altTitleListView.setItems(altTitles);
         altTitleListView.setPrefHeight(100);
 
-        altTitleListView.setCellFactory(param -> new ListCell<AltTitle>() {
+        altTitleListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(AltTitle item, boolean empty) {
                 super.updateItem(item, empty);

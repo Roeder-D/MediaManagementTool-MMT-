@@ -21,7 +21,7 @@ public class LendingOverviewController implements MainControllerAware{
     @FXML private TableColumn<LendingDashboardItem, String> statusCol;
 
     MainController mainController;
-    private final LendingDAO lendingDAO = new LendingDAO();
+    private final LendingDAO lendingDAO = LendingDAO.getInstance();
 
     private final ObservableList<LendingDashboardItem> allItems = FXCollections.observableArrayList();
     private FilteredList<LendingDashboardItem> filteredItems;
@@ -77,13 +77,13 @@ public class LendingOverviewController implements MainControllerAware{
                 LanguageManager.getString("ui.LOST")
         );
         statusFilterComboBox.getSelectionModel().selectFirst();
-        statusFilterComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            applyFilter();
-        });
+        statusFilterComboBox.valueProperty().addListener((observable, oldValue, newValue) ->
+            applyFilter()
+        );
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            applyFilter();
-        });
+        searchField.textProperty().addListener((observable, oldValue, newValue) ->
+            applyFilter()
+        );
 
         loadLendings();
     }

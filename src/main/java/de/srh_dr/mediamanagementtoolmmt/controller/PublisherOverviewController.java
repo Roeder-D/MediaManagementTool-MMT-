@@ -18,13 +18,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PublisherOverviewController{
-    Logger LOGGER = Logger.getLogger(PublisherOverviewController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PublisherOverviewController.class.getName());
 
     @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Publisher> publisherList;
 
-    private final PublisherDAO publisherDAO = new PublisherDAO();
+    private final PublisherDAO publisherDAO = PublisherDAO.getInstance();
     private final ObservableList<Publisher> publishers = FXCollections.observableArrayList();
     private FilteredList<Publisher> filteredPublishers;
 
@@ -38,7 +38,7 @@ public class PublisherOverviewController{
 
     private void setupListView() {
         publisherList.setCellFactory(lv -> {
-            ListCell<Publisher> cell = new ListCell<Publisher>() {
+            ListCell<Publisher> cell = new ListCell<>() {
                 @Override
                 protected void updateItem(Publisher publisher, boolean empty) {
                     super.updateItem(publisher, empty);
@@ -71,9 +71,9 @@ public class PublisherOverviewController{
     public void applyFilter() {
         String searchText = searchField.getText().toLowerCase();
 
-        filteredPublishers.setPredicate(publisher -> {
-            return publisher.getPublisherName().toLowerCase().contains(searchText);
-        });
+        filteredPublishers.setPredicate(publisher ->
+            publisher.getPublisherName().toLowerCase().contains(searchText)
+        );
     }
 
     private void openPublisherPopup(Publisher selectedPublisher) {

@@ -1,6 +1,9 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
+import de.srh_dr.mediamanagementtoolmmt.data.FranchiseDAO;
+import de.srh_dr.mediamanagementtoolmmt.data.GenreDAO;
 import de.srh_dr.mediamanagementtoolmmt.data.StatisticsDAO;
+import de.srh_dr.mediamanagementtoolmmt.data.TagDAO;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,14 +17,20 @@ import java.util.logging.Logger;
 
 
 public class DefaultViewController{
-    Logger LOGGER =  Logger.getLogger(DefaultViewController.class.getName());
+    private static final Logger LOGGER =  Logger.getLogger(DefaultViewController.class.getName());
 
     @FXML private Label totalTitlesField;
     @FXML private Label lentTitlesField;
     @FXML private Label lostTitlesField;
     @FXML private PieChart mediaTypePieChart;
+    @FXML private Label totalTagsField;
+    @FXML private Label totalGenresField;
+    @FXML private Label totalFranchisesField;
 
-    private final StatisticsDAO statisticsDAO =  new StatisticsDAO();
+    private final StatisticsDAO statisticsDAO = StatisticsDAO.getInstance();
+    private final TagDAO tagDAO =  TagDAO.getInstance();
+    private final GenreDAO genreDAO =  GenreDAO.getInstance();
+    private final FranchiseDAO franchiseDAO =  FranchiseDAO.getInstance();
 
     @FXML
     private void initialize() {
@@ -44,6 +53,10 @@ public class DefaultViewController{
                 pieChartData.add(new PieChart.Data(chartLabel, entry.getValue()));
             }
             mediaTypePieChart.setData(pieChartData);
+
+            totalTagsField.setText(String.valueOf(tagDAO.countRows()));
+            totalGenresField.setText(String.valueOf(genreDAO.countRows()));
+            totalFranchisesField.setText(String.valueOf(franchiseDAO.countRows()));
         }catch(Exception e){
             LOGGER.log(Level.WARNING, "Failed to load dashboard statistics: " + e.getMessage(), e);
         }

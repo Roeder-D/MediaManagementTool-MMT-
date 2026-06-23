@@ -12,7 +12,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ArtistDAO extends AbstractDAO<Artist> {
-    Logger LOGGER = Logger.getLogger(ArtistDAO.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ArtistDAO.class.getName());
+    private static final ArtistDAO INSTANCE = new ArtistDAO();
+
+    public static ArtistDAO getInstance() {
+        return INSTANCE;
+    }
+
+    private ArtistDAO() {}
 
     @Override
     protected String getTableName() {return "artist";}
@@ -113,20 +120,13 @@ public class ArtistDAO extends AbstractDAO<Artist> {
             stmt.setInt(1, mediaId);
             try (ResultSet rs = stmt.executeQuery()){
                 while (rs.next()){
-                    Artist artist = new Artist(
-                            rs.getInt("artist_id"),
-                            rs.getString("first_name"),
-                            rs.getString("last_name"),
-                            rs.getString("alias"),
-                            rs.getString("nationality"),
-                            false
-                    );
+                    Artist artist = mapResultSet(rs);
 
-                    ArtistRole role = new ArtistRole(
-                            rs.getInt("artist_role_id"),
-                            rs.getString("role"),
-                            false
-                    );
+                    int roleId = rs.getInt("artist_role_id");
+                    ArtistRole role = null;
+                    if(!rs.wasNull()){
+                        role = new ArtistRole(roleId, rs.getString("role"), false);
+                    }
                     mediaArtists.add(new MediaArtist(artist, role, false));
                 }
             }
@@ -167,9 +167,16 @@ public class ArtistDAO extends AbstractDAO<Artist> {
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             for (MediaArtist credit : credits) {
+
                 stmt.setInt(1, mediaId);
                 stmt.setInt(2, credit.getArtist().getId());
-                stmt.setInt(3, credit.getArtistRole().getId());
+
+                if(credit.getArtistRole() == null || credit.getArtistRole().getId() == 0){
+                    stmt.setNull(3, Types.INTEGER);
+                }else {
+                    stmt.setInt(3, credit.getArtistRole().getId());
+                }
+
                 stmt.addBatch();
             }
             stmt.executeBatch();
