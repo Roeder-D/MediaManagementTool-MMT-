@@ -5,7 +5,7 @@
     /* Define color palette as reusable variables */
     -fx-primary-color: #2b579a;
     -fx-accent-color: #1e3a67;
-    -fx-bg-color: #f4f6f9;
+    -fx-bg-color: #e4e6e9;
     -fx-card-bg: #ffffff;
     -fx-text-main: #333333;
     -fx-text-muted: #666666;
@@ -108,6 +108,17 @@
     -fx-text-fill: -fx-text-muted;
     -fx-font-style: italic;
 }
+
+// makes disabled item legible
+.disableableComboBox:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #bbbbbb;
+}
+.disableableComboBox:disabled .list-cell{
+    -fx-opacity: 1;
+    -fx-text-fill: #6f6f6f;
+}
 /* ==========================================================================
    DASHBOARD STAT CARDS
    ========================================================================== */
@@ -130,7 +141,7 @@
     -fx-font-weight: bold;
     -fx-text-fill: -fx-primary-color;
 }
-
+.stat-total { -fx-text-fill: #11b111}
 .stat-lent { -fx-text-fill: #f0ad4e; }
 .stat-lost { -fx-text-fill: -fx-error-color; }
 
@@ -230,6 +241,28 @@
     -fx-font-weight: bold;
     -fx-border-width: 1px;
     -fx-background-color: -fx-badge-color;
+}
+
+/* ==========================================================================
+   LOST ITEM HANDLING
+   ========================================================================== */
+/* Base app button overrides for actions */
+.btn-lost {
+    -fx-background-color: #d32f2f; /* Dark Red */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.btn-lost:hover {
+    -fx-background-color: #b71c1c; /* Darker Red on Hover */
+}
+
+.btn-returned {
+    -fx-background-color: #388e3c; /* Grass Green */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.btn-returned:hover {
+    -fx-background-color: #2e7d32; /* Darker Green on Hover */
 }
 /* ==========================================================================
    API SELECTION

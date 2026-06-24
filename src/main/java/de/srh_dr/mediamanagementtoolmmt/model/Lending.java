@@ -63,7 +63,7 @@ public class Lending {
         this.id = id;
     }
     public void setNote(String note) {
-        if(!note.equals(this.note)) {
+        if("".equals(note)) {
             this.note = note;
             this.isDirty =  true;
         }

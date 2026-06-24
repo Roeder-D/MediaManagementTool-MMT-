@@ -30,6 +30,7 @@ public class StatisticsDAO {
 
             if(rs.next()){
                 statistics.put("total", rs.getInt("total_titles"));
+                statistics.put("available", rs.getInt("available_titles"));
                 statistics.put("lent", rs.getInt("lent_titles"));
                 statistics.put("lost", rs.getInt("lost_titles"));
             }
@@ -47,7 +48,7 @@ public class StatisticsDAO {
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery()){
 
-            if(rs.next()){
+            while (rs.next()){
                 String mediaType = rs.getString("media_type");
                 int totalCount = rs.getInt("total_count");
 

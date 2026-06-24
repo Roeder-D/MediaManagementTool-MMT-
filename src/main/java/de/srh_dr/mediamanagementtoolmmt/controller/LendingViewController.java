@@ -18,6 +18,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,7 @@ public class LendingViewController implements MainControllerAware{
     @FXML private TextArea noteArea;
     @FXML private Button manageLendeeButton;
     @FXML private TextField lendeeReadOnlyField;
+    @FXML private Button statusActionButton;
 
     MainController mainController;
     LendingDAO lendingDAO = LendingDAO.getInstance();
@@ -44,6 +46,7 @@ public class LendingViewController implements MainControllerAware{
     private Lending currentLending;
     private Media targetMedia;
     private List<Lendee> allLendees;
+    private Media currentMedia;
 
     @Override
     public void setMainController(MainController mainController) {
@@ -82,6 +85,7 @@ public class LendingViewController implements MainControllerAware{
         try{
             if(viaMedia){
                 targetMedia = mediaService.getMediaById(id);
+                currentMedia = targetMedia;
                 if(targetMedia != null) {
                     toggleLendeeInputMode(false);
 
@@ -94,6 +98,7 @@ public class LendingViewController implements MainControllerAware{
                 }
             }else{
                 currentLending = lendingDAO.findById(id);
+                currentMedia = currentLending.getMedia();
                 if(currentLending != null){
                     toggleLendeeInputMode(true);
 
@@ -108,6 +113,7 @@ public class LendingViewController implements MainControllerAware{
                     }
                 }
             }
+            updateStatusButtonUI();
         }catch(Exception e){
             LOGGER.log(Level.SEVERE,"Failed to load lending data: " + e.getMessage(), e);
             AlertManager.showAlert(
@@ -119,6 +125,29 @@ public class LendingViewController implements MainControllerAware{
     }
 
     // action handlers
+    @FXML
+    private void handleToggleStatus(){
+        if(currentMedia == null) return;
+
+        Media.MediaStatus currentStatus = currentMedia.getStatus();
+        Media.MediaStatus newStatus;
+
+        if("LENT".equals(currentStatus.name())){
+            newStatus = Media.MediaStatus.LOST;
+        } else if ("LOST".equals(currentStatus.name())) {
+            newStatus = Media.MediaStatus.AVAILABLE;
+        }else {
+            return;
+        }
+        currentMedia.setStatus(newStatus);
+        try {
+            MediaService.getInstance().saveMedia(currentMedia);
+            updateStatusButtonUI();
+        }catch (SQLException e){
+            AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), LanguageManager.getString("error.failedToSave"), getWindow());
+        }
+    }
+
     @FXML
     private void handleManageLendee(){
         Lendee selectedLendee = lendeeComboBox.getValue();
@@ -341,13 +370,28 @@ public class LendingViewController implements MainControllerAware{
         }
     }
 
-    //Current window for popups
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
+    //Helpers
+    private void updateStatusButtonUI(){
+        if(currentMedia == null){
+            statusActionButton.setVisible(false);
+            return;
         }
-        return null;
+
+        statusActionButton.setVisible(true);
+        statusActionButton.getStyleClass().removeAll("btn-lost", "btn-returned", "app-button");
+        statusActionButton.getStyleClass().add("app-button");
+
+        if("LENT".equals(currentMedia.getStatus().name())){
+            statusActionButton.setText(LanguageManager.getString("ui.markAsLost"));
+            statusActionButton.getStyleClass().add("btn-lost");
+        } else if ("LOST".equals(currentMedia.getStatus().name())){
+            statusActionButton.setText(LanguageManager.getString("ui.returnMedia"));
+            statusActionButton.getStyleClass().add("btn-returned");
+        }else {
+            statusActionButton.setVisible(false);
+        }
     }
+
 
     //toggle readonly for new/existing lendings
     private void toggleLendeeInputMode(boolean readOnly) {
@@ -356,5 +400,13 @@ public class LendingViewController implements MainControllerAware{
 
         lendeeReadOnlyField.setVisible(readOnly);
         lendeeReadOnlyField.setManaged(readOnly);
+    }
+
+    //Current window for popups
+    private Window getWindow(){
+        if (viewContainer != null && viewContainer.getScene() != null) {
+            return viewContainer.getScene().getWindow();
+        }
+        return null;
     }
 }

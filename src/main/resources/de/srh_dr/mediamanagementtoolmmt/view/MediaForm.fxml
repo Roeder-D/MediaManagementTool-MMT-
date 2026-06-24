@@ -17,7 +17,7 @@
             <VBox spacing="30">
                 <HBox spacing="30">
                     <VBox alignment="TOP_CENTER" spacing="15" minWidth="-Infinity">
-                        <StackPane fx:id="imageDropZone" onDragOver="#handleDragOver" onDragDropped="#handleDrop" styleClass="drop-zone" prefHeight="250" prefWidth="180">
+                        <StackPane onDragOver="#handleDragOver" onDragDropped="#handleDrop" styleClass="drop-zone" prefHeight="250" prefWidth="180">
                             <ImageView fx:id="coverImage" fitHeight="250" fitWidth="180" preserveRatio="true" styleClass="cover-image"/>
                         </StackPane>
                         <Button styleClass="app-button" text="%ui.uploadImage" onAction="#handleImageUpload"/>
@@ -54,7 +54,7 @@
                             <Button text="%ui.addArtistRow" onAction="#addArtistDropRow"/>
                         </VBox>
 
-                        <Label text="%ui.releasedate" styleClass="field-label" GridPane.rowIndex="4"/>
+                        <Label text="%ui.releaseDate" styleClass="field-label" GridPane.rowIndex="4"/>
                         <DatePicker fx:id="releaseDateField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
                         <Label text="%ui.mediaType" styleClass="field-label" GridPane.rowIndex="5"/>
@@ -109,6 +109,8 @@
                 </VBox>
 
                 <HBox alignment="BOTTOM_RIGHT" spacing="15">
+                    <ComboBox fx:id="statusComboBox" styleClass="disableableComboBox"/>
+                    <Region HBox.hgrow="ALWAYS" />
                     <Button text="%ui.abort" onAction="#handleCancel"/>
                     <Button text="%ui.submit" onAction="#handleSubmit"/>
                 </HBox>

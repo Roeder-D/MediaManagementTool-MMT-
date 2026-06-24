@@ -236,11 +236,11 @@ FROM lending AS l
 
 CREATE VIEW v_collection_statistics AS
 SELECT
-    (SELECT COUNT(*) FROM media) AS total_titles,
-
-    (SELECT COUNT(*) FROM media WHERE status = 'AVAILABLE') AS available_titles,
-    (SELECT COUNT(*) FROM media WHERE status = 'LENT') AS lent_titles,
-    (SELECT COUNT(*) FROM media WHERE status = 'LOST') AS lost_titles;
+    COUNT(*) AS total_titles,
+    SUM(CASE WHEN status = 'AVAILABLE' THEN 1 ELSE 0 END) AS available_titles,
+    SUM(CASE WHEN status = 'LENT' THEN 1 ELSE 0 END) AS lent_titles,
+    SUM(CASE WHEN status = 'LOST' THEN 1 ELSE 0 END) AS lost_titles
+FROM media;
 
 CREATE VIEW v_media_type_distribution AS
 SELECT

@@ -43,8 +43,8 @@ public class DefaultViewController{
             Map<String, Integer> distributionStatistics = statisticsDAO.getMediaTypeDistribution();
 
             totalTitlesField.setText(String.valueOf(collectionStatistics.getOrDefault("total", 0)));
-            lentTitlesField.setText(String.valueOf(distributionStatistics.getOrDefault("lent", 0)));
-            lostTitlesField.setText(String.valueOf(distributionStatistics.getOrDefault("Lost", 0)));
+            lentTitlesField.setText(String.valueOf(collectionStatistics.getOrDefault("lent", 0)));
+            lostTitlesField.setText(String.valueOf(collectionStatistics.getOrDefault("lost", 0)));
 
             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 

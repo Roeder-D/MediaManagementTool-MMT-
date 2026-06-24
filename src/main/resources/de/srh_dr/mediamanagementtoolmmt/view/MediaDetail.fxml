@@ -61,7 +61,7 @@
                     <Label text="%ui.publisher" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                     <Label fx:id="publisherField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-                    <Label text="%ui.releasedate" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                    <Label text="%ui.releaseDate" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="6" />
                     <Label fx:id="releaseDateField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
                     <Label text="%ui.genre" styleClass="field-label" GridPane.valignment="TOP" GridPane.columnIndex="0" GridPane.rowIndex="7" />

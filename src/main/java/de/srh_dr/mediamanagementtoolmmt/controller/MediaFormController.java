@@ -26,6 +26,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.stage.*;
+import javafx.util.StringConverter;
 import org.controlsfx.control.Rating;
 import org.controlsfx.control.SearchableComboBox;
 
@@ -62,6 +63,7 @@ public class MediaFormController implements MainControllerAware{
     @FXML private VBox tagContainer;
     @FXML private Button api_search_isbn_button;
     @FXML private Button api_search_title_button;
+    @FXML private ComboBox<Media.MediaStatus> statusComboBox;
 
     // DAOs
     private final MediaService mediaService = MediaService.getInstance();
@@ -109,6 +111,27 @@ public class MediaFormController implements MainControllerAware{
         allTags = observableArrayList(tagDAO.findAll());
         allFranchises = observableArrayList(franchiseDAO.findAll());
         mediaRating.setRating(0);
+        statusComboBox.getItems().addAll(Media.MediaStatus.AVAILABLE, Media.MediaStatus.LOST);
+
+        statusComboBox.getSelectionModel().select(Media.MediaStatus.AVAILABLE);
+        statusComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Media.MediaStatus status) {
+                if (status == null) return "";
+
+                return switch (status) {
+                    case AVAILABLE -> LanguageManager.getString("ui.available");
+                    case LENT -> LanguageManager.getString("ui.lent");
+                    case LOST -> LanguageManager.getString("ui.LOST");
+                };
+            }
+
+            @Override //unused
+            public Media.MediaStatus fromString(String s) {
+                return null;
+            }
+        });
+
 
         publisherComboBox.setItems(allPublishers);
         mediaTypeComboBox.setItems(allMediaTypes);
@@ -195,6 +218,15 @@ public class MediaFormController implements MainControllerAware{
                     seriesOrderField.setText(String.valueOf(media.getSeriesOrder()));
                 }else{
                     seriesOrderField.setText("");
+                }
+
+                if(currentMedia.getStatus().equals(Media.MediaStatus.LENT)){
+                    statusComboBox.getSelectionModel().select(Media.MediaStatus.LENT);
+                    statusComboBox.setDisable(true);
+                }else {
+                    statusComboBox.getItems().remove(Media.MediaStatus.LENT);
+                    statusComboBox.getSelectionModel().select(currentMedia.getStatus());
+                    statusComboBox.setDisable(false);
                 }
 
                 displayImage();
@@ -386,7 +418,7 @@ public class MediaFormController implements MainControllerAware{
                 "ui.newMediaType",
                 "ui.addNewMediaType",
                 "ui.mediaTypeName",
-                "info.MediaTypeExistsAndSelected",
+                "info.mediaTypeExistsAndSelected",
                 MediaType::getTypeName,
                 name -> new MediaType(0, name, true),
                 mediaType -> {
@@ -631,6 +663,7 @@ public class MediaFormController implements MainControllerAware{
         List<Franchise> selectedFranchises = getSelectedFranchises();
         List<Language> selectedLanguages = getSelectedLanguages();
         MediaType selectedMediaType = mediaTypeComboBox.getValue();
+        Media.MediaStatus selectedStatus = statusComboBox.getValue();
 
         int seriesOrder = 0;
         try {
@@ -720,7 +753,7 @@ public class MediaFormController implements MainControllerAware{
                         .genres(selectedGenres)
                         .languages(selectedLanguages)
                         .credits(getSelectedMediaArtists())
-                        .status(Media.MediaStatus.AVAILABLE)
+                        .status(selectedStatus)
                         .tags(selectedTags)
                         .franchises(selectedFranchises)
                         .seriesOrder(seriesOrder)
@@ -739,6 +772,7 @@ public class MediaFormController implements MainControllerAware{
                 currentMedia.setPublisher(publisherComboBox.getValue());
                 currentMedia.setSeries(seriesComboBox.getValue());
                 currentMedia.setSeriesOrder(seriesOrder);
+                currentMedia.setStatus(selectedStatus);
 
                 syncList(currentMedia.getGenres(), selectedGenres, currentMedia::removeGenre, currentMedia::addGenre);
                 syncList(currentMedia.getCredits(), getSelectedMediaArtists(), currentMedia::removeCredit, currentMedia::addCredit);

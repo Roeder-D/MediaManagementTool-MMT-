@@ -14,7 +14,7 @@
     <HBox spacing="20.0" alignment="CENTER">
         <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
             <Label text="%ui.stats.total_titles" styleClass="stat-label"/>
-            <Label fx:id="totalTitlesField" text="0" styleClass="stat-value"/>
+            <Label fx:id="totalTitlesField" text="0" styleClass="stat-value, stat-total"/>
         </VBox>
 
         <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
@@ -42,12 +42,12 @@
 
         <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
             <Label text="%ui.stats.total_genres" styleClass="stat-label"/>
-            <Label fx:id="totalGenresField" text="0" styleClass="stat-value, stat-lent"/>
+            <Label fx:id="totalGenresField" text="0" styleClass="stat-value"/>
         </VBox>
 
         <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
             <Label text="%ui.stats.total_franchises" styleClass="stat-label"/>
-            <Label fx:id="totalFranchisesField" text="0" styleClass="stat-value, stat-lost"/>
+            <Label fx:id="totalFranchisesField" text="0" styleClass="stat-value"/>
         </VBox>
 
     </HBox>
