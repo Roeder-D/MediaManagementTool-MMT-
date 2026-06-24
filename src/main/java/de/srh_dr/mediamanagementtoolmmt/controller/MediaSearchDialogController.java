@@ -13,11 +13,15 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 //Handles the API search for MediaFormController
 public class MediaSearchDialogController {
+    Logger LOGGER = LoggerFactory.getLogger(MediaSearchDialogController.class);
+
     @FXML private VBox layerSelection;
     @FXML private VBox layerLoading;
     @FXML private VBox layerResults;
@@ -89,6 +93,12 @@ public class MediaSearchDialogController {
                 showLayer(layerResults);
             }
         });
+        searchTask.setOnFailed(event -> {
+            Throwable exception = searchTask.getException();
+            if(exception != null){
+                LOGGER.error(exception.getMessage(), exception);
+            }
+        });
         new Thread(searchTask).start();
     }
 
@@ -101,19 +111,23 @@ public class MediaSearchDialogController {
         loadingLabel.setText(LanguageManager.getString("ui.fetchingDetails"));
         showLayer(layerLoading);
 
-        Task<ExternalMediaSearchResult> fetchTask = new Task<>() {
-            @Override
-            protected ExternalMediaSearchResult call(){
-                return facade.fetchAndSyncDetails(selectedItem.remoteId(), selectedSource);
-            }
-        };
+        if(ApiSource.TMDB.equals(selectedSource)) {
+            Task<ExternalMediaSearchResult> fetchTask = new Task<>() {
+                @Override
+                protected ExternalMediaSearchResult call() {
+                    return facade.fetchAndSyncDetails(selectedItem.remoteId(), selectedSource);
+                }
+            };
 
-        fetchTask.setOnSucceeded(event -> {
-            this.selectedResult = fetchTask.getValue();
+            fetchTask.setOnSucceeded(event -> {
+                this.selectedResult = fetchTask.getValue();
+                closeDialog();
+            });
+            new Thread(fetchTask).start();
+        }else {
+            this.selectedResult = selectedItem;
             closeDialog();
-        });
-
-        new Thread(fetchTask).start();
+        }
     }
 
     //cancel transaction

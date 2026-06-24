@@ -34,6 +34,7 @@ public class SeriesDialog extends BaseEntityDialog<Series>{
         super("ui.newSeries", "ui.addNewSeries");
         this.allSeries = allSeries;
         this.owner = owner;
+        buildDialogUI();
     }
 
     @Override

@@ -14,7 +14,9 @@ public abstract class BaseEntityDialog<T> extends Dialog<T> {
     public BaseEntityDialog(String titleKey, String headerKey) {
         this.setTitle(LanguageManager.getString(titleKey));
         this.setHeaderText(LanguageManager.getString(headerKey));
+    }
 
+    protected void buildDialogUI(){
         ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
         this.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 

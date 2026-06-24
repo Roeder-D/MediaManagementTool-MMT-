@@ -23,6 +23,7 @@ public class ArtistDialog extends BaseEntityDialog<Artist> {
         super("ui.newArtist", "ui.addNewArtist");
         this.allArtists = allArtists;
         this.owner = owner;
+        buildDialogUI();
     }
 
     @Override

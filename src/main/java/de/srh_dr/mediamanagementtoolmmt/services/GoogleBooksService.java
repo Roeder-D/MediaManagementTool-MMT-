@@ -33,8 +33,9 @@ public class GoogleBooksService implements BookLookupService{
     //Fetch data
     @Override
     public List<ExternalMediaSearchResult> searchByTitle(String title) {
+        int maxResults = 20; //max value per API call: 40
         String encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8);
-        String url = baseUrl + "?q=" + encodedTitle + "&key=" + apiToken;
+        String url = baseUrl + "?q=" + encodedTitle + "&maxResults=" + maxResults + "&key=" + apiToken;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()){
             ClassicHttpRequest request = ClassicRequestBuilder.get(url).build();
