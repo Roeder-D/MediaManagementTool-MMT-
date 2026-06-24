@@ -8,15 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+//handles transactions for simple entities
 public abstract class AbstractDAO<T> {
     private static final Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());
 
+    //configuration based on entity
     protected abstract String getTableName();
     protected abstract String getIdColumnName();
     protected abstract String getValueColumnName();
     protected abstract T mapResultSet(ResultSet rs) throws SQLException;
 
+    //Read
     public int countRows(){
         String sql = "SELECT COUNT(" + getIdColumnName() + ") FROM " + getTableName();
         int count = 0;
@@ -67,6 +69,27 @@ public abstract class AbstractDAO<T> {
         return null;
     }
 
+    protected List<T> fetchViaJunction(int mediaId, String junctionTable, String junctionIdColumn){
+        String sql = String.format("SELECT t.* FROM %s t JOIN  %s j ON t.%s = j.%s WHERE j.media_id = ?",
+                getTableName(), junctionTable, getIdColumnName(), junctionIdColumn);
+
+        List<T> items = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setInt(1, mediaId);
+            try (ResultSet rs = stmt.executeQuery()){
+                while (rs.next()){
+                    items.add(mapResultSet(rs));
+                }
+            }
+        }catch (SQLException e){
+            LOGGER.log(Level.WARNING,"Error fetching from " + getTableName(), e);
+        }
+        return items;
+    }
+
+    //Update
     protected void saveJunctionBatch(int mediaId, List<? extends Identifiable> items, String sql, Connection conn) throws SQLException{
         if (items == null || items.isEmpty()) return;
 
@@ -80,6 +103,7 @@ public abstract class AbstractDAO<T> {
         }
     }
 
+    //Delete
     protected void deleteJunctionBatch(int mediaId, List<? extends Identifiable> items, String sql, Connection conn) throws SQLException{
         if (items == null || items.isEmpty()) return;
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -90,26 +114,6 @@ public abstract class AbstractDAO<T> {
             }
             stmt.executeBatch();
         }
-    }
-
-    protected List<T> fetchViaJunction(int mediaId, String junctionTable, String junctionIdColumn){
-        String sql = String.format("SELECT t.* FROM %s t JOIN  %s j ON t.%s = j.%s WHERE j.media_id = ?",
-                getTableName(), junctionTable, getIdColumnName(), junctionIdColumn);
-
-        List<T> items = new ArrayList<>();
-
-        try (Connection conn = DBConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)){
-            stmt.setInt(1, mediaId);
-            try (ResultSet rs = stmt.executeQuery()){
-                while (rs.next()){
-                    items.add(mapResultSet(rs));
-                }
-            }
-        }catch (SQLException e){
-            LOGGER.log(Level.WARNING,"Error fetching from " + getTableName(), e);
-        }
-        return items;
     }
 
     public boolean delete(int id) {

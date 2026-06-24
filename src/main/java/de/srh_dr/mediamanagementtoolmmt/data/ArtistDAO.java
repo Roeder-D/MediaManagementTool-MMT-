@@ -39,7 +39,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Artist artist) {
         if (artist.isNewItem()) {
             create(artist);
@@ -107,35 +107,6 @@ public class ArtistDAO extends AbstractDAO<Artist> {
         return null;
     }
 
-    public List<MediaArtist> fetchByMediaId(int mediaId) {
-        String sql = "SELECT a.*, ar.* FROM media_artist ma " +
-                "JOIN artist a ON ma.artist_id = a.artist_id " +
-                "LEFT JOIN artist_role ar ON ma.artist_role_id = ar.artist_role_id " +
-                "WHERE ma.media_id = ?";
-
-        List<MediaArtist> mediaArtists = new ArrayList<>();
-
-        try (Connection conn = DBConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)){
-            stmt.setInt(1, mediaId);
-            try (ResultSet rs = stmt.executeQuery()){
-                while (rs.next()){
-                    Artist artist = mapResultSet(rs);
-
-                    int roleId = rs.getInt("artist_role_id");
-                    ArtistRole role = null;
-                    if(!rs.wasNull()){
-                        role = new ArtistRole(roleId, rs.getString("role"), false);
-                    }
-                    mediaArtists.add(new MediaArtist(artist, role, false));
-                }
-            }
-        }catch (SQLException e){
-            LOGGER.log(Level.SEVERE,"Error looking up artist: " + mediaId, e);
-        }
-        return mediaArtists;
-    }
-
     // UPDATE
     private void update(Artist artist) {
         if (artist.isNewItem()) return;
@@ -160,6 +131,7 @@ public class ArtistDAO extends AbstractDAO<Artist> {
         }
     }
 
+    // Media relations
     public void saveCreditsForMedia(int mediaId, List<MediaArtist> credits, Connection conn) throws SQLException {
         if(credits == null || credits.isEmpty()) return;
 
@@ -197,5 +169,34 @@ public class ArtistDAO extends AbstractDAO<Artist> {
             }
             stmt.executeBatch();
         }
+    }
+
+    public List<MediaArtist> fetchByMediaId(int mediaId) {
+        String sql = "SELECT a.*, ar.* FROM media_artist ma " +
+                "JOIN artist a ON ma.artist_id = a.artist_id " +
+                "LEFT JOIN artist_role ar ON ma.artist_role_id = ar.artist_role_id " +
+                "WHERE ma.media_id = ?";
+
+        List<MediaArtist> mediaArtists = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setInt(1, mediaId);
+            try (ResultSet rs = stmt.executeQuery()){
+                while (rs.next()){
+                    Artist artist = mapResultSet(rs);
+
+                    int roleId = rs.getInt("artist_role_id");
+                    ArtistRole role = null;
+                    if(!rs.wasNull()){
+                        role = new ArtistRole(roleId, rs.getString("role"), false);
+                    }
+                    mediaArtists.add(new MediaArtist(artist, role, false));
+                }
+            }
+        }catch (SQLException e){
+            LOGGER.log(Level.SEVERE,"Error looking up artist: " + mediaId, e);
+        }
+        return mediaArtists;
     }
 }

@@ -42,7 +42,7 @@ public class ImageManager {
     private final String imageFolder = dotenv.get("IMAGE_FOLDER");
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    // UPLOAD
+    // UPLOAD to image-server
     public boolean uploadImage(File file, String generatedName){
         String url = serverUrl + serverPhp;
 

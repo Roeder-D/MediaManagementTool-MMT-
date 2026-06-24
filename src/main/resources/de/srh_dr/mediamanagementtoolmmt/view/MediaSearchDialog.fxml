@@ -16,12 +16,12 @@
         <HBox alignment="CENTER" spacing="30">
             <VBox alignment="CENTER" spacing="15" styleClass="api-tile" onMouseClicked="#handleSelectGoogleBooks">
                 <FontIcon iconLiteral="fas-book" iconSize="64" styleClass="tile-icon"/>
-                <Label text="Google Books" styleClass="tile-label"/>
+                <Label wrapText="true" maxWidth="Infinity" alignment="CENTER" text="Google Books" styleClass="tile-label"/>
             </VBox>
 
             <VBox alignment="CENTER" spacing="15" styleClass="api-tile" onMouseClicked="#handleSelectTMDB">
                 <FontIcon iconLiteral="fas-film" iconSize="64" styleClass="tile-icon"/>
-                <Label text="The Movie Database" styleClass="tile-label"/>
+                <Label wrapText="true" maxWidth="Infinity" alignment="CENTER" text="The Movie Database" styleClass="tile-label"/>
             </VBox>
         </HBox>
     </VBox>

@@ -155,7 +155,7 @@ public class TMDBService implements ExternalMediaService{
         }
     }
 
-    //helper
+    //helper for mapping JSON to program class
     private ExternalMediaSearchResult mapItemToSearchResult(JsonNode item) {
         String remoteId = item.get("id").asText("");
         String mainTitle = item.get("title").asText("");

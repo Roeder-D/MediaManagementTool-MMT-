@@ -31,7 +31,7 @@ public class GenreDAO extends AbstractDAO<Genre> {
         );
     }
 
-    // HELPER
+    // Helper for switching between creat and update
     public void save(Genre genre) throws SQLException {
         if (genre.isNewItem()) {
             create(genre);
@@ -86,7 +86,6 @@ public class GenreDAO extends AbstractDAO<Genre> {
     }
 
     //Media relations
-
     public void saveGenresForMedia(int mediaId, List<Genre> genres, Connection conn) throws SQLException {
         String sql = "INSERT INTO media_genre (media_id, genre_id) VALUES (?, ?)";
         saveJunctionBatch(mediaId, genres, sql, conn);

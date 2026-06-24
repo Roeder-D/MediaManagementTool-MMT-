@@ -18,6 +18,7 @@ public class LanguageManager {
         }
     }
 
+    //get Locale/region
     private static Locale init(){
         String languageSetting;
         try {
@@ -40,6 +41,7 @@ public class LanguageManager {
         bundle = ResourceBundle.getBundle(BUNDLE_PATH, Locale.of(languageCode));
     }
 
+    //Provides resources to the rest of the program
     public static String getString(String key){
         try {
             return bundle.getString(key);

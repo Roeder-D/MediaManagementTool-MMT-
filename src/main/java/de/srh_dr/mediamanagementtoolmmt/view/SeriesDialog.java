@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+//Dialog for creating new series
 public class SeriesDialog extends BaseEntityDialog<Series>{
     private final TextField seriesNameField = new TextField();
     private final TextField seriesTitleCountField = new TextField();

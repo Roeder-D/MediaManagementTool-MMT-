@@ -31,7 +31,7 @@ public class PublisherDAO extends AbstractDAO<Publisher> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Publisher publisher) throws SQLException {
         if (publisher.isNewItem()) {
             create(publisher);

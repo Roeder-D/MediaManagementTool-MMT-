@@ -22,7 +22,7 @@ public class MediaDAO {
 
     private MediaDAO(){}
 
-    // READ
+    // READ root entity
     public MediaEntity readMediaEntity(int mediaId){
         String sql = "SELECT * FROM media WHERE media_id = ?";
 
@@ -56,7 +56,7 @@ public class MediaDAO {
     }
 
     // CREATE
-        public int create(Media media, Connection conn) throws SQLException {
+    public int create(Media media, Connection conn) throws SQLException {
         String sql = "INSERT INTO media (isbn, title, original_title, cover_url, description, rating, release_date, series_order," +
                 " series_id, media_type_id, publisher_id, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
@@ -112,11 +112,6 @@ public class MediaDAO {
         }
     }
 
-    private void appendUpdate(StringBuilder sql, String column, List<Object> values, Object value) {
-        sql.append(column).append(" = ?, ");
-        values.add(value);
-    }
-
     // DELETE
     public void deleteById(int id) {
         String sql = "DELETE FROM media WHERE media_id = ?";
@@ -151,5 +146,11 @@ public class MediaDAO {
             stmt.setNull(11, Types.INTEGER);
         }
         stmt.setString(12, m.getStatus().name());
+    }
+
+    // dynamic sql builder
+    private void appendUpdate(StringBuilder sql, String column, List<Object> values, Object value) {
+        sql.append(column).append(" = ?, ");
+        values.add(value);
     }
 }

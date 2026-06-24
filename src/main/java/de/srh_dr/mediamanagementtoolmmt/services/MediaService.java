@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//transactional layer between the model and the related DAOs
 public class MediaService {
     private static final Logger LOGGER = Logger.getLogger(MediaService.class.getName());
     private final static MediaService INSTANCE = new MediaService();
@@ -39,6 +40,31 @@ public class MediaService {
         this.mediaTypeDAO = MediaTypeDAO.getInstance();
     }
 
+    // Helper for switching between create and update
+    public void saveMedia(Media media) throws SQLException {
+        if(media == null){return;}
+
+        try (Connection conn = DBConnection.getConnection()) {
+            try {
+                conn.setAutoCommit(false);
+
+                if (media.isNewItem()) {
+                    createMedia(media, conn);
+                } else {
+                    updateMedia(media, conn);
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE,"Save failed. Rolling back transaction: " + e.getMessage(), e);
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    //READ
     public Media getMediaById(int id){
         MediaEntity mediaCore = mediaDAO.readMediaEntity(id);
 
@@ -73,7 +99,7 @@ public class MediaService {
                     .series(series)
                     .mediaType(mediaType)
                     .status(mediaCore.status())
-                    //Fetch lists (all todo)
+                    //Fetch lists
                     .tags(tagDAO.fetchByMediaId(id))
                     .genres(genreDAO.fetchByMediaId(id))
                     .languages(languageDAO.fetchByMediaId(id))
@@ -87,29 +113,7 @@ public class MediaService {
         return null;
     }
 
-    public void saveMedia(Media media) throws SQLException {
-        if(media == null){return;}
-
-        try (Connection conn = DBConnection.getConnection()) {
-            try {
-                conn.setAutoCommit(false);
-
-                if (media.isNewItem()) {
-                    createMedia(media, conn);
-                } else {
-                    updateMedia(media, conn);
-                }
-                conn.commit();
-            } catch (SQLException e) {
-                LOGGER.log(Level.SEVERE,"Save failed. Rolling back transaction: " + e.getMessage(), e);
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
-        }
-    }
-
+    //UPDATE
     private void updateMedia(Media media, Connection conn) throws SQLException {
         mediaDAO.update(media, conn);
         int mediaId = media.getId();
@@ -151,6 +155,7 @@ public class MediaService {
 
     }
 
+    //CREATE
     private void createMedia(Media media, Connection conn) throws SQLException {
         int newMediaId = mediaDAO.create(media, conn);
 
@@ -175,6 +180,7 @@ public class MediaService {
         }
     }
 
+    //DELETE
     public void deleteMedia(int mediaId) throws SQLException {
         mediaDAO.deleteById(mediaId);
     }

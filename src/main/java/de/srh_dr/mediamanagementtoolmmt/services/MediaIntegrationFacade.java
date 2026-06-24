@@ -12,8 +12,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//Separation-layer between APIs, UI and DAOs
 public class MediaIntegrationFacade {
     private static final Logger LOGGER = Logger.getLogger(MediaIntegrationFacade.class.getName());
+    private static final MediaIntegrationFacade INSTANCE = new MediaIntegrationFacade();
+
+    public static MediaIntegrationFacade getInstance(){
+        return INSTANCE;
+    }
 
     private final Map<ApiSource, ExternalMediaService> lookupServices;
 
@@ -22,7 +28,7 @@ public class MediaIntegrationFacade {
     private final PublisherDAO publisherDAO;
     private final MediaService mediaService;
 
-    public MediaIntegrationFacade() {
+    private MediaIntegrationFacade() {
         this.artistDAO = ArtistDAO.getInstance();
         this.languageDAO = LanguageDAO.getInstance();
         this.mediaService = MediaService.getInstance();
@@ -33,6 +39,7 @@ public class MediaIntegrationFacade {
         this.lookupServices.put(ApiSource.TMDB, new TMDBService());
     }
 
+    //fetch data via API
     public ExternalMediaSearchResult fetchAndSyncBookIsbn(String isbn, ApiSource apiSource) {
         ExternalMediaSearchResult rawResult = lookupServices.get(apiSource).searchByIsbn(isbn);
         return syncWithDatabase(rawResult, apiSource);
@@ -65,6 +72,7 @@ public class MediaIntegrationFacade {
         return syncWithDatabase(rawResult, apiSource);
     }
 
+    //check db for duplicates
     private ExternalMediaSearchResult syncWithDatabase(ExternalMediaSearchResult rawResult, ApiSource apiSource){
         if(rawResult == null){return null;}
 
@@ -103,6 +111,7 @@ public class MediaIntegrationFacade {
         );
     }
 
+    //saves new Artist and creates missing relational entities
     public void persistConfirmedMedia(Media media) throws SQLException{
         List<Language> languages = media.getLanguages();
         List<Artist> artists = new ArrayList<>();

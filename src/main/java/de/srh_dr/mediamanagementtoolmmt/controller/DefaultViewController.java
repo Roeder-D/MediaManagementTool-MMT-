@@ -4,7 +4,6 @@ import de.srh_dr.mediamanagementtoolmmt.data.FranchiseDAO;
 import de.srh_dr.mediamanagementtoolmmt.data.GenreDAO;
 import de.srh_dr.mediamanagementtoolmmt.data.StatisticsDAO;
 import de.srh_dr.mediamanagementtoolmmt.data.TagDAO;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -34,9 +33,10 @@ public class DefaultViewController{
 
     @FXML
     private void initialize() {
-        Platform.runLater(this::loadDashboardData);
+        loadDashboardData();
     }
 
+    //populate dashboard
     public void loadDashboardData(){
         try{
             Map<String, Integer> collectionStatistics = statisticsDAO.getCollectionStatistics();

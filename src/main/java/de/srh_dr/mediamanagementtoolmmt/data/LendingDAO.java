@@ -23,7 +23,7 @@ public class LendingDAO {
 
     private LendingDAO(){}
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Lending lending){
         if(lending.isNewItem()){
             create(lending);
@@ -143,7 +143,7 @@ public class LendingDAO {
         return 0;
     }
 
-    //DASHBOARD
+    //dashboard items
     public List<LendingDashboardItem> getLendingDashboard(){
         String sql = "SELECT * FROM v_lending_dashboard";
         List<LendingDashboardItem> lendingDashboardItems = new ArrayList<>();

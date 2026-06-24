@@ -33,18 +33,17 @@ public class MainController {
         DEFAULT_VIEW, MEDIA_OVERVIEW, ARTIST_OVERVIEW, FRANCHISE_OVERVIEW, LENDING_OVERVIEW, MEDIA_DETAIL, MEDIA_FORM, PUBLISHER_OVERVIEW, LENDING_DETAIL_VIEW, SERIES_OVERVIEW
     }
     private ViewState currentView =  ViewState.DEFAULT_VIEW;
-    private int currentPramId = -1;
+    private int currentParamId = -1;
     private boolean lendingParam = false;
+
+    @FXML private BorderPane viewContainer;
 
     @FXML
     private void initialize(){
         showDefaultView();
     }
 
-    // HUD
-    @FXML private BorderPane viewContainer;
-
-    // Menu
+    // Settings-menu
     @FXML
     void handleLanguageSettings() {
         Dialog<Void> languageDialog = new Dialog<>();
@@ -211,7 +210,7 @@ public class MainController {
         }
     }
 
-    // Action
+    // Action handlers / view switchers
     @FXML
     public void showDefaultView(){
         try{
@@ -222,7 +221,7 @@ public class MainController {
             Node view = loader.load();
 
             currentView = ViewState.DEFAULT_VIEW;
-            currentPramId = -1;
+            currentParamId = -1;
             lendingParam = false;
             viewContainer.setCenter(view);
         }catch(IOException e){
@@ -237,51 +236,55 @@ public class MainController {
     @FXML
     void showMediaOverview() {
         currentView = ViewState.MEDIA_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/MediaOverview.fxml");
     }
     @FXML
     void showAddMedia() {
+        currentView = ViewState.MEDIA_FORM;
+        currentParamId = -1;
+        lendingParam = false;
         showMediaFormView(0);
     }
     @FXML
     void showArtists() {
         currentView = ViewState.ARTIST_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/ArtistOverview.fxml");
     }
     @FXML
     void showSeries() {
         currentView = ViewState.SERIES_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/SeriesOverview.fxml");
     }
     @FXML
     void showFranchises() {
         currentView = ViewState.FRANCHISE_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/FranchiseOverview.fxml");
     }
     @FXML
     void showPublishers() {
         currentView = ViewState.PUBLISHER_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/PublisherOverview.fxml");
     }
     @FXML
     void showLendings() {
         currentView = ViewState.LENDING_OVERVIEW;
-        currentPramId = -1;
+        currentParamId = -1;
         lendingParam = false;
         loadView("/de/srh_dr/mediamanagementtoolmmt/view/LendingOverview.fxml");
     }
 
-
+    //HELPERS
+    //view switchers
     private void loadView(String fxmlFile) {
         try{
             URL resource = getClass().getResource(fxmlFile);
@@ -325,7 +328,7 @@ public class MainController {
             }
 
             currentView = ViewState.MEDIA_DETAIL;
-            currentPramId = mediaId;
+            currentParamId = mediaId;
             lendingParam = false;
             viewContainer.setCenter(view);
         }catch(IOException e){
@@ -357,7 +360,7 @@ public class MainController {
                 }
 
                 currentView = ViewState.MEDIA_FORM;
-                currentPramId = mediaId;
+                currentParamId = mediaId;
                 lendingParam = false;
                 viewContainer.setCenter(view);
             }
@@ -386,7 +389,7 @@ public class MainController {
             }
 
             currentView = ViewState.LENDING_DETAIL_VIEW;
-            currentPramId = id;
+            currentParamId = id;
             lendingParam = true;
             viewContainer.setCenter(view);
         }catch(IOException e){
@@ -399,6 +402,7 @@ public class MainController {
         }
     }
 
+    //language switching
     private void reloadApplicationUI() {
         try {
             Stage stage = (Stage) getWindow();
@@ -409,7 +413,7 @@ public class MainController {
             Parent newRoot = loader.load();
             MainController newController = loader.getController();
 
-            newController.restoreState(this.currentView, this.currentPramId, this.lendingParam);
+            newController.restoreState(this.currentView, this.currentParamId, this.lendingParam);
 
             stage.getScene().setRoot(newRoot);
         } catch (IOException e) {
@@ -437,6 +441,7 @@ public class MainController {
         }
     }
 
+    //current window
     public Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

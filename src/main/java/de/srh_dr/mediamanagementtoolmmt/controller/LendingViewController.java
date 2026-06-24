@@ -50,6 +50,7 @@ public class LendingViewController implements MainControllerAware{
         this.mainController = mainController;
     }
 
+    //Populate view
     @FXML
     private void initialize() {
         allLendees = lendeeDAO.findAll();
@@ -117,6 +118,7 @@ public class LendingViewController implements MainControllerAware{
         }
     }
 
+    // action handlers
     @FXML
     private void handleManageLendee(){
         Lendee selectedLendee = lendeeComboBox.getValue();
@@ -339,6 +341,7 @@ public class LendingViewController implements MainControllerAware{
         }
     }
 
+    //Current window for popups
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();
@@ -346,6 +349,7 @@ public class LendingViewController implements MainControllerAware{
         return null;
     }
 
+    //toggle readonly for new/existing lendings
     private void toggleLendeeInputMode(boolean readOnly) {
         lendeeComboBox.setVisible(!readOnly);
         lendeeComboBox.setManaged(!readOnly);

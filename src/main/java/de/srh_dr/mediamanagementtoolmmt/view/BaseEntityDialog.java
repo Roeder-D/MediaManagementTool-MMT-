@@ -5,7 +5,7 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.GridPane;
-
+//Base dialog for complex entity creation
 public abstract class BaseEntityDialog<T> extends Dialog<T> {
     protected abstract void hydrateGridPane(GridPane gridPane);
     protected abstract T createEntity();

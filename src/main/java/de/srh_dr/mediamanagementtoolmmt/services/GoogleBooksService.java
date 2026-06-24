@@ -30,6 +30,7 @@ public class GoogleBooksService implements BookLookupService{
     private static final String apiToken = dotenv.get("GOOGLE_BOOKS_API_TOKEN");
     private static final String baseUrl = dotenv.get("GOOGLE_BOOKS_BASE_URL");
 
+    //Fetch data
     @Override
     public List<ExternalMediaSearchResult> searchByTitle(String title) {
         String encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8);
@@ -90,13 +91,14 @@ public class GoogleBooksService implements BookLookupService{
         }
     }
 
+    //Unused/Should not be reached!
     @Override
     public ExternalMediaSearchResult fetchDetails(String remoteId) {
         LOGGER.log(Level.SEVERE,"--Broken Path-- Tried to fetch Google Books details for: " + remoteId + " --Broken Path--");
         return null;
     }
 
-    //helper
+    //helper for mapping JSON into program class
     private ExternalMediaSearchResult mapItemToSearchResult(JsonNode itemNode){
         String remoteId = itemNode.path("id").asText("");
 
@@ -144,7 +146,7 @@ public class GoogleBooksService implements BookLookupService{
             finalTitle += " - " + subtitle;
         }
 
-        // use ISBN as identifier in unless it's not in the industry identifiers
+        // use ISBN as identifier unless it's not in the industry identifiers
         String finalRemoteId = remoteId;
         JsonNode identifiers = volumeInfo.path("industryIdentifiers");
         if(identifiers.isArray() && !identifiers.isEmpty()){

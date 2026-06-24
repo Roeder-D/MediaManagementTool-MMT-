@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+//simple counts are provided by AbstractDAO instead
 public class StatisticsDAO {
     private static final  StatisticsDAO INSTANCE = new StatisticsDAO();
 
@@ -18,6 +19,7 @@ public class StatisticsDAO {
 
     private StatisticsDAO(){}
 
+    // READ
     public Map<String, Integer> getCollectionStatistics() {
         Map<String, Integer> statistics = new HashMap<>();
         String sql = "Select total_titles, available_titles, lent_titles, lost_titles FROM v_collection_statistics LIMIT 1";

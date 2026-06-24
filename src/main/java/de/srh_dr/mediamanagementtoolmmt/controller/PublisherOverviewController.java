@@ -28,6 +28,7 @@ public class PublisherOverviewController{
     private final ObservableList<Publisher> publishers = FXCollections.observableArrayList();
     private FilteredList<Publisher> filteredPublishers;
 
+    //Populate views
     @FXML
     private void initialize() {
         setupListView();
@@ -67,6 +68,7 @@ public class PublisherOverviewController{
         applyFilter();
     }
 
+    //Filters
     @FXML
     public void applyFilter() {
         String searchText = searchField.getText().toLowerCase();
@@ -76,6 +78,7 @@ public class PublisherOverviewController{
         );
     }
 
+    //edit publisher popup
     private void openPublisherPopup(Publisher selectedPublisher) {
         Dialog<Publisher> dialog = new Dialog<>();
         dialog.setTitle(LanguageManager.getString("ui.edit_publisher"));
@@ -137,6 +140,7 @@ public class PublisherOverviewController{
         loadPublishers();
     }
 
+    //current window
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

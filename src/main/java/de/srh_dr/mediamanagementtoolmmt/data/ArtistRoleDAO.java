@@ -35,7 +35,7 @@ public class ArtistRoleDAO extends AbstractDAO<ArtistRole> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(ArtistRole artistRole) {
         if (artistRole.isNewItem()) {
             create(artistRole);

@@ -41,7 +41,7 @@ public class MediaTypeDAO extends AbstractDAO<MediaType> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(MediaType type) {
         if (type.isNewItem()) {
             create(type);

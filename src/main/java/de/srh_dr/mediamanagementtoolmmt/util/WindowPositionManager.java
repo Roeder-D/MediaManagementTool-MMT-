@@ -5,6 +5,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+// Positions the app in the last open position or (if out of bounds) on the main screen
 public class WindowPositionManager {
     public static void restoreWindowBounds(Stage stage, double savedX, double savedY, double savedWidth, double savedHeight) {
         stage.setWidth(savedWidth > 100 ? savedWidth : 1050);

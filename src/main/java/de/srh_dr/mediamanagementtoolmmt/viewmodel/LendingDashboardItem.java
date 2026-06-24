@@ -3,6 +3,7 @@ package de.srh_dr.mediamanagementtoolmmt.viewmodel;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+//provides thin data for the lending dashboard
 public class LendingDashboardItem {
     private final SimpleIntegerProperty lendingId;
     private final SimpleStringProperty mediaTitle;

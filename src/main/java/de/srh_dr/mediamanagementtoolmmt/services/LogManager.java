@@ -10,6 +10,7 @@ import java.util.logging.SimpleFormatter;
 public class LogManager {
     private static final Logger rootLogger = Logger.getLogger("");
 
+    //configures included logger
     public static void setup(){
         try {
             String userHome = System.getProperty("user.home");

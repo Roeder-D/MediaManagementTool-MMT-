@@ -19,7 +19,7 @@ public class SeriesDAO {
 
     private SeriesDAO(){}
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Series series) {
         if (series.isNewItem()) {
             create(series);
@@ -152,7 +152,7 @@ public class SeriesDAO {
         }
     }
 
-    // READ (findById)
+    // READ
     public Series findById(int id) {
         String seriesSql = "SELECT * FROM series WHERE series_id = ?";
         String titlesSql = "SELECT * FROM alt_title WHERE series_id = ?";
@@ -194,7 +194,6 @@ public class SeriesDAO {
         return series;
     }
 
-    // READ all
     public List<Series> findAll() {
         Map<Integer,Series> seriesMap = new LinkedHashMap<>();
 

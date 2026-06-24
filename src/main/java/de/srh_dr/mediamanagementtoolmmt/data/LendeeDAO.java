@@ -43,7 +43,7 @@ public class LendeeDAO extends AbstractDAO<Lendee> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Lendee lendee) {
         if (lendee.isNewItem()) {
             create(lendee);

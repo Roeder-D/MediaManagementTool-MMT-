@@ -36,6 +36,7 @@ public class FranchiseOverviewController implements MainControllerAware{
         this.mainController = mainController;
     }
 
+    //populate view
     @FXML
     private void initialize() {
         setupListView();
@@ -68,6 +69,13 @@ public class FranchiseOverviewController implements MainControllerAware{
         });
     }
 
+    @FXML
+    public void loadFranchises(){
+        franchises.setAll((franchiseDAO.findAll()));
+        applyFilter();
+    }
+
+    //edit franchise popup
     private void openFranchisePopup(Franchise selectedFranchise) {
         Dialog<Franchise> dialog = new Dialog<>();
         dialog.setTitle(LanguageManager.getString("ui.edit_franchise"));
@@ -191,16 +199,12 @@ public class FranchiseOverviewController implements MainControllerAware{
             }
             return null;
         });
+        dialog.initOwner(getWindow());
         dialog.showAndWait();
         loadFranchises();
     }
 
-    @FXML
-    public void loadFranchises(){
-        franchises.setAll((franchiseDAO.findAll()));
-        applyFilter();
-    }
-
+    //Filtering
     @FXML
     private void applyFilter(){
         String searchText = searchField.getText().toLowerCase().trim();
@@ -216,6 +220,7 @@ public class FranchiseOverviewController implements MainControllerAware{
         });
     }
 
+    //current window for popups
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

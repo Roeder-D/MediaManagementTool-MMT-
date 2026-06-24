@@ -1,5 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.viewmodel;
 
+//allows separation between localized display and internal string
 public class FilterOption {
     private final String displayText;
     private final String filterText;

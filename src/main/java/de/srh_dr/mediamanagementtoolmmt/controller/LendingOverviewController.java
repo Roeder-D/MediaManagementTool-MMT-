@@ -31,6 +31,7 @@ public class LendingOverviewController implements MainControllerAware{
         this.mainController = mainController;
     }
 
+    //Populate view
     @FXML
     public void initialize(){
         titleCol.setCellValueFactory(cellData -> cellData.getValue().mediaTitleProperty());
@@ -89,6 +90,19 @@ public class LendingOverviewController implements MainControllerAware{
     }
 
     @FXML
+    private void loadLendings(){
+        allItems.setAll(lendingDAO.getLendingDashboard());
+        filteredItems = new FilteredList<>(allItems, p -> true);
+
+        SortedList<LendingDashboardItem> sortedItems = new SortedList<>(filteredItems);
+        sortedItems.comparatorProperty().bind(lendingTable.comparatorProperty());
+
+        lendingTable.setItems(sortedItems);
+        applyFilter();
+    }
+
+    //Filtering
+    @FXML
     private void applyFilter(){
         if(filteredItems == null) return;
 
@@ -121,17 +135,5 @@ public class LendingOverviewController implements MainControllerAware{
                     }
                     return statusMatch && textMatch;
         });
-    }
-
-    @FXML
-    private void loadLendings(){
-        allItems.setAll(lendingDAO.getLendingDashboard());
-        filteredItems = new FilteredList<>(allItems, p -> true);
-
-        SortedList<LendingDashboardItem> sortedItems = new SortedList<>(filteredItems);
-        sortedItems.comparatorProperty().bind(lendingTable.comparatorProperty());
-
-        lendingTable.setItems(sortedItems);
-        applyFilter();
     }
 }

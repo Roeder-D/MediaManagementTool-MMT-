@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+//App-configuration
 public class ConfigManager {
     private static final String USER_HOME = System.getProperty("user.home");
     private static final Path EXTERNAL_CONFIG_PATH = Paths.get(USER_HOME, ".mmt", "config", "app.properties");

@@ -15,9 +15,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static javafx.collections.FXCollections.observableList;
 
 public class ArtistOverviewController{
     private static final Logger LOGGER = Logger.getLogger(ArtistOverviewController.class.getName());
@@ -90,6 +91,8 @@ public class ArtistOverviewController{
         });
     }
 
+    //HELPERS
+    //edit artist
     private void openArtistPopup(Artist selectedArtist){
         Dialog<Artist> dialog = new Dialog<>();
         dialog.setTitle(LanguageManager.getString("ui.editArtist"));
@@ -158,19 +161,22 @@ public class ArtistOverviewController{
             }
             return null;
         });
+        dialog.initOwner(getWindow());
         dialog.showAndWait();
         loadNationalities();
         loadArtists();
     }
 
+    //fill combobox
     private void loadNationalities(){
-        List<String> allNationalities = artistDAO.getAllNationalities();
+        ObservableList<String> allNationalities = observableList(artistDAO.getAllNationalities());
 
         nationalityFilterComboBox.getItems().clear();
         nationalityFilterComboBox.getItems().add(LanguageManager.getString("ui.selectNationality"));
         nationalityFilterComboBox.getItems().addAll(allNationalities);
     }
 
+    //get current window for popups
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

@@ -31,7 +31,7 @@ public class LanguageDAO extends AbstractDAO<Language> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Language language) throws SQLException {
         if (language.isNewItem()) {
             create(language);

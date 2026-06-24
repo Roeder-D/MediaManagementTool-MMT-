@@ -74,7 +74,7 @@ public class MediaFormController implements MainControllerAware{
     private final MediaTypeDAO  mediaTypeDAO = MediaTypeDAO.getInstance();
     private final SeriesDAO seriesDAO = SeriesDAO.getInstance();
     private final LanguageDAO languageDAO = LanguageDAO.getInstance();
-    private final MediaIntegrationFacade mediaIntegrationFacade = new  MediaIntegrationFacade();
+    private final MediaIntegrationFacade mediaIntegrationFacade = MediaIntegrationFacade.getInstance();
 
     MainController mainController;
     ImageManager imageManager = ImageManager.getInstance();
@@ -97,6 +97,7 @@ public class MediaFormController implements MainControllerAware{
         this.mainController = mainController;
     }
 
+    //region Populate View
     public void initialize() {
         allGenres = observableArrayList(genreDAO.findAll());
         allLanguages = observableArrayList(languageDAO.findAll());
@@ -210,7 +211,9 @@ public class MediaFormController implements MainControllerAware{
             }
         }
     }
-
+    //endregion
+    //region Action Handlers
+    //image handler
     @FXML
     private void handleDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles()){
@@ -239,7 +242,24 @@ public class MediaFormController implements MainControllerAware{
         event.setDropCompleted(success);
         event.consume();
     }
+    @FXML
+    private void handleImageUpload(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(LanguageManager.getString("ui.selectCoverImage"));
 
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        File file = fileChooser.showOpenDialog(getWindow());
+
+        if(file != null){
+            selectedCoverImage = file;
+            this.coverImage.setImage(new Image(file.toURI().toString()));
+        }
+    }
+
+    //new dynamic rows
     @FXML
     private void addGenreDropdown(){
         addDynamicDropdownRow(genreContainer, allGenres, null, () -> {
@@ -281,7 +301,7 @@ public class MediaFormController implements MainControllerAware{
         });
     }
 
-
+    //dialogs for adding new entities
     @FXML
     private void handleAddNewArtist(SearchableComboBox<Artist> targetComboBox){
         ArtistDialog dialog = new ArtistDialog(allArtists, getWindow());
@@ -459,6 +479,7 @@ public class MediaFormController implements MainControllerAware{
         );
     }
 
+    //API search
     @FXML
     private void handleSearchRemoteByIsbn(){
         String isbn = isbnField.getText().trim().replace("-", "").replace("_", "");
@@ -582,7 +603,7 @@ public class MediaFormController implements MainControllerAware{
 
     }
 
-
+    //cancel/submit
     @FXML
     public void handleCancel(){
         if(mainController != null){
@@ -735,26 +756,165 @@ public class MediaFormController implements MainControllerAware{
             System.err.println("Failed to save Media: " + e.getMessage());
         }
     }
+    //endregion
+    //region HELPERS
+    //dynamic row creation
+    private void addMediaArtistRow(MediaArtist selectedCredit){
+        HBox row = new HBox(10);
 
-    @FXML
-    private void handleImageUpload(){
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(LanguageManager.getString("ui.selectCoverImage"));
+        SearchableComboBox<Artist> artistComboBox = new SearchableComboBox<>();
+        if(allArtists != null){
+            artistComboBox.setItems(allArtists);
+        }
+        artistComboBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(artistComboBox, Priority.ALWAYS);
 
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
+        Button addArtistButton = new Button(LanguageManager.getString("ui.addArtist"));
+        addArtistButton.setOnAction(e -> handleAddNewArtist(artistComboBox));
 
-        File file = fileChooser.showOpenDialog(getWindow());
+        SearchableComboBox<ArtistRole> artistRoleComboBox = new SearchableComboBox<>();
+        if(allArtistRoles != null){
+            artistRoleComboBox.setItems(allArtistRoles);
+        }
+        artistRoleComboBox.setMaxWidth(150);
+        artistRoleComboBox.setPromptText(LanguageManager.getString("ui.selectArtistRole"));
 
-        if(file != null){
-            selectedCoverImage = file;
-            this.coverImage.setImage(new Image(file.toURI().toString()));
+        Button addArtistRoleButton = new Button(LanguageManager.getString("ui.addArtistRole"));
+        addArtistRoleButton.setOnAction(e -> handleAddNewArtistRole(artistRoleComboBox));
+
+        if(selectedCredit != null){
+            artistComboBox.setValue(selectedCredit.getArtist());
+            artistRoleComboBox.setValue(selectedCredit.getArtistRole());
+        }
+
+        Button removeButton = new Button(LanguageManager.getString("ui.remove"));
+        removeButton.setOnAction(event -> artistContainer.getChildren().remove(row));
+
+        row.getChildren().addAll(artistComboBox, addArtistButton, artistRoleComboBox, addArtistRoleButton, removeButton);
+
+        artistContainer.getChildren().add(row);
+
+    }
+
+    private <T> void addDynamicDropdownRow(VBox container, ObservableList<T> items, T selectedItem, Runnable onAddAction){
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        SearchableComboBox<T> comboBox = new SearchableComboBox<>();
+        if(items != null){
+            comboBox.setItems(items);
+        }
+        comboBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(comboBox, Priority.ALWAYS);
+
+        if(selectedItem != null){
+            comboBox.setValue(selectedItem);
+        }
+
+        //add new button
+        Button addButton = null;
+        if (onAddAction != null) {
+            addButton = new Button(LanguageManager.getString("ui.add"));
+            addButton.setOnAction(e -> onAddAction.run());
+        }
+
+        //remove row button
+        Button removeBtn = new Button(LanguageManager.getString("ui.remove"));
+        removeBtn.setOnAction(event -> container.getChildren().remove(row));
+
+        if (addButton != null) {
+            row.getChildren().addAll(comboBox, addButton, removeBtn);
+        } else {
+            row.getChildren().addAll(comboBox, removeBtn);
+        }
+
+        container.getChildren().add(row);
+
+    }
+
+    //image handling
+    private String sanitizeForFilename(String input) {
+        if (input == null) {
+            return "";
+        }
+
+        String localized = input.trim()
+                .replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")
+                .replace("Ä", "Ae").replace("Ö", "Oe").replace("Ü", "Ue")
+                .replace("ß", "ss");
+
+        return localized.replaceAll("\\s+", "_")
+                .replaceAll("[^a-zA-Z0-9_]", "");
+    }
+
+    private void displayImage(){
+        coverImage.setImage(null);
+        if(currentMedia != null && currentMedia.getCoverFileName() != null && !currentMedia.getCoverFileName().isEmpty()){
+            String fullServerURL = imageManager.getFullImageUrl(currentMedia.getCoverFileName());
+            Image serverImage = new Image(fullServerURL, true); //true for background loading
+            coverImage.setImage(serverImage);
+        }else if(remoteCoverUrl != null && !remoteCoverUrl.isEmpty()){
+            String secureURL = remoteCoverUrl.replace("http://", "https://");
+            coverImage.setImage(new Image(secureURL, true)); //true for background loading
+        }else {
+            String defaultImagePath = "/de/srh_dr/mediamanagementtoolmmt/Images/1920px-No-Image-Placeholder.svg.png";
+            URL defaultImageURL = getClass().getResource(defaultImagePath);
+            if(defaultImageURL != null){
+                Image defaultImage = new Image(defaultImageURL.toExternalForm());
+                coverImage.setImage(defaultImage);
+            }
         }
     }
 
+    // entity creation dialogs
+    private <T> void handleAddNewSimpleEntity(SearchableComboBox<T> targetComboBox,
+                                              List<T> allItemsList,
+                                              String titleKey,
+                                              String headerKey,
+                                              String contentKey,
+                                              String existsMsgKey,
+                                              Function<T, String> nameExtractor,
+                                              Function<String, T> entityCreator,
+                                              Consumer<T> daoSaver){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(LanguageManager.getString(titleKey));
+        dialog.setHeaderText(LanguageManager.getString(headerKey));
+        dialog.setContentText(LanguageManager.getString(contentKey));
 
-    // Helper
+        dialog.initOwner(getWindow());
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(itemName -> {
+            String cleanItemName = itemName.trim();
+
+            if(!itemName.isEmpty()){
+                try{
+                    Optional<T> existingItem = allItemsList.stream()
+                            .filter(m -> nameExtractor.apply(m).equalsIgnoreCase(cleanItemName))
+                            .findFirst();
+                    if(existingItem.isPresent()){
+                        targetComboBox.setValue(existingItem.get());
+                        AlertManager.showAlert(
+                                Alert.AlertType.INFORMATION,
+                                LanguageManager.getString("ui.info"),
+                                LanguageManager.getString(existsMsgKey),
+                                getWindow()
+                        );
+                    } else{
+                        T item = entityCreator.apply(itemName);
+                        daoSaver.accept(item);
+                        allItemsList.add(item);
+                        targetComboBox.setValue(item);
+                    }
+                }catch(Exception e){
+                    LOGGER.log(Level.SEVERE, "Failed to add new entity: " +e.getMessage(), e);
+                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
+                }
+            }
+        });
+    }
+
+    // reset view
     public void refresh(){
         this.currentMedia = null;
         this.selectedCoverImage = null;
@@ -793,6 +953,29 @@ public class MediaFormController implements MainControllerAware{
         api_search_isbn_button.setManaged(true);
         api_search_title_button.setVisible(true);
         api_search_title_button.setManaged(true);
+    }
+
+    //helpers for saving data
+    private LocalDate parseDate(String dateString){
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            dateString = dateString.trim();
+            if(dateString.length() == 4){
+                return LocalDate.of(Integer.parseInt(dateString), 1, 1);
+            } else if (dateString.length() == 7) {
+                String[] parts = dateString.split("-");
+                return  LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
+            }else if (dateString.length() == 10) {
+                return LocalDate.parse(dateString);
+            }else{
+                return null;
+            }
+        }catch (Exception e){
+            LOGGER.log(Level.WARNING, "Failed to parse date: " + e.getMessage(), e);
+            return null;
+        }
     }
 
     private List<Genre> getSelectedGenres(){
@@ -868,79 +1051,7 @@ public class MediaFormController implements MainControllerAware{
         return mediaArtists;
     }
 
-    private void addMediaArtistRow(MediaArtist selectedCredit){
-        HBox row = new HBox(10);
-
-        SearchableComboBox<Artist> artistComboBox = new SearchableComboBox<>();
-        if(allArtists != null){
-            artistComboBox.setItems(allArtists);
-        }
-        artistComboBox.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(artistComboBox, Priority.ALWAYS);
-
-        Button addArtistButton = new Button(LanguageManager.getString("ui.addArtist"));
-        addArtistButton.setOnAction(e -> handleAddNewArtist(artistComboBox));
-
-        SearchableComboBox<ArtistRole> artistRoleComboBox = new SearchableComboBox<>();
-        if(allArtistRoles != null){
-            artistRoleComboBox.setItems(allArtistRoles);
-        }
-        artistRoleComboBox.setMaxWidth(150);
-        artistRoleComboBox.setPromptText(LanguageManager.getString("ui.selectArtistRole"));
-
-        Button addArtistRoleButton = new Button(LanguageManager.getString("ui.addArtistRole"));
-        addArtistRoleButton.setOnAction(e -> handleAddNewArtistRole(artistRoleComboBox));
-
-        if(selectedCredit != null){
-            artistComboBox.setValue(selectedCredit.getArtist());
-            artistRoleComboBox.setValue(selectedCredit.getArtistRole());
-        }
-
-        Button removeButton = new Button(LanguageManager.getString("ui.remove"));
-        removeButton.setOnAction(event -> artistContainer.getChildren().remove(row));
-
-        row.getChildren().addAll(artistComboBox, addArtistButton, artistRoleComboBox, addArtistRoleButton, removeButton);
-
-        artistContainer.getChildren().add(row);
-
-    }
-
-    private <T> void addDynamicDropdownRow(VBox container, ObservableList<T> items, T selectedItem, Runnable onAddAction){
-        HBox row = new HBox(10);
-        row.setAlignment(Pos.CENTER_LEFT);
-
-        SearchableComboBox<T> comboBox = new SearchableComboBox<>();
-        if(items != null){
-            comboBox.setItems(items);
-        }
-        comboBox.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(comboBox, Priority.ALWAYS);
-
-        if(selectedItem != null){
-            comboBox.setValue(selectedItem);
-        }
-
-        //add new button
-        Button addButton = null;
-        if (onAddAction != null) {
-            addButton = new Button(LanguageManager.getString("ui.add"));
-            addButton.setOnAction(e -> onAddAction.run());
-        }
-
-        //remove row button
-        Button removeBtn = new Button(LanguageManager.getString("ui.remove"));
-        removeBtn.setOnAction(event -> container.getChildren().remove(row));
-
-        if (addButton != null) {
-            row.getChildren().addAll(comboBox, addButton, removeBtn);
-        } else {
-            row.getChildren().addAll(comboBox, removeBtn);
-        }
-
-        container.getChildren().add(row);
-
-    }
-
+    //splits items for deletion / creation due to change tracking in Media class
     private <T> void syncList(Collection<T> currentItems, Collection<T> uiItems, Consumer<T> remover, Consumer<T> adder){
         new ArrayList<>(currentItems).forEach(item -> {
             if(!uiItems.contains(item)){remover.accept(item);}
@@ -950,112 +1061,12 @@ public class MediaFormController implements MainControllerAware{
         });
     }
 
-    private <T> void handleAddNewSimpleEntity(SearchableComboBox<T> targetComboBox,
-                                              List<T> allItemsList,
-                                              String titleKey,
-                                              String headerKey,
-                                              String contentKey,
-                                              String existsMsgKey,
-                                              Function<T, String> nameExtractor,
-                                              Function<String, T> entityCreator,
-                                              Consumer<T> daoSaver){
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(LanguageManager.getString(titleKey));
-        dialog.setHeaderText(LanguageManager.getString(headerKey));
-        dialog.setContentText(LanguageManager.getString(contentKey));
-
-        dialog.initOwner(getWindow());
-
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(itemName -> {
-            String cleanItemName = itemName.trim();
-
-            if(!itemName.isEmpty()){
-                try{
-                    Optional<T> existingItem = allItemsList.stream()
-                            .filter(m -> nameExtractor.apply(m).equalsIgnoreCase(cleanItemName))
-                            .findFirst();
-                    if(existingItem.isPresent()){
-                        targetComboBox.setValue(existingItem.get());
-                        AlertManager.showAlert(
-                                Alert.AlertType.INFORMATION,
-                                LanguageManager.getString("ui.info"),
-                                LanguageManager.getString(existsMsgKey),
-                                getWindow()
-                        );
-                    } else{
-                        T item = entityCreator.apply(itemName);
-                        daoSaver.accept(item);
-                        allItemsList.add(item);
-                        targetComboBox.setValue(item);
-                    }
-                }catch(Exception e){
-                    LOGGER.log(Level.SEVERE, "Failed to add new entity: " +e.getMessage(), e);
-                    AlertManager.showAlert(Alert.AlertType.ERROR, LanguageManager.getString("ui.error"), e.getMessage(), getWindow());
-                }
-            }
-        });
-    }
-
+    //current window
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();
         }
         return null;
     }
-
-    private LocalDate parseDate(String dateString){
-        if (dateString == null || dateString.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            dateString = dateString.trim();
-            if(dateString.length() == 4){
-                return LocalDate.of(Integer.parseInt(dateString), 1, 1);
-            } else if (dateString.length() == 7) {
-                String[] parts = dateString.split("-");
-                return  LocalDate.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), 1);
-            }else if (dateString.length() == 10) {
-                return LocalDate.parse(dateString);
-            }else{
-                return null;
-            }
-        }catch (Exception e){
-            LOGGER.log(Level.WARNING, "Failed to parse date: " + e.getMessage(), e);
-            return null;
-        }
-    }
-
-    private String sanitizeForFilename(String input) {
-        if (input == null) {
-            return "";
-        }
-
-        String localized = input.trim()
-                .replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")
-                .replace("Ä", "Ae").replace("Ö", "Oe").replace("Ü", "Ue")
-                .replace("ß", "ss");
-
-        return localized.replaceAll("\\s+", "_")
-                .replaceAll("[^a-zA-Z0-9_]", "");
-    }
-
-    private void displayImage(){
-        coverImage.setImage(null);
-        if(currentMedia != null && currentMedia.getCoverFileName() != null && !currentMedia.getCoverFileName().isEmpty()){
-            String fullServerURL = imageManager.getFullImageUrl(currentMedia.getCoverFileName());
-            Image serverImage = new Image(fullServerURL, true); //true for background loading
-            coverImage.setImage(serverImage);
-        }else if(remoteCoverUrl != null && !remoteCoverUrl.isEmpty()){
-            String secureURL = remoteCoverUrl.replace("http://", "https://");
-            coverImage.setImage(new Image(secureURL, true)); //true for background loading
-        }else {
-            String defaultImagePath = "/de/srh_dr/mediamanagementtoolmmt/Images/1920px-No-Image-Placeholder.svg.png";
-            URL defaultImageURL = getClass().getResource(defaultImagePath);
-            if(defaultImageURL != null){
-                Image defaultImage = new Image(defaultImageURL.toExternalForm());
-                coverImage.setImage(defaultImage);
-            }
-        }
-    }
+    //endregion
 }

@@ -18,6 +18,7 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
     }
 
     private FranchiseDAO(){}
+
     @Override
     protected String getTableName() {
         return "franchise";
@@ -44,7 +45,7 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
     }
 
 
-    // HELPER
+    // Helper foe switching between crate and update
     public void save(Franchise franchise) {
         if (franchise.isNewItem()) {
             create(franchise);
@@ -172,7 +173,8 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
         }
     }
 
-    // READ (findById)
+
+    // READ
     @Override
     public Franchise findById(int id) {
         Franchise franchise = super.findById(id);
@@ -184,7 +186,6 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
         return franchise;
     }
 
-    // READ all
     @Override
     public List<Franchise> findAll(){
         Map<Integer, Franchise> franchiseMap = new LinkedHashMap<>();
@@ -219,7 +220,30 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
         }
         return new ArrayList<>(franchiseMap.values());
     }
+    private List<AltTitle> fetchAltTitlesForFranchise(int franchiseId){
+        List<AltTitle> altTitles = new ArrayList<>();
+        String sql = "SELECT * FROM alt_title WHERE franchise_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setInt(1, franchiseId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    AltTitle altTitle = new AltTitle(
+                            rs.getInt("alt_title_id"),
+                            rs.getString("title"),
+                            false
+                    );
+                    altTitles.add(altTitle);
+                }
+            }
+        }
+        catch (SQLException e){
+            LOGGER.log(Level.SEVERE,"Error fetching alt titles " + franchiseId, e);
+        }
+        return altTitles;
+    }
 
+    // Media relations
     public void saveFranchisesForMedia(int mediaId, List<Franchise> franchises, Connection conn) throws SQLException {
         String sql = "INSERT INTO media_franchise (media_id, franchise_id) VALUES (?, ?)";
         saveJunctionBatch(mediaId, franchises, sql, conn);
@@ -239,7 +263,7 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
         Map<Integer, Franchise> franchiseMap = new HashMap<>();
 
         try (Connection conn = DBConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)){
+             PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setInt(1, mediaId);
 
             try(ResultSet rs = stmt.executeQuery()){
@@ -254,7 +278,7 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
                                 rs.getInt("franchise_id"),
                                 rs.getString("franchise_name"),
                                 new ArrayList<>(),
-                        false
+                                false
                         );
                         franchiseMap.put(currentFranchiseId, currentFranchise);
                     }
@@ -269,29 +293,5 @@ public class FranchiseDAO extends AbstractDAO<Franchise>{
             LOGGER.log(Level.SEVERE,"Error fetching franchise " + franchiseMap.size(), e);
         }
         return new ArrayList<>(franchiseMap.values());
-    }
-
-    //helper
-    private List<AltTitle> fetchAltTitlesForFranchise(int franchiseId){
-        List<AltTitle> altTitles = new ArrayList<>();
-        String sql = "SELECT * FROM alt_title WHERE franchise_id = ?";
-            try (Connection conn = DBConnection.getConnection();
-                    PreparedStatement stmt = conn.prepareStatement(sql)){
-                stmt.setInt(1, franchiseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        AltTitle altTitle = new AltTitle(
-                                rs.getInt("alt_title_id"),
-                                rs.getString("title"),
-                                false
-                        );
-                        altTitles.add(altTitle);
-                    }
-                }
-            }
-        catch (SQLException e){
-            LOGGER.log(Level.SEVERE,"Error fetching alt titles " + franchiseId, e);
-        }
-        return altTitles;
     }
 }

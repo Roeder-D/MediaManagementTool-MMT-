@@ -48,6 +48,7 @@ public class MediaOverviewController implements MainControllerAware {
         this.mainController = mainController;
     }
 
+    //Populate view
     @FXML
     public void initialize() {
         filterStatusComboBox.getItems().clear();
@@ -133,6 +134,7 @@ public class MediaOverviewController implements MainControllerAware {
 
     }
 
+    //Filtering
     @FXML
     public void applyFilter() {
         String searchText = searchField.getText().toLowerCase();
@@ -168,6 +170,7 @@ public class MediaOverviewController implements MainControllerAware {
         });
     }
 
+    //current window
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

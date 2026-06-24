@@ -19,6 +19,7 @@ public class MediaOverviewDAO {
 
     private MediaOverviewDAO(){}
 
+    //READ
     public List<MediaOverview> getMediaOverview() throws SQLException {
         List<MediaOverview> overviewList = new ArrayList<>();
         String sql = "SELECT media_id, title, release_date, publisher_name, status, type_name, artists, tags FROM v_media_overview";

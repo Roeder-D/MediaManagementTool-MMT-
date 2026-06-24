@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
+//Handles the API search for MediaFormController
 public class MediaSearchDialogController {
     @FXML private VBox layerSelection;
     @FXML private VBox layerLoading;
@@ -53,6 +54,7 @@ public class MediaSearchDialogController {
         showLayer(layerSelection);
     }
 
+    //API-selection
     @FXML
     private void handleSelectGoogleBooks(){
         this.selectedSource = ApiSource.GOOGLE_BOOKS;
@@ -64,7 +66,7 @@ public class MediaSearchDialogController {
         this.selectedSource = ApiSource.TMDB;
         executeShallowSearch();
     }
-
+    //TMDB only returns limited data for a title search
     private void executeShallowSearch(){
         loadingLabel.setText(LanguageManager.getString("ui.searching") + " " + selectedSource.name() + "...");
         showLayer(layerLoading);
@@ -90,6 +92,7 @@ public class MediaSearchDialogController {
         new Thread(searchTask).start();
     }
 
+    //load all data on selection
     @FXML
     private void handleImport(){
         ExternalMediaSearchResult selectedItem = resultsListView.getSelectionModel().getSelectedItem();
@@ -113,6 +116,7 @@ public class MediaSearchDialogController {
         new Thread(fetchTask).start();
     }
 
+    //cancel transaction
     @FXML
     private void handleCancel(){
         closeDialog();

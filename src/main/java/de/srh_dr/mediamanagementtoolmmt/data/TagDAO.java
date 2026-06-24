@@ -31,7 +31,7 @@ public class TagDAO extends AbstractDAO<Tag> {
         );
     }
 
-    // HELPER
+    // Helper for switching between create and update
     public void save(Tag tag) throws SQLException {
         if (tag.isNewItem()) {
             create(tag);
@@ -102,7 +102,7 @@ public class TagDAO extends AbstractDAO<Tag> {
         }
     }
 
-//Media relations
+    //Media relations
     public void saveTagsForMedia(int mediaId, List<Tag> tags, Connection conn) throws SQLException {
         String sql = "INSERT INTO media_tag (media_id, tag_id) VALUES (?, ?)";
         saveJunctionBatch(mediaId, tags, sql, conn);

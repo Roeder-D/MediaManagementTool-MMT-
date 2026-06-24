@@ -37,6 +37,7 @@ public class SeriesOverviewController{
     private final ObservableList<Series> seriesList = FXCollections.observableArrayList();
     private FilteredList<Series> filteredSeries;
 
+    //populate view
     @FXML
     private void initialize(){
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
@@ -71,6 +72,7 @@ public class SeriesOverviewController{
         applyFilter();
     }
 
+    //filters
     @FXML
     private void applyFilter(){
         String searchText = searchField.getText().toLowerCase();
@@ -102,6 +104,7 @@ public class SeriesOverviewController{
         });
     }
 
+    //edit series popup
     private void openSeriesPopup(Series selectedSeries) {
         Dialog<Series> dialog = new Dialog<>();
         dialog.setTitle(LanguageManager.getString("ui.edit_series"));
@@ -228,10 +231,12 @@ public class SeriesOverviewController{
             return null;
         });
 
+        dialog.initOwner(getWindow());
         dialog.showAndWait();
         loadSeries();
     }
 
+    //current window
     private Window getWindow(){
         if (viewContainer != null && viewContainer.getScene() != null) {
             return viewContainer.getScene().getWindow();

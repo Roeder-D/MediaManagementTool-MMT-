@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Window;
 
+//Dialog for creating new artists
 public class ArtistDialog extends BaseEntityDialog<Artist> {
     private TextField firstNameField;
     private TextField lastNameField;
