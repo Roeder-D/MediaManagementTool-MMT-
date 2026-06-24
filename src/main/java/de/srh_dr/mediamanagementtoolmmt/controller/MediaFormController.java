@@ -585,6 +585,18 @@ public class MediaFormController implements MainControllerAware{
            Scene scene = new Scene(root);
            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/de/srh_dr/mediamanagementtoolmmt/css/style.css")).toExternalForm());
            dialogStage.setScene(scene);
+           dialogStage.sizeToScene();
+           Window parentWindow = getWindow();
+           dialogStage.initOwner(parentWindow);
+
+           //waits until window is sized and then calculates position
+           dialogStage.setOnShown(event -> {
+               assert parentWindow != null;
+               double centerX = parentWindow.getX() + parentWindow.getWidth() / 2 - dialogStage.getWidth() / 2;
+               double centerY = parentWindow.getY() + parentWindow.getHeight() / 2 - dialogStage.getHeight() / 2;
+               dialogStage.setX(centerX);
+               dialogStage.setY(centerY);
+           });
 
            dialogStage.showAndWait();
 

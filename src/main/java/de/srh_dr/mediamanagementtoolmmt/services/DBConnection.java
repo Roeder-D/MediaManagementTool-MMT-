@@ -15,7 +15,10 @@ public class DBConnection {
     //creating a connection pool using HikariDataSouce
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(dotenv.get("DB_URL"));
+
+        String jdbcUrl = "jdbc:mysql://" + dotenv.get("DB_HOST") + ":" + dotenv.get("DB_PORT") + "/" + dotenv.get("DB_NAME");
+
+        config.setJdbcUrl(jdbcUrl);
         config.setUsername(dotenv.get("DB_USER"));
         config.setPassword(dotenv.get("DB_PASSWORD"));
 
