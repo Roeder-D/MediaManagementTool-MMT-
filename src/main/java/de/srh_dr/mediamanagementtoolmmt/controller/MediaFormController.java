@@ -132,12 +132,13 @@ public class MediaFormController implements MainControllerAware{
             }
         });
         isbnField.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.ENTER && (isbnField.getText().trim().length() == 10 || isbnField.getText().trim().length() == 13)){
+            if(event.getCode() == KeyCode.ENTER){
                 handleSearchRemoteByIsbn();
                 event.consume();
             }
         });
         Platform.runLater(() -> isbnField.requestFocus());
+
 
         titleField.setOnKeyPressed(event -> {
             if(event.getCode() == KeyCode.ENTER && !titleField.getText().trim().isEmpty()){

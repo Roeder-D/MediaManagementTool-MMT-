@@ -89,6 +89,7 @@ public class MediaService {
             Media.Builder builder = new Media.Builder()
                     .isNewItem(false)
                     .id(mediaCore.id())
+                    .isbn((mediaCore.isbn()))
                     .title(mediaCore.title())
                     .originalTitle(mediaCore.originalTitle())
                     .coverFileName(mediaCore.coverFileName())
@@ -181,7 +182,7 @@ public class MediaService {
     }
 
     //DELETE
-    public void deleteMedia(int mediaId) throws SQLException {
+    public void deleteMedia(int mediaId){
         mediaDAO.deleteById(mediaId);
     }
 }
