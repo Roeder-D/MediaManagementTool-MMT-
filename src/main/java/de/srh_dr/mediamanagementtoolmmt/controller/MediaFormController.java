@@ -8,9 +8,11 @@ import de.srh_dr.mediamanagementtoolmmt.services.MediaIntegrationFacade;
 import de.srh_dr.mediamanagementtoolmmt.services.MediaService;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.services.ImageManager;
+import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import de.srh_dr.mediamanagementtoolmmt.view.ArtistDialog;
 import de.srh_dr.mediamanagementtoolmmt.view.SeriesDialog;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,9 +23,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.StringConverter;
@@ -131,11 +131,32 @@ public class MediaFormController implements MainControllerAware{
                 return null;
             }
         });
+        isbnField.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER && (isbnField.getText().trim().length() == 10 || isbnField.getText().trim().length() == 13)){
+                handleSearchRemoteByIsbn();
+                event.consume();
+            }
+        });
+        Platform.runLater(() -> isbnField.requestFocus());
 
+        titleField.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER && !titleField.getText().trim().isEmpty()){
+                handleSearchRemoteByTitle();
+                event.consume();
+            }
+        });
 
         publisherComboBox.setItems(allPublishers);
-        mediaTypeComboBox.setItems(allMediaTypes);
         seriesComboBox.setItems(allSeries);
+
+        mediaTypeComboBox.setItems(allMediaTypes);
+        mediaTypeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null) {
+                boolean showISBN = ConfigManager.getISBNEnabledMediaTypes().contains(newValue.getTypeName());
+
+                isbnField.setDisable(!showISBN);
+            }
+        });
 
         addGenreDropdown();
         addLanguageRow();
@@ -746,7 +767,8 @@ public class MediaFormController implements MainControllerAware{
             }
 
             int targetViewId;
-            String isbn = isbnField.getText() != null && (isbnField.getText().trim().length() == 10 || isbnField.getText().trim().length() == 13) ? isbnField.getText().trim() : null;
+            boolean enabledIsbn = ConfigManager.getISBNEnabledMediaTypes().contains(selectedMediaType.getTypeName());
+            String isbn = enabledIsbn && isbnField.getText() != null && (isbnField.getText().trim().length() == 10 || isbnField.getText().trim().length() == 13) ? isbnField.getText().trim() : null;
 
             if(currentMedia == null){ //fresh item
                 Media newMedia = new Media.Builder()

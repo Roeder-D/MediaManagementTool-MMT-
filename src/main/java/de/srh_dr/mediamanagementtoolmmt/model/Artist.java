@@ -43,6 +43,16 @@ public class Artist implements Identifiable {
     public String getAlias() {
         return alias;
     }
+    public String getFullName(){
+        String result = firstName + " " + lastName;
+        result = result.trim();
+        if(result.isEmpty()){
+            return alias;
+        } else if (!alias.isEmpty()) {
+            return result + " (" + alias + ")";
+        }
+        return result;
+    }
     public String getNationality() {
         return nationality;
     }

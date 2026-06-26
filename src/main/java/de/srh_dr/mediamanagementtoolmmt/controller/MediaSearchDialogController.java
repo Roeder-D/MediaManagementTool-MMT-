@@ -45,8 +45,10 @@ public class MediaSearchDialogController {
                 super.updateItem(item, empty);
                 if(empty || item == null) {
                     setText(null);
-                }else{
+                } else if (item.artists() == null || item.artists().isEmpty()) {
                     setText(item.title() + " (" + item.releaseDate() + ")");
+                } else{
+                    setText(item.title() + " (" + item.releaseDate() + ") , " + item.artists().getFirst().getFullName());
                 }
             }
         });

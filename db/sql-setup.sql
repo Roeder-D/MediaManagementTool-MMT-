@@ -186,6 +186,12 @@ CREATE INDEX idx_tag_name ON tag (tag);
 CREATE INDEX idx_series_name ON series (series_name);
 CREATE INDEX idx_genre_name ON genre (genre_name);
 
+# secondary ids in bridge tables
+CREATE INDEX idx_franchise_on_media_franchise ON media_franchise (franchise_id);
+CREATE INDEX idx_tag_on_media_tag ON media_tag (tag_id);
+CREATE INDEX idx_genre_on_media_genre ON media_genre (genre_id);
+CREATE INDEX idx_language_on_media_language ON media_language (language_id);
+CREATE INDEX idx_artist_role_on_media_artist ON media_artist (artist_role_id);
 
 # views
 CREATE VIEW v_media_overview AS
@@ -322,7 +328,7 @@ WHERE last_active_date < DATE_SUB(CURRENT_DATE, INTERVAL 3 YEAR)
 END;//
 
 CREATE TRIGGER trg_cleanup_on_media_franchise
-    AFTER DELETE on media_franchise
+    AFTER DELETE ON media_franchise
     FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM media_franchise WHERE franchise_id = OLD.franchise_id) THEN
@@ -330,6 +336,56 @@ BEGIN
     WHERE franchise_id = OLD.franchise_id;
 END IF;
 END; //
+
+CREATE TRIGGER trg_cleanup_on_media_tag
+    AFTER DELETE ON media_tag
+    FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_tag WHERE tag_id = OLD.tag_id) THEN
+    DELETE FROM tag
+    WHERE tag.tag_id = OLD.tag_id;
+END IF;
+END;//
+
+CREATE TRIGGER trg_cleanup_on_media_genre
+    AFTER DELETE ON media_genre
+    FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_genre WHERE genre_id = OLD.genre_id) THEN
+    DELETE FROM genre
+    WHERE genre.genre_id = OLD.genre_id;
+END IF;
+END;//
+
+CREATE TRIGGER trg_cleanup_on_media_language
+    AFTER DELETE ON media_language
+    FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_language WHERE language_id = OLD.language_id) THEN
+    DELETE FROM language
+    WHERE language.language_id = OLD.language_id;
+END IF;
+END;//
+
+CREATE TRIGGER trg_cleanup_on_media_artist_update
+    AFTER UPDATE ON media_artist
+    FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_artist WHERE artist_role_id = OLD.artist_role_id) THEN
+    DELETE FROM artist_role
+    WHERE artist_role_id = OLD.artist_role_id;
+END IF;
+END;//
+
+CREATE TRIGGER trg_cleanup_on_media_artist_delete
+    AFTER DELETE ON media_artist
+                        FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM media_artist WHERE artist_role_id = OLD.artist_role_id) THEN
+DELETE FROM artist_role
+WHERE artist_role_id = OLD.artist_role_id;
+END IF;
+END;//
 
 CREATE TRIGGER validate_isbn_on_insert
     BEFORE INSERT ON media
@@ -406,8 +462,6 @@ WHERE mf.franchise_id = NEW.franchise_id;
 END IF;
 END;//
 
-
-
 DELIMITER ;
 
 
@@ -455,6 +509,5 @@ SELECT
 FROM artist AS a
 WHERE a.first_name LIKE CONCAT(p_search_term, '%') OR a.last_name LIKE  CONCAT(p_search_term, '%');
 END; //
-
 
 DELIMITER ;
