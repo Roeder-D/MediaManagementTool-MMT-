@@ -112,7 +112,8 @@ public class SeriesOverviewController{
 
         ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"),  ButtonBar.ButtonData.OK_DONE);
         ButtonType deleteButtonType = new ButtonType(LanguageManager.getString("ui.delete"),  ButtonBar.ButtonData.LEFT);
-        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, saveButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType(LanguageManager.getString("ui.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, saveButtonType, cancelButtonType);
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);

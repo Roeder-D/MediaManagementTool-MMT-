@@ -86,7 +86,8 @@ public class PublisherOverviewController{
 
         ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.APPLY);
         ButtonType deleteButtonType = new ButtonType(LanguageManager.getString("ui.delete"), ButtonBar.ButtonData.APPLY);
-        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, saveButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType(LanguageManager.getString("ui.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(deleteButtonType, saveButtonType, cancelButtonType);
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);

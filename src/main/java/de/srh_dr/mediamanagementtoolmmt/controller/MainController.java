@@ -80,13 +80,8 @@ public class MainController {
 
         languageDialog.getDialogPane().setContent(gridPane);
 
-        ButtonType saveButtonType = new ButtonType(
-                LanguageManager.getString("ui.submit"),
-                ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButtonType = new ButtonType(
-                LanguageManager.getString("ui.cancel"),
-                ButtonBar.ButtonData.CANCEL_CLOSE
-        );
+        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType(LanguageManager.getString("ui.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         languageDialog.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
 
         languageDialog.setResultConverter(dialogButton -> {
@@ -183,13 +178,8 @@ public class MainController {
 
             isbnDialog.getDialogPane().setContent(container);
 
-            ButtonType saveButtonType = new ButtonType(
-                    LanguageManager.getString("ui.submit"),
-                    ButtonBar.ButtonData.OK_DONE);
-            ButtonType cancelButtonType = new ButtonType(
-                    LanguageManager.getString("ui.cancel"),
-                    ButtonBar.ButtonData.CANCEL_CLOSE
-            );
+            ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType(LanguageManager.getString("ui.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
             isbnDialog.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
 
             isbnDialog.setResultConverter(dialogButton -> {
