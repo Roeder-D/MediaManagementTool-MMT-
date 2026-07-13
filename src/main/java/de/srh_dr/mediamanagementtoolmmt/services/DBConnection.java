@@ -22,7 +22,7 @@ public class DBConnection {
         config.setUsername(dotenv.get("DB_USER"));
         config.setPassword(dotenv.get("DB_PASSWORD"));
 
-        config.setMaximumPoolSize(5);
+        config.setMaximumPoolSize(10); // MediaService requires up to 9 connections simultaneously
         config.setMinimumIdle(2);
 
         dataSource = new HikariDataSource(config);

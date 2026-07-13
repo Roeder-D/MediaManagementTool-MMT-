@@ -946,6 +946,18 @@ public class MediaFormController implements MainControllerAware{
                                               Function<String, T> entityCreator,
                                               Consumer<T> daoSaver){
         TextInputDialog dialog = new TextInputDialog();
+        //swap out default buttons for i18n
+        dialog.getDialogPane().getButtonTypes().clear();
+        ButtonType saveButton = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType(LanguageManager.getString("ui.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButton, cancelButton);
+        dialog.setResultConverter(button -> {
+            if(button == saveButton){
+                return dialog.getEditor().getText();
+            }
+            return null;
+        });
+
         dialog.setTitle(LanguageManager.getString(titleKey));
         dialog.setHeaderText(LanguageManager.getString(headerKey));
         dialog.setContentText(LanguageManager.getString(contentKey));

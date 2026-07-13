@@ -17,8 +17,14 @@ public abstract class BaseEntityDialog<T> extends Dialog<T> {
     }
 
     protected void buildDialogUI(){
-        ButtonType saveButtonType = new ButtonType(LanguageManager.getString("ui.submit"), ButtonBar.ButtonData.OK_DONE);
-        this.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        ButtonType saveButtonType = new ButtonType(
+                LanguageManager.getString("ui.submit"),
+                ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType(
+                LanguageManager.getString("ui.cancel"), // Use your key here
+                ButtonBar.ButtonData.CANCEL_CLOSE
+        );
+        this.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
