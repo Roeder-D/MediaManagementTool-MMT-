@@ -2,40 +2,43 @@ package de.srh_dr.mediamanagementtoolmmt.services;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.github.cdimascio.dotenv.Dotenv;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+
 public class DBConnection {
-    //using "io.github.cdimascio.dotenv.java" to load .env-files
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final HikariDataSource dataSource;
+   private static HikariDataSource dataSource;
 
-    //creating a connection pool using HikariDataSouce
-    static {
-        HikariConfig config = new HikariConfig();
+   public static void initPool(HikariConfig hikariConfig) {
+       dataSource = new HikariDataSource(hikariConfig);
+   }
 
-        String jdbcUrl = "jdbc:mysql://" + dotenv.get("DB_HOST") + ":" + dotenv.get("DB_PORT") + "/" + dotenv.get("DB_NAME");
+   public static Connection getConnection() throws SQLException {
+       if(dataSource == null){
+           throw new SQLException("HikariDataSource not initialized");
+       }
+       return dataSource.getConnection();
+   }
 
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(dotenv.get("DB_USER"));
-        config.setPassword(dotenv.get("DB_PASSWORD"));
+   public static boolean isConnected() {
+       if(dataSource == null || dataSource.isClosed()) {
+           return false;
+       }
+       try (Connection conn = dataSource.getConnection()){
+           return conn.isValid(2);
+       }catch (SQLException e){
+           return false;
+       }
+   }
 
-        config.setMaximumPoolSize(10); // MediaService requires up to 9 connections simultaneously
-        config.setMinimumIdle(2);
+   public static boolean isInitialized() {
+       return dataSource != null;
+   }
 
-        dataSource = new HikariDataSource(config);
-    }
-
-
-    public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
-
-    public static void closePool(){
-        if(dataSource != null && !dataSource.isClosed()){
-            dataSource.close();
-        }
-    }
+   public static void closePool() {
+       if (dataSource != null) {
+           dataSource.close();
+       }
+   }
 }

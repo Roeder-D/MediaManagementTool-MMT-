@@ -13,8 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +20,6 @@ import java.util.logging.Logger;
 public class FranchiseOverviewController implements MainControllerAware{
     private static final Logger LOGGER = Logger.getLogger(FranchiseOverviewController.class.getName());
 
-    @FXML private VBox viewContainer;
     @FXML private TextField searchField;
     @FXML private ListView<Franchise> franchiseList;
 
@@ -34,6 +31,11 @@ public class FranchiseOverviewController implements MainControllerAware{
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public MainController getMainController() {
+        return mainController;
     }
 
     //populate view
@@ -219,13 +221,5 @@ public class FranchiseOverviewController implements MainControllerAware{
             }
             return targetText.toString().contains(searchText);
         });
-    }
-
-    //current window for popups
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
-        }
-        return null;
     }
 }

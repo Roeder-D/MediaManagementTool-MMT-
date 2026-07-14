@@ -13,7 +13,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.stage.Window;
 import org.controlsfx.control.Rating;
 
 import java.net.URL;
@@ -24,7 +23,6 @@ import java.util.logging.Logger;
 public class MediaDetailController implements MainControllerAware {
     private static final Logger LOGGER  = Logger.getLogger(MediaDetailController.class.getName());
 
-    @FXML private BorderPane viewContainer;
     @FXML private Label titleLabel;
     @FXML private Label isbnLabel;
     @FXML private Label isbnField;
@@ -54,6 +52,11 @@ public class MediaDetailController implements MainControllerAware {
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public MainController getMainController() {
+        return mainController;
     }
 
     @FXML
@@ -297,13 +300,6 @@ public class MediaDetailController implements MainControllerAware {
         }
         artist.setText(name);
         return artist;
-    }
-
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
-        }
-        return null;
     }
 
     private void displayImage(){

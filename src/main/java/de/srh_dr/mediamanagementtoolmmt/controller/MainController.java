@@ -1,5 +1,6 @@
 package de.srh_dr.mediamanagementtoolmmt.controller;
 
+import de.srh_dr.mediamanagementtoolmmt.services.DBConnection;
 import de.srh_dr.mediamanagementtoolmmt.util.AlertManager;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
@@ -222,10 +223,15 @@ public class MainController {
 
             Node view = loader.load();
 
-            currentView = ViewState.DEFAULT_VIEW;
-            currentParamId = -1;
-            lendingParam = false;
-            viewContainer.setCenter(view);
+            DefaultViewController controller = loader.getController();
+            if(controller!=null) {
+                controller.setMainController(this);
+
+                currentView = ViewState.DEFAULT_VIEW;
+                currentParamId = -1;
+                lendingParam = false;
+                viewContainer.setCenter(view);
+            }
         }catch(IOException e){
             LOGGER.log(Level.SEVERE, "Error while setting default view : " + e.getMessage(), e);
             AlertManager.showAlert(
@@ -244,6 +250,9 @@ public class MainController {
     }
     @FXML
     void showAddMedia() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.MEDIA_FORM;
         currentParamId = -1;
         lendingParam = false;
@@ -251,6 +260,9 @@ public class MainController {
     }
     @FXML
     void showArtists() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.ARTIST_OVERVIEW;
         currentParamId = -1;
         lendingParam = false;
@@ -258,6 +270,9 @@ public class MainController {
     }
     @FXML
     void showSeries() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.SERIES_OVERVIEW;
         currentParamId = -1;
         lendingParam = false;
@@ -265,6 +280,9 @@ public class MainController {
     }
     @FXML
     void showFranchises() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.FRANCHISE_OVERVIEW;
         currentParamId = -1;
         lendingParam = false;
@@ -272,6 +290,9 @@ public class MainController {
     }
     @FXML
     void showPublishers() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.PUBLISHER_OVERVIEW;
         currentParamId = -1;
         lendingParam = false;
@@ -279,6 +300,9 @@ public class MainController {
     }
     @FXML
     void showLendings() {
+        if(!DBConnection.isConnected()){
+            return;
+        }
         currentView = ViewState.LENDING_OVERVIEW;
         currentParamId = -1;
         lendingParam = false;
@@ -300,8 +324,8 @@ public class MainController {
             Node view = loader.load();
 
             Object controller = loader.getController();
-            if(controller instanceof MainControllerAware){
-                ((MainControllerAware) controller).setMainController(this);
+            if(controller instanceof MainControllerAware) {
+                ((MainControllerAware)controller).setMainController(this);
             }
 
             viewContainer.setCenter(view);

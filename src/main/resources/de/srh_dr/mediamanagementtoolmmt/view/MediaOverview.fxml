@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import org.controlsfx.control.SearchableComboBox?>
-<VBox fx:id="viewContainer" prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css"
+<VBox prefHeight="600" prefWidth="800" styleClass="view-container" stylesheets="@../css/style.css"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="de.srh_dr.mediamanagementtoolmmt.controller.MediaOverviewController">
     <HBox styleClass="controls-bar" alignment="CENTER_LEFT">

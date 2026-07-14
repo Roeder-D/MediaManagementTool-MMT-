@@ -11,8 +11,6 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
 import java.sql.SQLException;
@@ -24,7 +22,6 @@ import java.util.logging.Logger;
 public class MediaOverviewController implements MainControllerAware {
     private static final Logger LOGGER = Logger.getLogger(MediaOverviewController.class.getName());
 
-    @FXML private VBox viewContainer;
     @FXML private TableView<MediaOverview> mediaTable;
     @FXML private TableColumn<MediaOverview, String> titleCol;
     @FXML private TableColumn<MediaOverview, String> typeCol;
@@ -46,6 +43,11 @@ public class MediaOverviewController implements MainControllerAware {
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public MainController getMainController() {
+        return mainController;
     }
 
     //Populate view
@@ -168,13 +170,5 @@ public class MediaOverviewController implements MainControllerAware {
             }
             return true;
         });
-    }
-
-    //current window
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
-        }
-        return null;
     }
 }

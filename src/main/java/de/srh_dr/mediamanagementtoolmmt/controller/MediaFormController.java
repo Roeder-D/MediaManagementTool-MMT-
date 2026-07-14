@@ -44,7 +44,6 @@ import static javafx.collections.FXCollections.observableArrayList;
 public class MediaFormController implements MainControllerAware{
     private static final Logger LOGGER = Logger.getLogger(MediaFormController.class.getName());
 
-    @FXML private ScrollPane viewContainer;
     @FXML private ImageView coverImage;
     @FXML private Rating mediaRating;
     @FXML private TextField isbnField;
@@ -97,6 +96,11 @@ public class MediaFormController implements MainControllerAware{
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public MainController getMainController() {
+        return mainController;
     }
 
     //region Populate View
@@ -1140,14 +1144,6 @@ public class MediaFormController implements MainControllerAware{
         uiItems.forEach(item -> {
             if(!currentItems.contains(item)){adder.accept(item);}
         });
-    }
-
-    //current window
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
-        }
-        return null;
     }
     //endregion
 }

@@ -31,6 +31,11 @@ public class LendingOverviewController implements MainControllerAware{
         this.mainController = mainController;
     }
 
+    @Override
+    public MainController getMainController(){
+        return mainController;
+    }
+
     //Populate view
     @FXML
     public void initialize(){

@@ -13,9 +13,7 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Window;
 import org.controlsfx.control.SearchableComboBox;
 
 import java.sql.SQLException;
@@ -28,7 +26,6 @@ import java.util.logging.Logger;
 public class LendingViewController implements MainControllerAware{
     private static final Logger LOGGER = Logger.getLogger(LendingViewController.class.getName());
 
-    @FXML private BorderPane viewContainer;
     @FXML private TextField mediaTitleField;
     @FXML private SearchableComboBox<Lendee> lendeeComboBox;
     @FXML private DatePicker borrowDateField;
@@ -51,6 +48,11 @@ public class LendingViewController implements MainControllerAware{
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public MainController getMainController() {
+        return mainController;
     }
 
     //Populate view
@@ -402,13 +404,5 @@ public class LendingViewController implements MainControllerAware{
 
         lendeeReadOnlyField.setVisible(readOnly);
         lendeeReadOnlyField.setManaged(readOnly);
-    }
-
-    //Current window for popups
-    private Window getWindow(){
-        if (viewContainer != null && viewContainer.getScene() != null) {
-            return viewContainer.getScene().getWindow();
-        }
-        return null;
     }
 }
