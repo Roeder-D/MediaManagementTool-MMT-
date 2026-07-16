@@ -9,12 +9,11 @@ import de.srh_dr.mediamanagementtoolmmt.model.Language;
 import de.srh_dr.mediamanagementtoolmmt.model.Publisher;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ public class GoogleBooksService implements BookLookupService{
     private static final Dotenv dotenv = Dotenv.load();
     private static final String apiToken = dotenv.get("GOOGLE_BOOKS_API_TOKEN");
     private static final String baseUrl = dotenv.get("GOOGLE_BOOKS_BASE_URL");
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     //Fetch data
     @Override
@@ -37,17 +37,19 @@ public class GoogleBooksService implements BookLookupService{
         String encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8);
         String url = baseUrl + "?q=" + encodedTitle + "&maxResults=" + maxResults + "&key=" + apiToken;
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
-            ClassicHttpRequest request = ClassicRequestBuilder.get(url).build();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
 
-            String jsonResponse = httpClient.execute(request, response ->
-                    EntityUtils.toString(response.getEntity())
-            );
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonResponse = response.body();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonResponse);
 
-            int totalItems = root.get("totalItems").asInt(0);
+            int totalItems = root.path("totalItems").asInt(0);
             if(totalItems == 0){return List.of();}
 
             List<ExternalMediaSearchResult> results = new ArrayList<>();
@@ -69,12 +71,14 @@ public class GoogleBooksService implements BookLookupService{
     public ExternalMediaSearchResult searchByIsbn(String isbn) {
         String url = baseUrl + "?q=isbn:" + isbn + "&key=" + apiToken;
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            ClassicHttpRequest request = ClassicRequestBuilder.get(url).build();
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
 
-            String jsonResponse = httpClient.execute(request, response ->
-                EntityUtils.toString(response.getEntity())
-            );
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonResponse = response.body();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonResponse);

@@ -1,14 +1,7 @@
 package de.srh_dr.mediamanagementtoolmmt.services;
 
+import de.srh_dr.mediamanagementtoolmmt.util.HttpMultipartUtility;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -46,23 +39,27 @@ public class ImageManager {
     public boolean uploadImage(File file, String generatedName){
         String url = serverUrl + serverPhp;
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost post = new HttpPost(url);
-            post.setHeader("Authorization", "Bearer " + token);
+        try {
+            HttpMultipartUtility multipartUtility = new HttpMultipartUtility();
+            multipartUtility.addFormField("filename", generatedName);
+            multipartUtility.addFilePart("image", file);
+            byte[] cargo = multipartUtility.finishMultipart();
 
-            HttpEntity entity = MultipartEntityBuilder.create()
-                    .addTextBody("filename", generatedName)
-                    .addBinaryBody("image", file, ContentType.APPLICATION_OCTET_STREAM, file.getName())
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "multipart/form-data; boundary=" + multipartUtility.getBoundary())
+                    .header("Authorization", "Bearer " + token)
+                    .POST(HttpRequest.BodyPublishers.ofByteArray(cargo))
                     .build();
 
-            post.setEntity(entity);
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            return client.execute(post, response ->
-                    response.getCode() == 200 && EntityUtils.toString(response.getEntity()).contains("success")
-            );
+            return response.statusCode() == 200 && response.body().contains("success");
         }catch (IOException e){
             LOGGER.log(Level.SEVERE, "Error uploading image", e);
             return false;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

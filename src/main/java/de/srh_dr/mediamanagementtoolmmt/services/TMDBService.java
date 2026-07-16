@@ -9,12 +9,11 @@ import de.srh_dr.mediamanagementtoolmmt.model.Language;
 import de.srh_dr.mediamanagementtoolmmt.model.Publisher;
 import de.srh_dr.mediamanagementtoolmmt.util.ConfigManager;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,22 +29,23 @@ public class TMDBService implements ExternalMediaService{
     private static final String apiToken = dotenv.get("TMDB_API_TOKEN");
     private static final String baseUrl = dotenv.get("TMDB_BASE_URL", "https://api.themoviedb.org/3");
     private static  final String imageBaseUrl = dotenv.get("TMDB_IMAGE_BASE_URL");
-
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
     public List<ExternalMediaSearchResult> searchByTitle(String title) {
         String encodedTitle = URLEncoder.encode(title, StandardCharsets.UTF_8);
         String url = baseUrl + "/search/movie?query=" + encodedTitle;
 
-        try(CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            ClassicHttpRequest request = ClassicRequestBuilder.get(url)
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
                     .setHeader("Authorization", "Bearer " + apiToken)
                     .setHeader("accept", "application/json")
+                    .GET()
                     .build();
 
-            String jsonResponse = httpClient.execute(request, response ->
-                    EntityUtils.toString(response.getEntity())
-            );
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonResponse = response.body();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonResponse);
@@ -80,15 +80,16 @@ public class TMDBService implements ExternalMediaService{
     public ExternalMediaSearchResult fetchDetails(String remoteId) {
         String url = baseUrl + "/movie/" + remoteId + "?append_to_response=credits";
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
-            ClassicHttpRequest request = ClassicRequestBuilder.get(url)
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
                     .setHeader("Authorization", "Bearer " + apiToken)
                     .setHeader("accept", "application/json")
+                    .GET()
                     .build();
 
-            String jsonResponse = httpClient.execute(request, response ->
-                    EntityUtils.toString(response.getEntity())
-            );
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonResponse = response.body();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonResponse);
@@ -157,10 +158,10 @@ public class TMDBService implements ExternalMediaService{
 
     //helper for mapping JSON to program class
     private ExternalMediaSearchResult mapItemToSearchResult(JsonNode item) {
-        String remoteId = item.get("id").asText("");
-        String mainTitle = item.get("title").asText("");
-        String releaseDate = item.get("release_date").asText("");
-        String description = item.get("overview").asText("");
+        String remoteId = item.path("id").asText("");
+        String mainTitle = item.path("title").asText("");
+        String releaseDate = item.path("release_date").asText("");
+        String description = item.path("overview").asText("");
 
         String posterPath = item.path("poster_path").asText("");
         String imageUrl = posterPath.isEmpty() || posterPath.equalsIgnoreCase("null") ? "" : imageBaseUrl + posterPath;
