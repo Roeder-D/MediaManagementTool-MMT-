@@ -10,6 +10,7 @@ import de.srh_dr.mediamanagementtoolmmt.util.LanguageManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -41,6 +42,7 @@ public class MediaDetailController implements MainControllerAware {
     @FXML private FlowPane languageContainer;
     @FXML private Label tagLabel;
     @FXML private ImageView coverImage;
+    @FXML private ScrollPane descriptionPane;
 
 
     private MainController mainController;
@@ -219,7 +221,11 @@ public class MediaDetailController implements MainControllerAware {
 
           // populate series order
           if(media.getSeriesOrder() != 0) {
-              seriesOrderField.setText("Volume " + media.getSeriesOrder());
+              if(media.getSeries().getNumberOfTitles() == 0) {
+                  seriesOrderField.setText("Volume " + media.getSeriesOrder());
+              }else {
+                  seriesOrderField.setText("Volume " + media.getSeriesOrder() + "/" + media.getSeries().getNumberOfTitles());
+              }
           }else{
               seriesOrderField.setVisible(false);
               seriesOrderField.setManaged(false);
@@ -275,6 +281,9 @@ public class MediaDetailController implements MainControllerAware {
           }else{
               descriptionField.setText("/");
           }
+
+          descriptionPane.prefHeightProperty().bind(descriptionField.heightProperty().add(20));
+          descriptionPane.setMaxHeight(200);
 
 
       }catch(Exception e){
