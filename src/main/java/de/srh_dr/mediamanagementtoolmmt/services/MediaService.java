@@ -98,6 +98,7 @@ public class MediaService {
                     .releaseDate(mediaCore.releaseDate())
                     .publisher(publisher)
                     .series(series)
+                    .seriesOrder((mediaCore.seriesOrder()))
                     .mediaType(mediaType)
                     .status(mediaCore.status())
                     //Fetch lists

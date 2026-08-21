@@ -46,10 +46,10 @@
                     <Label fx:id="isbnLabel" text="%ui.isbn" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                     <Label fx:id="isbnField" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <Label fx:id="seriesLabel" text="%ui.series" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <Label fx:id="seriesLabel" text="%ui.series" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                     <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <Label fx:id="seriesField" text="-"/>
-                    <Label fx:id="seriesOrderField" prefWidth="60.0" />
+                    <Label fx:id="seriesOrderField"/>
                     </HBox>
 
                     <Label fx:id="franchiseLabel" text="%ui.franchise" styleClass="field-label" GridPane.valignment="TOP" GridPane.columnIndex="0" GridPane.rowIndex="3" />
@@ -77,7 +77,7 @@
 
             <VBox spacing="10.0">
                 <Label text="%ui.description" styleClass="section-header" />
-                <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+                <ScrollPane fx:id="descriptionPane" fitToWidth="true" hbarPolicy="NEVER">
                     <Label fx:id="descriptionField" text="No description available." wrapText="true" />
                 </ScrollPane>
             </VBox>

@@ -78,6 +78,10 @@
     -fx-background-insets: 0, 0 0 1 0, 1 1 2 1; /* Subtle underline focus look */
 }
 
+.scroll-pane {
+    -fx-padding: 10px;
+}
+
 /* Reusable buttons */
 .app-button {
     -fx-background-color: -fx-primary-color;
